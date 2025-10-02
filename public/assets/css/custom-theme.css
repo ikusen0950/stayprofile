@@ -1,0 +1,252 @@
+/* ================================
+   ISLANDERS APP - CUSTOM THEME COLORS
+   ================================ */
+
+/* CSS Custom Properties (Variables) for Easy Theme Management */
+:root {
+    /* ===== PRIMARY BRAND COLORS ===== */
+    --bs-primary: #1f2129;          /* Dark primary - your current theme */
+    --bs-primary-rgb: 31, 33, 41;
+    
+    /* ===== STATUS COLORS (Change these to customize your theme) ===== */
+    --bs-success: #20D489;          /* Success green - change to your preferred green */
+    --bs-success-rgb: 32, 212, 137;
+    
+    --bs-danger: #F1416C;           /* Danger red - change to your preferred red */
+    --bs-danger-rgb: 241, 65, 108;
+    
+    --bs-warning: #FFC700;          /* Warning yellow - change to your preferred yellow */
+    --bs-warning-rgb: 255, 199, 0;
+    
+    --bs-info: #7239EA;             /* Info purple - change to your preferred blue/purple */
+    --bs-info-rgb: 114, 57, 234;
+    
+    /* ===== SECONDARY COLORS ===== */
+    --bs-secondary: #99A1B7;        /* Gray secondary */
+    --bs-secondary-rgb: 153, 161, 183;
+    
+    --bs-light: #F5F8FA;            /* Light background */
+    --bs-light-rgb: 245, 248, 250;
+    
+    --bs-dark: #181C32;             /* Dark text/background */
+    --bs-dark-rgb: 24, 28, 50;
+    
+    /* ===== CUSTOM ISLAND THEME COLORS ===== */
+    --island-ocean: #0077BE;        /* Ocean blue */
+    --island-ocean-rgb: 0, 119, 190;
+    
+    --island-sand: #F4E4BC;         /* Sandy beige */
+    --island-sand-rgb: 244, 228, 188;
+    
+    --island-palm: #228B22;         /* Palm green */
+    --island-palm-rgb: 34, 139, 34;
+    
+    --island-sunset: #FF6B35;       /* Sunset orange */
+    --island-sunset-rgb: 255, 107, 53;
+}
+
+/* ===== BOOTSTRAP COLOR UTILITIES OVERRIDE ===== */
+.text-success { color: var(--bs-success) !important; }
+.text-danger { color: var(--bs-danger) !important; }
+.text-warning { color: var(--bs-warning) !important; }
+.text-info { color: var(--bs-info) !important; }
+.text-primary { color: var(--bs-primary) !important; }
+
+.bg-success { background-color: var(--bs-success) !important; }
+.bg-danger { background-color: var(--bs-danger) !important; }
+.bg-warning { background-color: var(--bs-warning) !important; }
+.bg-info { background-color: var(--bs-info) !important; }
+.bg-primary { background-color: var(--bs-primary) !important; }
+
+/* ===== BUTTON OVERRIDES ===== */
+.btn-success {
+    color: #fff;
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+.btn-success:hover {
+    background-color: rgba(var(--bs-success-rgb), 0.8);
+    border-color: rgba(var(--bs-success-rgb), 0.8);
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: var(--bs-danger);
+    border-color: var(--bs-danger);
+}
+.btn-danger:hover {
+    background-color: rgba(var(--bs-danger-rgb), 0.8);
+    border-color: rgba(var(--bs-danger-rgb), 0.8);
+}
+
+.btn-warning {
+    color: #fff;
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+}
+.btn-warning:hover {
+    background-color: rgba(var(--bs-warning-rgb), 0.8);
+    border-color: rgba(var(--bs-warning-rgb), 0.8);
+}
+
+.btn-info {
+    color: #fff;
+    background-color: var(--bs-info);
+    border-color: var(--bs-info);
+}
+.btn-info:hover {
+    background-color: rgba(var(--bs-info-rgb), 0.8);
+    border-color: rgba(var(--bs-info-rgb), 0.8);
+}
+
+/* ===== ALERT OVERRIDES ===== */
+.alert-success {
+    color: #fff;
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+
+.alert-danger {
+    color: #fff;
+    background-color: var(--bs-danger);
+    border-color: var(--bs-danger);
+}
+
+.alert-warning {
+    color: #000;
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+}
+
+.alert-info {
+    color: #fff;
+    background-color: var(--bs-info);
+    border-color: var(--bs-info);
+}
+
+/* ===== FORM VALIDATION STATES ===== */
+.is-valid,
+.was-validated .form-control:valid {
+    border-color: var(--bs-success);
+}
+
+.is-invalid,
+.was-validated .form-control:invalid {
+    border-color: var(--bs-danger);
+}
+
+.valid-feedback {
+    color: var(--bs-success);
+}
+
+.invalid-feedback {
+    color: var(--bs-danger);
+}
+
+/* ===== CUSTOM ISLAND THEME CLASSES ===== */
+.btn-ocean {
+    color: #fff;
+    background-color: var(--island-ocean);
+    border-color: var(--island-ocean);
+}
+.btn-ocean:hover {
+    background-color: rgba(var(--island-ocean-rgb), 0.8);
+    border-color: rgba(var(--island-ocean-rgb), 0.8);
+}
+
+.btn-sunset {
+    color: #fff;
+    background-color: var(--island-sunset);
+    border-color: var(--island-sunset);
+}
+.btn-sunset:hover {
+    background-color: rgba(var(--island-sunset-rgb), 0.8);
+    border-color: rgba(var(--island-sunset-rgb), 0.8);
+}
+
+.btn-palm {
+    color: #fff;
+    background-color: var(--island-palm);
+    border-color: var(--island-palm);
+}
+.btn-palm:hover {
+    background-color: rgba(var(--island-palm-rgb), 0.8);
+    border-color: rgba(var(--island-palm-rgb), 0.8);
+}
+
+.text-ocean { color: var(--island-ocean) !important; }
+.text-sunset { color: var(--island-sunset) !important; }
+.text-palm { color: var(--island-palm) !important; }
+.text-sand { color: var(--island-sand) !important; }
+
+.bg-ocean { background-color: var(--island-ocean) !important; }
+.bg-sunset { background-color: var(--island-sunset) !important; }
+.bg-palm { background-color: var(--island-palm) !important; }
+.bg-sand { background-color: var(--island-sand) !important; }
+
+/* ===== KEENTHEMES ICON OVERRIDES ===== */
+.ki-duotone.text-success .path1,
+.ki-duotone.text-success .path2 {
+    fill: var(--bs-success);
+}
+
+.ki-duotone.text-danger .path1,
+.ki-duotone.text-danger .path2 {
+    fill: var(--bs-danger);
+}
+
+.ki-duotone.text-warning .path1,
+.ki-duotone.text-warning .path2 {
+    fill: var(--bs-warning);
+}
+
+.ki-duotone.text-info .path1,
+.ki-duotone.text-info .path2 {
+    fill: var(--bs-info);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    /* Ensure colors work well on mobile */
+    .alert-success,
+    .alert-danger,
+    .alert-warning,
+    .alert-info {
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+}
+
+/* ===== DARK MODE SUPPORT (Optional) ===== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Adjust colors for dark mode if needed */
+        --bs-success: #4CAF50;
+        --bs-danger: #FF5722;
+        --bs-warning: #FF9800;
+        --bs-info: #2196F3;
+    }
+}
+
+/* ===== EASY COLOR CUSTOMIZATION EXAMPLES ===== */
+/*
+To change theme colors, simply modify the CSS variables at the top:
+
+For a Blue/Ocean Theme:
+--bs-success: #00BCD4;  (Cyan)
+--bs-danger: #F44336;   (Red)
+--bs-warning: #FF9800;  (Orange)
+--bs-info: #2196F3;     (Blue)
+
+For a Green/Nature Theme:
+--bs-success: #4CAF50;  (Green)
+--bs-danger: #E91E63;   (Pink)
+--bs-warning: #FFC107;  (Amber)
+--bs-info: #9C27B0;     (Purple)
+
+For a Corporate Theme:
+--bs-success: #28A745;  (Bootstrap Green)
+--bs-danger: #DC3545;   (Bootstrap Red)
+--bs-warning: #FFC107;  (Bootstrap Yellow)
+--bs-info: #17A2B8;     (Bootstrap Teal)
+*/
