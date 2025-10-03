@@ -348,7 +348,23 @@
 
 
                     <!--begin:Menu item-->
-                    <?php $isActive = isMenuActive(['/modules', '/status', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']); ?>
+                    <?php 
+                    // Check permissions for system settings
+                    $hasStatusAccess = has_permission('status.view');
+                    $hasModulesAccess = has_permission('modules.view');
+                    $hasLogsAccess = has_permission('logs.view');
+                    $hasSystemAccess = $hasStatusAccess || $hasModulesAccess || $hasLogsAccess;
+                    
+                    // For Islander Settings, we'll assume admin/manager access for now
+                    // You can add specific permissions for these later if needed
+                    $hasIslanderAccess = has_permission('system.admin') || in_groups(['admin', 'manager']);
+                    
+                    // Check if user has access to any settings
+                    $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess;
+                    
+                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']) && $hasAnySettingsAccess;
+                    ?>
+                    <?php if ($hasAnySettingsAccess): ?>
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion ms-n5 <?= $isActive ? 'here show' : '' ?>">
                         <!--begin:Menu link-->
                         <span class="menu-link <?= $isActive ? 'active bg-dark' : '' ?>" <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -365,7 +381,10 @@
                         <!--begin:Menu sub-->
                         <div class="menu-sub menu-sub-accordion">
                             <!--begin:Menu item-->
-                            <?php $islanderActive = isMenuActive(['/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']); ?>
+                            <?php 
+                            $islanderActive = isMenuActive(['/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']) && $hasIslanderAccess;
+                            ?>
+                            <?php if ($hasIslanderAccess): ?>
                             <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $islanderActive ? 'here show' : '' ?>">
                                 <!--begin:Menu link-->
                                 <span class="menu-link <?= $islanderActive ? 'active bg-dark' : '' ?>" <?= $islanderActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -485,10 +504,18 @@
                                 </div>
                                 <!--end:Menu sub-->
                             </div>
+                            <?php endif; ?>
                             <!--end:Menu item-->
 
                             <!--begin:Menu item-->
-                            <?php $systemActive = isMenuActive(['/modules', '/status', '/logs']); ?>
+                            <?php 
+                            // Check permissions for system settings items
+                            $hasStatusAccess = has_permission('status.view');
+                            $hasModulesAccess = has_permission('modules.view');
+                            $hasLogsAccess = has_permission('logs.view');
+                            $systemActive = isMenuActive(['/modules', '/status', '/logs']) && ($hasStatusAccess || $hasModulesAccess || $hasLogsAccess);
+                            ?>
+                            <?php if ($hasStatusAccess || $hasModulesAccess || $hasLogsAccess): ?>
                             <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $systemActive ? 'here show' : '' ?>">
                                 <!--begin:Menu link-->
                                 <span class="menu-link <?= $systemActive ? 'active bg-dark' : '' ?>" <?= $systemActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -502,6 +529,7 @@
                                 <!--begin:Menu sub-->
                                 <div class="menu-sub menu-sub-accordion">
                                     <!--begin:Menu item-->
+                                    <?php if ($hasStatusAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive1 = isMenuActive(['/status']); ?>
@@ -513,8 +541,10 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
+                                    <?php if ($hasModulesAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive2 = isMenuActive(['/modules']) && !isMenuActive(['/status']); ?>
@@ -526,8 +556,10 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
+                                    <?php if ($hasLogsAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive4 = isMenuActive(['/logs']); ?>
@@ -539,15 +571,18 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                 </div>
                                 <!--end:Menu sub-->
                             </div>
+                            <?php endif; ?>
                             <!--end:Menu item-->
 
                         </div>
                         <!--end:Menu sub-->
                     </div>
+                    <?php endif; ?>
                     <!--end:Menu item-->
 
 

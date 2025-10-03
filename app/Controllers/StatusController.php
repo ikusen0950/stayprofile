@@ -118,6 +118,11 @@ class StatusController extends BaseController
      */
     public function index()
     {
+        // Check if user has permission to view status
+        if (!has_permission('status.view')) {
+            return redirect()->to('/')->with('error', 'You do not have permission to view status.');
+        }
+
         $search = trim(strip_tags($this->request->getGet('search') ?? ''));
         $page = (int)($this->request->getGet('page') ?? 1);
         $limit = 10;
@@ -131,6 +136,14 @@ class StatusController extends BaseController
         $modules = $this->statusModel->getActiveModules();
         log_message('info', 'Modules data: ' . json_encode($modules));
 
+        // Check user permissions for buttons
+        $permissions = [
+            'canCreate' => has_permission('status.create'),
+            'canEdit' => has_permission('status.edit'),
+            'canView' => has_permission('status.view'),
+            'canDelete' => has_permission('status.delete')
+        ];
+
         $data = [
             'title' => 'Status Management',
             'statuses' => $statuses,
@@ -139,7 +152,8 @@ class StatusController extends BaseController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalStatus' => $totalStatus,
-            'limit' => $limit
+            'limit' => $limit,
+            'permissions' => $permissions
         ];
 
         return view('status/index', $data);
@@ -150,6 +164,17 @@ class StatusController extends BaseController
      */
     public function store()
     {
+        // Check if user has permission to create status
+        if (!has_permission('status.create')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'You do not have permission to create status.'
+                ]);
+            }
+            return redirect()->back()->with('error', 'You do not have permission to create status.');
+        }
+
         // Debug: Log the incoming request
         log_message('info', 'Status store called. POST data: ' . json_encode($this->request->getPost()));
         log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
@@ -211,6 +236,14 @@ class StatusController extends BaseController
      */
     public function show($id = null)
     {
+        // Check if user has permission to view status
+        if (!has_permission('status.view')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to view status.'
+            ]);
+        }
+
         // Only allow AJAX requests for modals
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403)->setJSON([
@@ -246,6 +279,17 @@ class StatusController extends BaseController
      */
     public function update($id = null)
     {
+        // Check if user has permission to edit status
+        if (!has_permission('status.edit')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'You do not have permission to edit status.'
+                ]);
+            }
+            return redirect()->back()->with('error', 'You do not have permission to edit status.');
+        }
+
         // Debug: Log the incoming request
         log_message('info', 'Status update called for ID: ' . $id . '. POST data: ' . json_encode($this->request->getPost()));
         log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
@@ -356,6 +400,14 @@ class StatusController extends BaseController
      */
     public function delete($id = null)
     {
+        // Check if user has permission to delete status
+        if (!has_permission('status.delete')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to delete status.'
+            ]);
+        }
+
         if ($id === null) {
             return $this->response->setJSON([
                 'success' => false,

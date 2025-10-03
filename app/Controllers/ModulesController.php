@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\ModuleModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
-class ModuleController extends BaseController
+class ModulesController extends BaseController
 {
     protected $moduleModel;
     protected $logModel;
@@ -84,14 +84,14 @@ class ModuleController extends BaseController
             // Create structured action description in the requested format
             $actionDescription = $actionPrefix . "\n";
             $actionDescription .= "#: " . $moduleNumber . "\n";
-            $actionDescription .= "Module: System\n"; // Modules are part of System module
+            $actionDescription .= "Module: Modules" . "\n";
             $actionDescription .= "Name: " . ($moduleData['name'] ?? 'Unknown') . "\n";
             $actionDescription .= "Description:\n";
             $actionDescription .= ($moduleData['description'] ?? 'No description provided');
 
             $logData = [
                 'status_id' => $logStatusId, // Use mapped status ID based on action
-                'module_id' => 1, // System module ID (from modules table)
+                'module_id' => 4, // Modules module ID (assuming ID 4 for modules)
                 'action' => $actionDescription, // Structured action text with details
             ];
 
@@ -117,6 +117,11 @@ class ModuleController extends BaseController
      */
     public function index()
     {
+        // Check if user has permission to view modules
+        if (!has_permission('modules.view')) {
+            return redirect()->to('/')->with('error', 'You do not have permission to view modules.');
+        }
+
         $search = trim(strip_tags($this->request->getGet('search') ?? ''));
         $page = (int)($this->request->getGet('page') ?? 1);
         $limit = 10;
@@ -130,6 +135,14 @@ class ModuleController extends BaseController
         $statuses = $this->moduleModel->getActiveStatuses();
         log_message('info', 'Statuses data: ' . json_encode($statuses));
 
+        // Check user permissions for buttons
+        $permissions = [
+            'canCreate' => has_permission('modules.create'),
+            'canEdit' => has_permission('modules.edit'),
+            'canView' => has_permission('modules.view'),
+            'canDelete' => has_permission('modules.delete')
+        ];
+
         $data = [
             'title' => 'Module Management',
             'modules' => $modules,
@@ -138,7 +151,8 @@ class ModuleController extends BaseController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalModules' => $totalModules,
-            'limit' => $limit
+            'limit' => $limit,
+            'permissions' => $permissions
         ];
 
         return view('modules/index', $data);
@@ -149,6 +163,17 @@ class ModuleController extends BaseController
      */
     public function store()
     {
+        // Check if user has permission to create modules
+        if (!has_permission('modules.create')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'You do not have permission to create modules.'
+                ]);
+            }
+            return redirect()->back()->with('error', 'You do not have permission to create modules.');
+        }
+
         // Debug: Log the incoming request
         log_message('info', 'Module store called. POST data: ' . json_encode($this->request->getPost()));
         log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
@@ -209,6 +234,14 @@ class ModuleController extends BaseController
      */
     public function show($id = null)
     {
+        // Check if user has permission to view modules
+        if (!has_permission('modules.view')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to view modules.'
+            ]);
+        }
+
         // Only allow AJAX requests for modals
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403)->setJSON([
@@ -244,6 +277,17 @@ class ModuleController extends BaseController
      */
     public function update($id = null)
     {
+        // Check if user has permission to edit modules
+        if (!has_permission('modules.edit')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'You do not have permission to edit modules.'
+                ]);
+            }
+            return redirect()->back()->with('error', 'You do not have permission to edit modules.');
+        }
+
         // Debug: Log the incoming request
         log_message('info', 'Module update called for ID: ' . $id . '. POST data: ' . json_encode($this->request->getPost()));
         log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
@@ -353,6 +397,14 @@ class ModuleController extends BaseController
      */
     public function delete($id = null)
     {
+        // Check if user has permission to delete modules
+        if (!has_permission('modules.delete')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to delete modules.'
+            ]);
+        }
+
         if ($id === null) {
             return $this->response->setJSON([
                 'success' => false,

@@ -80,17 +80,17 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 }
 
 /* Enhanced mobile card hover effects */
-.mobile-status-card {
+.mobile-module-card {
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.mobile-status-card:hover {
+.mobile-module-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-status-card:active {
+.mobile-module-card:active {
     transform: translateY(0);
 }
 
@@ -147,26 +147,6 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
         border-top: 1px solid var(--bs-border-color) !important;
         flex-shrink: 0 !important;
     }
-
-    /* Ensure modal backdrop doesn't interfere */
-    .modal-backdrop {
-        background-color: rgba(0, 0, 0, 0) !important;
-    }
-}
-
-/* Better Select2 dropdown positioning in modals */
-.select2-container--bootstrap5 .select2-dropdown {
-    z-index: 1060;
-}
-
-/* Color preview styles */
-.color-preview {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--bs-border-color);
-    display: inline-block;
-    margin-right: 8px;
 }
 </style>
 
@@ -176,7 +156,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
     <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
         <div class="container-fluid">
             <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Status</h1>
+                <h1 class="text-dark fw-bold ms-2">Modules</h1>
             </div>
             <div class="row align-items-stretch">
                 <div class="col-10">
@@ -187,12 +167,12 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <span class="path2"></span>
                         </i>
                         <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search status..." value="<?= esc($search) ?>" />
+                            placeholder="Search modules..." value="<?= esc($search) ?>" />
                     </div>
                 </div>
                 <div class="col-2">
-                    <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createStatusModal"
+                    <?php if (isset($permissions) && $permissions['canCreate']): ?>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#createModuleModal"
                         class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
                         style="min-height: 48px;">
                         <i class="ki-duotone ki-plus-square fs-3x">
@@ -203,7 +183,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                     </button>
                     <?php else: ?>
                     <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create status">
+                        style="min-height: 48px;" title="No permission to create modules">
                         <i class="ki-duotone ki-lock fs-3x">
                             <span class="path1"></span>
                             <span class="path2"></span>
@@ -247,63 +227,61 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
         <!-- Scrollable Card List -->
         <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($statuses)): ?>
-            <?php foreach ($statuses as $index => $status): ?>
+            <?php if (!empty($modules)): ?>
+            <?php foreach ($modules as $index => $module): ?>
             <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-status-card" data-status-id="<?= esc($status['id']) ?>">
+                <div class="card mobile-module-card" data-module-id="<?= esc($module['id']) ?>">
                     <div class="card-body p-4">
-                        <!-- Status Header -->
+                        <!-- Module Header -->
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase">#<?= esc($status['id']) ?></small>
+                                <small class="text-muted text-uppercase">#<?= esc($module['id']) ?></small>
                             </div>
                             <div class="ms-3">
                                 <?php 
-                                // Use custom color if available, otherwise fallback to status-based colors
-                                if (!empty($status['color'])) 
-                                    // Convert hex color to RGB for light background
-                                    $hex = ltrim($status['color'], '#');
+                                // Use custom color if available from status
+                                if (!empty($module['status_color'])) {
+                                    $hex = ltrim($module['status_color'], '#');
                                     $r = hexdec(substr($hex, 0, 2));
                                     $g = hexdec(substr($hex, 2, 2));
                                     $b = hexdec(substr($hex, 4, 2));
                                     $lightBg = "rgba($r, $g, $b, 0.1)";
-                                    $textColor = $status['color'];
+                                    $textColor = $module['status_color'];
                                     $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                } else {
+                                    $badgeStyle = "background-color: rgba(108, 117, 125, 0.1); color: #6c757d; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                }
                                 ?>
-                                <?php if (!empty($status['color'])): ?>
                                 <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                    <?= strtoupper(esc($status['name'])) ?>
+                                    <?= strtoupper(esc($module['status_name'] ?? 'Unknown')) ?>
                                 </span>
-                                <?php else: ?>
-                                <span class="badge <?= $badgeClass ?>"><?= strtoupper(esc($status['name'])) ?></span>
-                                <?php endif; ?>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
                             <div class="flex-grow-1">
-                                <strong class="me-5 text-uppercase text-truncate"><?= esc($status['name']) ?></strong>
+                                <strong class="me-5 text-uppercase text-truncate"><?= esc($module['name']) ?></strong>
                             </div>
                         </div>
 
-                        <!-- Status Footer -->
+                        <!-- Module Footer -->
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <div class="d-flex flex-column">
                                 <small class="text-muted">
-                                    <?= !empty($status['created_by_name']) ? esc($status['created_by_name']) : 'System' ?>
+                                    <?= !empty($module['created_by_name']) ? esc($module['created_by_name']) : 'System' ?>
                                 </small>
                             </div>
-                            <small class="text-muted"><?= date('M d, Y', strtotime($status['created_at'])) ?></small>
+                            <small class="text-muted"><?= date('M d, Y', strtotime($module['created_at'])) ?></small>
                         </div>
 
                         <!-- Expandable Actions (initially hidden) -->
                         <div class="mobile-actions mt-3 pt-3 border-top d-none">
                             <div class="row g-2">
-                                <?php if ($permissions['canView']): ?>
+                                <?php if (isset($permissions) && $permissions['canView']): ?>
                                 <div class="col-4">
                                     <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-status-btn"
-                                        data-status-id="<?= esc($status['id']) ?>">
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-module-btn"
+                                        data-module-id="<?= esc($module['id']) ?>">
                                         <i class="ki-duotone ki-eye fs-1 me-2">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -313,11 +291,11 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     </button>
                                 </div>
                                 <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
+                                <?php if (isset($permissions) && $permissions['canEdit']): ?>
                                 <div class="col-4">
                                     <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-status-btn"
-                                        data-status-id="<?= esc($status['id']) ?>">
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-module-btn"
+                                        data-module-id="<?= esc($module['id']) ?>">
                                         <i class="ki-duotone ki-pencil fs-1 me-2">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -326,11 +304,11 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     </button>
                                 </div>
                                 <?php endif; ?>
-                                <?php if ($permissions['canDelete']): ?>
+                                <?php if (isset($permissions) && $permissions['canDelete']): ?>
                                 <div class="col-4">
                                     <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-status-btn"
-                                        data-status-id="<?= esc($status['id']) ?>">
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-module-btn"
+                                        data-module-id="<?= esc($module['id']) ?>">
                                         <i class="ki-duotone ki-trash fs-1 me-2">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -355,8 +333,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <span class="path1"></span>
                         <span class="path2"></span>
                     </i>
-                    <h6 class="fw-bold text-gray-700 mb-2">No status found</h6>
-                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first status entry</p>
+                    <h6 class="fw-bold text-gray-700 mb-2">No modules found</h6>
+                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first module entry</p>
                 </div>
             </div>
             <?php endif; ?>
@@ -367,12 +345,12 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="mt-2 text-muted">Loading more status...</p>
+            <p class="mt-2 text-muted">Loading more modules...</p>
         </div>
 
         <!-- No more data indicator -->
         <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more status to load</p>
+            <p class="text-muted">No more modules to load</p>
         </div>
     </div>
 </div>
@@ -427,8 +405,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <span class="path2"></span>
                                 </i>
                                 <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search status..."
-                                    value="<?= esc($search) ?>" />
+                                    class="form-control form-control-solid w-250px ps-13"
+                                    placeholder="Search modules..." value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
                         </div>
@@ -437,15 +415,19 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
                             <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-status-table-toolbar="base">
-                                <!--begin::Add status-->
-                                <?php if ($permissions['canCreate']): ?>
+                            <div class="d-flex justify-content-end" data-kt-module-table-toolbar="base">
+                                <!--begin::Add module-->
+                                <?php if (isset($permissions) && $permissions['canCreate']): ?>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createStatusModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Status
+                                    data-bs-target="#createModuleModal">
+                                    <i class="ki-duotone ki-plus fs-2"></i>Add Module
+                                </button>
+                                <?php else: ?>
+                                <button type="button" class="btn btn-light-secondary disabled" title="No permission to create modules">
+                                    <i class="ki-duotone ki-lock fs-2"></i>Add Module
                                 </button>
                                 <?php endif; ?>
-                                <!--end::Add status-->
+                                <!--end::Add module-->
                             </div>
                             <!--end::Toolbar-->
                         </div>
@@ -457,7 +439,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                     <div class="card-body py-4">
                         <!--begin::Table-->
                         <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_status_table">
+                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_module_table">
                                 <!--begin::Table head-->
                                 <thead>
                                     <!--begin::Table row-->
@@ -466,13 +448,14 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             <div
                                                 class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                                 <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_status_table .form-check-input"
+                                                    data-kt-check-target="#kt_module_table .form-check-input"
                                                     value="1" />
                                             </div>
                                         </th>
                                         <th class="min-w-20px">#</th>
-                                        <th class="min-w-80px">Status</th>
-                                        <th class="min-w-100px">Module</th>
+                                        <th class="min-w-100px">Status</th>
+
+                                        <th class="min-w-80px">Module</th>
                                         <th class="min-w-200px">Description</th>
                                         <th class="min-w-120px">Created By</th>
                                         <th class="min-w-120px">Updated By</th>
@@ -484,15 +467,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
                                 <!--begin::Table body-->
                                 <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($statuses)): ?>
-                                    <?php foreach ($statuses as $status): ?>
+                                    <?php if (!empty($modules)): ?>
+                                    <?php foreach ($modules as $module): ?>
                                     <!--begin::Table row-->
                                     <tr>
                                         <!--begin::Checkbox-->
                                         <td>
                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                                 <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($status['id']) ?>" />
+                                                    value="<?= esc($module['id']) ?>" />
                                             </div>
                                         </td>
                                         <!--end::Checkbox-->
@@ -500,54 +483,57 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::ID-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($status['id']) ?></small>
+                                                <small class="text-muted">#<?= esc($module['id']) ?></small>
                                             </div>
                                         </td>
                                         <!--end::ID-->
-                                     
+
+
                                         <!--begin::Status-->
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <?php 
                                                 // Use custom color if available, otherwise fallback to status-based colors
-                                                if (!empty($status['color'])) {
+                                                if (!empty($module['status_color'])) {
                                                     // Convert hex color to RGB for light background
-                                                    $hex = ltrim($status['color'], '#');
+                                                    $hex = ltrim($module['status_color'], '#');
                                                     $r = hexdec(substr($hex, 0, 2));
                                                     $g = hexdec(substr($hex, 2, 2));
                                                     $b = hexdec(substr($hex, 4, 2));
                                                     $lightBg = "rgba($r, $g, $b, 0.1)";
-                                                    $textColor = $status['color'];
+                                                    $textColor = $module['status_color'];
                                                     $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
                                                 
                                                 }
                                                 ?>
-                                                <?php if (!empty($status['color'])): ?>
+                                                <?php if (!empty($module['status_color'])): ?>
                                                 <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($status['name'])) ?>
+                                                    <?= strtoupper(esc($module['status_name'])) ?>
                                                 </span>
                                                 <?php else: ?>
                                                 <span class="badge <?= $badgeClass ?> fw-bold"
                                                     style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                                    <?= strtoupper(esc($status['name'])) ?>
+                                                    <?= strtoupper(esc($status['status_name'])) ?>
                                                 </span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
                                         <!--end::Status-->
 
+                                        
                                         <!--begin::Module-->
                                         <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="fw-bold text-dark"><?= esc($status['module_name']) ?></small>
+                                            <div class="d-flex align-items-center">
+                                                <span class="fw-bold text-dark"><?= esc($module['name']) ?></span>
                                             </div>
                                         </td>
                                         <!--end::Module-->
 
+
                                         <!--begin::Description-->
                                         <td>
                                             <div class="text-gray-600">
-                                                <?= esc($status['description']) ?>
+                                                <?= esc($module['description']) ?>
                                             </div>
                                         </td>
                                         <!--end::Description-->
@@ -555,10 +541,10 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::Created By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($status['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($status['created_by_name']) ?></span>
+                                                <?php if (!empty($module['created_by_name'])): ?>
+                                                <span class="text-muted"><?= esc($module['created_by_name']) ?></span>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['created_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($module['created_at'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -566,10 +552,10 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::Updated By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($status['updated_by_name']) && !empty($status['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($status['updated_by_name']) ?></span>
+                                                <?php if (!empty($module['updated_by_name']) && !empty($module['updated_at'])): ?>
+                                                <span class="text-muted"><?= esc($module['updated_by_name']) ?></span>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['updated_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($module['updated_at'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -587,26 +573,26 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
                                                 data-kt-menu="true">
                                                 <!--begin::Menu item-->
-                                                <?php if ($permissions['canView']): ?>
+                                                <?php if (isset($permissions) && $permissions['canView']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-status-btn"
-                                                        data-status-id="<?= esc($status['id']) ?>">View</a>
+                                                    <a class="menu-link px-3 view-module-btn"
+                                                        data-module-id="<?= esc($module['id']) ?>">View</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
-                                                <?php if ($permissions['canEdit']): ?>
+                                                <?php if (isset($permissions) && $permissions['canEdit']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-status-btn"
-                                                        data-status-id="<?= esc($status['id']) ?>">Edit</a>
+                                                    <a class="menu-link px-3 edit-module-btn"
+                                                        data-module-id="<?= esc($module['id']) ?>">Edit</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
-                                                <?php if ($permissions['canDelete']): ?>
+                                                <?php if (isset($permissions) && $permissions['canDelete']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-status-btn"
-                                                        data-status-id="<?= esc($status['id']) ?>">Delete</a>
+                                                    <a class="menu-link px-3 delete-module-btn"
+                                                        data-module-id="<?= esc($module['id']) ?>">Delete</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -620,14 +606,14 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <?php else: ?>
                                     <!--begin::No results-->
                                     <tr>
-                                        <td colspan="9" class="text-center py-10">
+                                        <td colspan="8" class="text-center py-10">
                                             <div class="d-flex flex-column align-items-center">
                                                 <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
                                                     <span class="path1"></span>
                                                     <span class="path2"></span>
                                                 </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No status found</div>
-                                                <div class="text-gray-500">Start by creating your first status entry
+                                                <div class="fw-bold text-gray-700 mb-2">No modules found</div>
+                                                <div class="text-gray-500">Start by creating your first module entry
                                                 </div>
                                             </div>
                                         </td>
@@ -651,11 +637,12 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
     <!--end::Content wrapper-->
 </div>
 <!--end::Main-->
+</div>
 
 <!-- Include Modals -->
-<?= $this->include('status/create_modal') ?>
-<?= $this->include('status/edit_modal') ?>
-<?= $this->include('status/view_modal') ?>
+<?= $this->include('modules/create_modal') ?>
+<?= $this->include('modules/edit_modal') ?>
+<?= $this->include('modules/view_modal') ?>
 
 <script>
 // Global variables
@@ -666,14 +653,12 @@ let searchTimeout;
 
 // Check if there are server-rendered cards and adjust currentPage
 document.addEventListener('DOMContentLoaded', function() {
-    const existingCards = document.querySelectorAll('#mobile-cards-container .mobile-status-card');
+    const existingCards = document.querySelectorAll('#mobile-cards-container .mobile-module-card');
     if (existingCards.length > 0) {
         // Server already rendered the first page, so start from page 2
         currentPage = Math.ceil(existingCards.length / 10) + 1;
     }
 });
-
-// Global functions are now defined above for modal access
 
 // Document ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -744,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (container && window.innerWidth < 992) {
                 // Mobile view - use AJAX
                 container.innerHTML = '';
-                loadStatus(true, query);
+                loadModules(true, query);
             } else {
                 // Desktop view - reload page with search
                 const url = new URL(window.location);
@@ -770,13 +755,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load initial status for mobile
+    // Load initial modules for mobile
     const mobileContainer = document.getElementById('mobile-cards-container');
     if (mobileContainer) {
         // Only load initial data if container is empty (no server-rendered content)
-        const existingCards = mobileContainer.querySelectorAll('.mobile-status-card');
+        const existingCards = mobileContainer.querySelectorAll('.mobile-module-card');
         if (existingCards.length === 0) {
-            loadStatus(false);
+            loadModules(false);
         }
 
         // Infinite scroll for mobile
@@ -789,43 +774,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     const documentHeight = document.documentElement.offsetHeight;
 
                     if (scrollPosition >= documentHeight - 1000) {
-                        loadStatus(false, mobileSearch?.value || '');
+                        loadModules(false, mobileSearch?.value || '');
                     }
                 }
             }, 100);
         });
     }
 
-    // Handle view status
+    // Handle view module
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.view-status-btn')) {
+        if (e.target.closest('.view-module-btn')) {
             e.preventDefault();
-            const statusId = e.target.closest('.view-status-btn').getAttribute('data-status-id');
-            viewStatus(statusId);
+            const moduleId = e.target.closest('.view-module-btn').getAttribute('data-module-id');
+            viewModule(moduleId);
         }
     });
 
-    // Handle edit status
+    // Handle edit module
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-status-btn')) {
+        if (e.target.closest('.edit-module-btn')) {
             e.preventDefault();
-            const statusId = e.target.closest('.edit-status-btn').getAttribute('data-status-id');
-            editStatus(statusId);
+            const moduleId = e.target.closest('.edit-module-btn').getAttribute('data-module-id');
+            editModule(moduleId);
         }
     });
 
-    // Handle delete status
+    // Handle delete module
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-status-btn')) {
+        if (e.target.closest('.delete-module-btn')) {
             e.preventDefault();
-            const statusId = e.target.closest('.delete-status-btn').getAttribute('data-status-id');
-            deleteStatus(statusId);
+            const moduleId = e.target.closest('.delete-module-btn').getAttribute('data-module-id');
+            deleteModule(moduleId);
         }
     });
 
 });
 
-function loadStatus(reset = false, search = '') {
+function loadModules(reset = false, search = '') {
     if (isLoading) return;
 
     if (reset) {
@@ -851,7 +836,7 @@ function loadStatus(reset = false, search = '') {
         showSkeletonLoading();
     }
 
-    const url = `/status/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
+    const url = `/modules/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
 
     secureFetch(url)
         .then(response => {
@@ -873,7 +858,7 @@ function loadStatus(reset = false, search = '') {
                 removeSkeletonLoading();
 
                 if (data.data && data.data.length > 0) {
-                    renderStatus(data.data);
+                    renderModules(data.data);
                     currentPage++;
                     hasMoreData = data.hasMore;
 
@@ -884,7 +869,7 @@ function loadStatus(reset = false, search = '') {
                 } else {
                     hasMoreData = false;
                     if (currentPage === 1) {
-                        showNoStatusMessage();
+                        showNoModulesMessage();
                     }
                 }
 
@@ -908,72 +893,55 @@ function loadStatus(reset = false, search = '') {
         });
 }
 
-function renderStatus(statuses) {
+function renderModules(modules) {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
-    statuses.forEach((status, index) => {
-        const statusCard = createStatusCard(status, (currentPage - 1) * 10 + index);
-        container.appendChild(statusCard);
+    modules.forEach((module, index) => {
+        const moduleCard = createModuleCard(module, (currentPage - 1) * 10 + index);
+        container.appendChild(moduleCard);
     });
 
     // Reinitialize mobile cards after adding new ones
     initMobileCards();
 }
 
-function createStatusCard(status, index) {
+function createModuleCard(module, index) {
     const col = document.createElement('div');
     col.className = 'col-12 mb-3';
     col.setAttribute('data-aos', 'fade-up');
     col.setAttribute('data-aos-delay', (index * 100).toString());
     col.setAttribute('data-aos-duration', '600');
 
-    const colorPreview = status.color ?
-        `<div class="color-preview" style="background-color: ${status.color};"></div>` : '';
-
-    const description = status.description ?
-        `<p class="text-muted mb-0 mt-3">${status.description}</p>` : '';
-
-    const createdByName = status.created_by_name || 'System';
-    const updatedInfo = status.updated_by_name ?
-        `<small class="text-success">Updated: ${status.updated_by_name}</small>` : '';
-
-    const createdAt = new Date(status.created_at).toLocaleDateString('en-US', {
+    const createdByName = module.created_by_name || 'System';
+    const createdAt = new Date(module.created_at).toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
         year: 'numeric'
     });
-    const updatedAt = status.updated_at ?
-        new Date(status.updated_at).toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-        }) : '';
 
     // Determine badge style based on status color or fallback to default classes
-    let badgeClass = 'badge-light-primary';
     let badgeStyle = '';
-    let badgeText = status.name.toUpperCase();
-
-    if (status.color) {
+    if (module.status_color) {
         // Use custom color from status
-        const hex = status.color.replace('#', '');
+        const hex = module.status_color.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
         const b = parseInt(hex.substr(4, 2), 16);
         const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
         badgeStyle =
-            `background-color: ${lightBg}; color: ${status.color}; padding: 4px 8px; font-size: 11px; line-height: 1.2;`;
-        badgeClass = 'badge fw-bold';
-
+            `background-color: ${lightBg}; color: ${module.status_color}; padding: 4px 8px; font-size: 11px; line-height: 1.2;`;
+    } else {
+        badgeStyle =
+            "background-color: rgba(108, 117, 125, 0.1); color: #6c757d; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
     }
 
     // Create action buttons based on permissions
     let actionButtons = '';
-    <?php if ($permissions['canView']): ?>
+    <?php if (isset($permissions) && $permissions['canView']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-status-btn" data-status-id="${status.id}">
+            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-module-btn" data-module-id="${module.id}">
                 <i class="ki-duotone ki-eye fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -984,10 +952,10 @@ function createStatusCard(status, index) {
         </div>
     `;
     <?php endif; ?>
-    <?php if ($permissions['canEdit']): ?>
+    <?php if (isset($permissions) && $permissions['canEdit']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-status-btn" data-status-id="${status.id}">
+            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-module-btn" data-module-id="${module.id}">
                 <i class="ki-duotone ki-pencil fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -997,10 +965,10 @@ function createStatusCard(status, index) {
         </div>
     `;
     <?php endif; ?>
-    <?php if ($permissions['canDelete']): ?>
+    <?php if (isset($permissions) && $permissions['canDelete']): ?>
     actionButtons += `
         <div class="col-4">
-            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-status-btn" data-status-id="${status.id}">
+            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-module-btn" data-module-id="${module.id}">
                 <i class="ki-duotone ki-trash fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1025,25 +993,27 @@ function createStatusCard(status, index) {
     ` : '';
 
     col.innerHTML = `
-        <div class="card mobile-status-card" data-status-id="${status.id}">
+        <div class="card mobile-module-card" data-module-id="${module.id}">
             <div class="card-body p-4">
-                <!-- Status Header -->
+                <!-- Module Header -->
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div class="flex-grow-1">
-                        <small class="text-muted text-uppercase">#${status.id}</small>
+                        <small class="text-muted text-uppercase">#${module.id}</small>
                     </div>
                     <div class="ms-3">
-                        <span class="${badgeClass}" style="${badgeStyle}">${badgeText}</span>
+                        <span class="badge fw-bold" style="${badgeStyle}">
+                            ${(module.status_name || 'Unknown').toUpperCase()}
+                        </span>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
                     <div class="flex-grow-1">
-                        <strong class="me-5 text-uppercase text-truncate">${status.name}</strong>
+                        <strong class="me-5 text-uppercase text-truncate">${module.name}</strong>
                     </div>
                 </div>
 
-                <!-- Status Footer -->
+                <!-- Module Footer -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="d-flex flex-column">
                         <small class="text-muted">${createdByName}</small>
@@ -1094,7 +1064,7 @@ function removeSkeletonLoading() {
     skeletonCards.forEach(card => card.remove());
 }
 
-function showNoStatusMessage() {
+function showNoModulesMessage() {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
@@ -1106,16 +1076,16 @@ function showNoStatusMessage() {
                 <span class="path1"></span>
                 <span class="path2"></span>
             </i>
-            <h6 class="fw-bold text-gray-700 mb-2">No status found</h6>
-            <p class="fs-7 text-gray-500 mb-4">Start by creating your first status entry</p>
+            <h6 class="fw-bold text-gray-700 mb-2">No modules found</h6>
+            <p class="fs-7 text-gray-500 mb-4">Start by creating your first module entry</p>
         </div>
     `;
     container.appendChild(noDataDiv);
 }
 
-// Status CRUD functions
-function viewStatus(statusId) {
-    secureFetch(`/status/show/${statusId}`)
+// Module CRUD functions
+function viewModule(moduleId) {
+    secureFetch(`/modules/show/${moduleId}`)
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 handleSessionExpired();
@@ -1126,22 +1096,19 @@ function viewStatus(statusId) {
         .then(data => {
             if (data.success) {
                 // Populate view modal
-                populateViewModal(data.data);
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('viewStatusModal'));
-                modal.show();
+                openViewModal(data.data);
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load status details', 'error');
+            Swal.fire('Error', 'Failed to load module details', 'error');
         });
 }
 
-function editStatus(statusId) {
-    secureFetch(`/status/show/${statusId}`)
+function editModule(moduleId) {
+    secureFetch(`/modules/show/${moduleId}`)
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 handleSessionExpired();
@@ -1152,21 +1119,18 @@ function editStatus(statusId) {
         .then(data => {
             if (data.success) {
                 // Populate edit modal
-                populateEditModal(data.data);
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('editStatusModal'));
-                modal.show();
+                openEditModal(data.data);
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load status details', 'error');
+            Swal.fire('Error', 'Failed to load module details', 'error');
         });
 }
 
-function deleteStatus(statusId) {
+function deleteModule(moduleId) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -1177,7 +1141,7 @@ function deleteStatus(statusId) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            secureFetch(`/status/delete/${statusId}`, {
+            secureFetch(`/modules/delete/${moduleId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1201,20 +1165,20 @@ function deleteStatus(statusId) {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    Swal.fire('Error', 'Failed to delete status', 'error');
+                    Swal.fire('Error', 'Failed to delete module', 'error');
                 });
         }
     });
 }
 
-// Mobile card click functionality (matching modules UI)
+// Mobile card click functionality (matching status UI)
 function initMobileCards() {
     // Remove existing listeners to prevent duplicates
-    document.querySelectorAll('.mobile-status-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-module-card').forEach(function(card) {
         card.replaceWith(card.cloneNode(true));
     });
 
-    document.querySelectorAll('.mobile-status-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-module-card').forEach(function(card) {
         card.addEventListener('click', function(e) {
             if (e.target.closest('.mobile-actions') || e.target.closest('button') || e.target.closest(
                     'a')) {
@@ -1240,92 +1204,19 @@ document.addEventListener('DOMContentLoaded', function() {
     initMobileCards();
 });
 
-// Modal population functions
-function populateViewModal(status) {
-    // Basic status info
-    document.getElementById('view_status_name').textContent = status.name;
-    document.getElementById('view_module_name').textContent = status.module_name || 'N/A';
-    
-    // Color info
-    const colorPreview = document.getElementById('view_color_preview');
-    const colorCode = document.getElementById('view_color_code');
-    const colorSection = document.getElementById('view_color_section');
-    
-    if (status.color) {
-        colorPreview.style.backgroundColor = status.color;
-        colorCode.textContent = status.color;
-        colorSection.style.display = 'block';
-    } else {
-        colorPreview.style.backgroundColor = '#f0f0f0';
-        colorCode.textContent = 'Not specified';
-        colorSection.style.display = 'none';
-    }
-    
-    // Description
-    const description = document.getElementById('view_description');
-    const descriptionSection = document.getElementById('view_description_section');
-    
-    if (status.description && status.description.trim() !== '') {
-        description.textContent = status.description;
-        descriptionSection.style.display = 'block';
-    } else {
-        description.textContent = 'No description provided';
-        descriptionSection.style.display = 'block';
-    }
-    
-    // Audit info
-    document.getElementById('view_created_by').textContent = status.created_by_name || 'System';
-    document.getElementById('view_created_at').textContent = status.created_at ? 
-        new Date(status.created_at).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }) : '-';
-    
-    // Updated info (show/hide based on availability)
-    const updatedBySection = document.getElementById('view_updated_by_section');
-    const updatedAtSection = document.getElementById('view_updated_at_section');
-    
-    if (status.updated_by_name) {
-        document.getElementById('view_updated_by').textContent = status.updated_by_name;
-        updatedBySection.style.display = 'block';
-    } else {
-        updatedBySection.style.display = 'none';
-    }
-    
-    if (status.updated_at) {
-        document.getElementById('view_updated_at').textContent = new Date(status.updated_at).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        updatedAtSection.style.display = 'block';
-    } else {
-        updatedAtSection.style.display = 'none';
-    }
-    
-    // Set status ID for edit button if it exists
-    const editBtn = document.getElementById('view_edit_btn');
-    if (editBtn) {
-        editBtn.setAttribute('data-status-id', status.id);
+// Show view modal function (will be implemented in view_modal.php)
+function showViewModal(module) {
+    // This will be implemented in the view modal include
+    if (typeof openViewModal === 'function') {
+        openViewModal(module);
     }
 }
 
-function populateEditModal(status) {
-    document.getElementById('edit_status_id').value = status.id;
-    document.querySelector('#editStatusForm input[name="name"]').value = status.name;
-    document.querySelector('#editStatusForm select[name="module_id"]').value = status.module_id;
-    document.querySelector('#editStatusForm input[name="color"]').value = status.color || '#000000';
-    document.querySelector('#editStatusForm textarea[name="description"]').value = status.description || '';
-
-    // Trigger Select2 update if it's initialized
-    const moduleSelect = document.querySelector('#editStatusForm select[name="module_id"]');
-    if (moduleSelect && typeof $(moduleSelect).select2 === 'function') {
-        $(moduleSelect).trigger('change');
+// Show edit modal function (will be implemented in edit_modal.php)
+function showEditModal(module) {
+    // This will be implemented in the edit modal include
+    if (typeof openEditModal === 'function') {
+        openEditModal(module);
     }
 }
 </script>

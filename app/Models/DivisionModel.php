@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class ModuleModel extends Model
+class DivisionModel extends Model
 {
-    protected $table      = 'modules';
+    protected $table      = 'divisions';
     protected $primaryKey = 'id';
 
     protected $useAutoIncrement = true;
@@ -15,7 +15,6 @@ class ModuleModel extends Model
     protected $useSoftDeletes = false;
 
     protected $allowedFields = [
-        'status_id', 
         'name', 
         'description', 
         'created_by', 
@@ -30,20 +29,12 @@ class ModuleModel extends Model
 
     protected $validationRules = [
         'name' => [
-            'label'  => 'Module Name',
-            'rules'  => 'required|min_length[3]|max_length[255]',
+            'label'  => 'Division Name',
+            'rules'  => 'required|min_length[3]|max_length[100]',
             'errors' => [
-                'required'    => 'Module name is required.',
-                'min_length'  => 'Module name must be at least 3 characters long.',
-                'max_length'  => 'Module name cannot exceed 255 characters.'
-            ]
-        ],
-        'status_id' => [
-            'label'  => 'Status',
-            'rules'  => 'required|numeric',
-            'errors' => [
-                'required' => 'Status is required.',
-                'numeric'  => 'Status must be a valid number.'
+                'required'    => 'Division name is required.',
+                'min_length'  => 'Division name must be at least 3 characters long.',
+                'max_length'  => 'Division name cannot exceed 100 characters.'
             ]
         ],
         'description' => [
@@ -131,92 +122,66 @@ class ModuleModel extends Model
     }
 
     /**
-     * Get all active modules
+     * Get division by ID with validation
      */
-    public function getActiveModules()
+    public function getDivision($id)
     {
-        return $this->where('status_id', 1)->findAll();
-    }
-
-    /**
-     * Get all active statuses for dropdown
-     */
-    public function getActiveStatuses()
-    {
-        $statusModel = new \App\Models\StatusModel();
-        return $statusModel->where('id !=', 0)->findAll();
-    }
-
-    /**
-     * Get module by ID with validation
-     */
-    public function getModule($id)
-    {
-        $builder = $this->db->table('modules m');
+        $builder = $this->db->table('divisions d');
         
-        return $builder->select('m.*, 
-                               s.name as status_name,
-                               s.color as status_color,
+        return $builder->select('d.*, 
                                CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                                CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                      ->join('users cu', 'cu.id = m.created_by', 'left')
-                      ->join('users uu', 'uu.id = m.updated_by', 'left')
-                      ->join('status s', 's.id = m.status_id', 'left')
-                      ->where('m.id', $id)
+                      ->join('users cu', 'cu.id = d.created_by', 'left')
+                      ->join('users uu', 'uu.id = d.updated_by', 'left')
+                      ->where('d.id', $id)
                       ->get()
                       ->getRowArray();
     }
 
     /**
-     * Get modules with pagination and search
+     * Get divisions with pagination and search
      */
-    public function getModulesWithPagination($search = '', $limit = 10, $offset = 0)
+    public function getDivisionsWithPagination($search = '', $limit = 10, $offset = 0)
     {
-        $builder = $this->db->table('modules m');
+        $builder = $this->db->table('divisions d');
         
-        // Join with users table for created_by and updated_by information, and status table
-        $builder->select('m.*, 
-                         s.name as status_name,
-                         s.color as status_color,
+        // Join with users tables
+        $builder->select('d.*, 
                          CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                          CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                ->join('users cu', 'cu.id = m.created_by', 'left')
-                ->join('users uu', 'uu.id = m.updated_by', 'left')
-                ->join('status s', 's.id = m.status_id', 'left');
+                ->join('users cu', 'cu.id = d.created_by', 'left')
+                ->join('users uu', 'uu.id = d.updated_by', 'left');
         
         if (!empty($search)) {
             $builder->groupStart()
-                    ->like('m.name', $search)
-                    ->orLike('m.description', $search)
-                    ->orLike('s.name', $search)
+                    ->like('d.name', $search)
+                    ->orLike('d.description', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
                     ->groupEnd();
         }
         
         return $builder->limit($limit, $offset)
-                      ->orderBy('m.created_at', 'DESC')
+                      ->orderBy('d.created_at', 'DESC')
                       ->get()
                       ->getResultArray();
     }
 
     /**
-     * Count modules with search filter
+     * Count divisions with search filter
      */
-    public function getModulesCount($search = '')
+    public function getDivisionsCount($search = '')
     {
-        $builder = $this->db->table('modules m');
+        $builder = $this->db->table('divisions d');
         
-        // Join with users table for consistent search results
-        $builder->join('users cu', 'cu.id = m.created_by', 'left')
-                ->join('users uu', 'uu.id = m.updated_by', 'left')
-                ->join('status s', 's.id = m.status_id', 'left');
+        // Join with users tables for consistent search results
+        $builder->join('users cu', 'cu.id = d.created_by', 'left')
+                ->join('users uu', 'uu.id = d.updated_by', 'left');
         
         if (!empty($search)) {
             $builder->groupStart()
-                    ->like('m.name', $search)
-                    ->orLike('m.description', $search)
-                    ->orLike('s.name', $search)
+                    ->like('d.name', $search)
+                    ->orLike('d.description', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
                     ->groupEnd();
@@ -239,8 +204,8 @@ class ModuleModel extends Model
     public function getUpdateValidationRules($id)
     {
         $rules = $this->validationRules;
-        $rules['name']['rules'] = "required|min_length[3]|max_length[255]|is_unique[modules.name,id,{$id}]";
-        $rules['name']['errors']['is_unique'] = 'This module name already exists.';
+        $rules['name']['rules'] = "required|min_length[3]|max_length[100]|is_unique[divisions.name,id,{$id}]";
+        $rules['name']['errors']['is_unique'] = 'This division name already exists.';
         return $rules;
     }
 
@@ -257,18 +222,5 @@ class ModuleModel extends Model
         }
         
         return true;
-    }
-
-    /**
-     * Toggle module status
-     */
-    public function toggleStatus($id)
-    {
-        $module = $this->find($id);
-        if ($module) {
-            $newStatus = $module['status_id'] == 1 ? 0 : 1;
-            return $this->update($id, ['status_id' => $newStatus]);
-        }
-        return false;
     }
 }
