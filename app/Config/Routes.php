@@ -74,6 +74,23 @@ $routes->group('divisions', ['filter' => 'login'], function($routes) {
     $routes->get('statuses', 'DivisionsController::getStatuses');
 });
 
+// Genders CRUD routes
+$routes->group('genders', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'GendersController::index');
+    $routes->get('create', 'GendersController::create');
+    $routes->post('store', 'GendersController::store');
+    $routes->get('show/(:num)', 'GendersController::show/$1');
+    $routes->get('(:num)', 'GendersController::show/$1');
+    $routes->get('(:num)/edit', 'GendersController::edit/$1');
+    $routes->post('(:num)/update', 'GendersController::update/$1');
+    $routes->post('update/(:num)', 'GendersController::update/$1');
+    $routes->post('(:num)/delete', 'GendersController::delete/$1');
+    $routes->post('delete/(:num)', 'GendersController::delete/$1');
+    $routes->get('api', 'GendersController::api');
+    $routes->get('genders', 'GendersController::getGenders');
+    $routes->get('statuses', 'GendersController::getStatuses');
+});
+
 // Departments CRUD routes
 $routes->group('departments', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'DepartmentsController::index');
