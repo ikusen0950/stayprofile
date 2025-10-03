@@ -398,6 +398,7 @@
                                 <!--begin:Menu sub-->
                                 <div class="menu-sub menu-sub-accordion">
                                     <!--begin:Menu item-->
+                                    <?php if (has_permission('divisions.view') || $hasIslanderAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive1 = isMenuActive(['/divisions']); ?>
@@ -409,8 +410,10 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
+                                    <?php if (has_permission('departments.view') || $hasIslanderAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive2 = isMenuActive(['/departments']); ?>
@@ -422,8 +425,10 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
+                                    <?php if (has_permission('sections.view') || $hasIslanderAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive3 = isMenuActive(['/sections']); ?>
@@ -435,6 +440,7 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
                                     <div class="menu-item">

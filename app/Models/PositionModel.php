@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class DivisionModel extends Model
+class PositionModel extends Model
 {
-    protected $table      = 'divisions';
+    protected $table      = 'positions';
     protected $primaryKey = 'id';
 
     protected $useAutoIncrement = true;
@@ -16,6 +16,7 @@ class DivisionModel extends Model
 
     protected $allowedFields = [
         'name', 
+        'section_id', 
         'description', 
         'status_id',
         'created_by', 
@@ -30,12 +31,19 @@ class DivisionModel extends Model
 
     protected $validationRules = [
         'name' => [
-            'label'  => 'Division Name',
+            'label'  => 'Position Name',
             'rules'  => 'required|min_length[3]|max_length[100]',
             'errors' => [
-                'required'    => 'Division name is required.',
-                'min_length'  => 'Division name must be at least 3 characters long.',
-                'max_length'  => 'Division name cannot exceed 100 characters.'
+                'required'    => 'Position name is required.',
+                'min_length'  => 'Position name must be at least 3 characters long.',
+                'max_length'  => 'Position name cannot exceed 100 characters.'
+            ]
+        ],
+        'section_id' => [
+            'label'  => 'Section',
+            'rules'  => 'permit_empty|numeric',
+            'errors' => [
+                'numeric'  => 'Section must be a valid number.'
             ]
         ],
         'status_id' => [
@@ -135,79 +143,95 @@ class DivisionModel extends Model
     public function getActiveStatuses()
     {
         $statusModel = new \App\Models\StatusModel();
-        return $statusModel->where('module_id', 1)->findAll(); // Module ID 1 for divisions
+        return $statusModel->where('module_id', 1)->findAll(); // Module ID 1 for divisions/departments
     }
 
     /**
-     * Get division by ID with validation
+     * Get all active sections for dropdown
      */
-    public function getDivision($id)
+    public function getActiveSections()
     {
-        $builder = $this->db->table('divisions d');
+        $sectionModel = new \App\Models\SectionModel();
+        return $sectionModel->findAll();
+    }
+
+    /**
+     * Get position by ID with validation
+     */
+    public function getPosition($id)
+    {
+        $builder = $this->db->table('positions p');
         
-        return $builder->select('d.*, 
-                               s.name as status_name,
-                               s.color as status_color,
+        return $builder->select('p.*, 
+                               s.name as section_name,
+                               st.name as status_name,
+                               st.color as status_color,
                                CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                                CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                      ->join('status s', 's.id = d.status_id', 'left')
-                      ->join('users cu', 'cu.id = d.created_by', 'left')
-                      ->join('users uu', 'uu.id = d.updated_by', 'left')
-                      ->where('d.id', $id)
+                      ->join('sections s', 's.id = p.section_id', 'left')
+                      ->join('status st', 'st.id = p.status_id', 'left')
+                      ->join('users cu', 'cu.id = p.created_by', 'left')
+                      ->join('users uu', 'uu.id = p.updated_by', 'left')
+                      ->where('p.id', $id)
                       ->get()
                       ->getRowArray();
     }
 
     /**
-     * Get divisions with pagination and search
+     * Get positions with pagination and search
      */
-    public function getDivisionsWithPagination($search = '', $limit = 10, $offset = 0)
+    public function getPositionsWithPagination($search = '', $limit = 10, $offset = 0)
     {
-        $builder = $this->db->table('divisions d');
+        $builder = $this->db->table('positions p');
         
-        // Join with status and users tables
-        $builder->select('d.*, 
-                         s.name as status_name,
-                         s.color as status_color,
+        // Join with sections, status and users tables
+        $builder->select('p.*, 
+                         s.name as section_name,
+                         st.name as status_name,
+                         st.color as status_color,
                          CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                          CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                ->join('status s', 's.id = d.status_id', 'left')
-                ->join('users cu', 'cu.id = d.created_by', 'left')
-                ->join('users uu', 'uu.id = d.updated_by', 'left');
+                ->join('sections s', 's.id = p.section_id', 'left')
+                ->join('status st', 'st.id = p.status_id', 'left')
+                ->join('users cu', 'cu.id = p.created_by', 'left')
+                ->join('users uu', 'uu.id = p.updated_by', 'left');
         
         if (!empty($search)) {
             $builder->groupStart()
-                    ->like('d.name', $search)
-                    ->orLike('d.description', $search)
+                    ->like('p.name', $search)
+                    ->orLike('p.description', $search)
                     ->orLike('s.name', $search)
+                    ->orLike('st.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
                     ->groupEnd();
         }
         
         return $builder->limit($limit, $offset)
-                      ->orderBy('d.created_at', 'DESC')
+                      ->orderBy('p.created_at', 'DESC')
                       ->get()
                       ->getResultArray();
     }
 
     /**
-     * Count divisions with search filter
+     * Count positions with search filter
      */
-    public function getDivisionsCount($search = '')
+    public function getPositionsCount($search = '')
     {
-        $builder = $this->db->table('divisions d');
+        $builder = $this->db->table('positions p');
         
-        // Join with status and users tables for consistent search results
-        $builder->join('status s', 's.id = d.status_id', 'left')
-                ->join('users cu', 'cu.id = d.created_by', 'left')
-                ->join('users uu', 'uu.id = d.updated_by', 'left');
+        // Join with sections, status and users tables for consistent search results
+        $builder->join('sections s', 's.id = p.section_id', 'left')
+                ->join('status st', 'st.id = p.status_id', 'left')
+                ->join('users cu', 'cu.id = p.created_by', 'left')
+                ->join('users uu', 'uu.id = p.updated_by', 'left');
         
         if (!empty($search)) {
             $builder->groupStart()
-                    ->like('d.name', $search)
-                    ->orLike('d.description', $search)
+                    ->like('p.name', $search)
+                    ->orLike('p.description', $search)
                     ->orLike('s.name', $search)
+                    ->orLike('st.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
                     ->groupEnd();
@@ -225,14 +249,11 @@ class DivisionModel extends Model
     }
 
     /**
-     * Get validation rules for updates (with unique constraint)
+     * Get validation rules for updates (basic rules, custom uniqueness handled separately)
      */
     public function getUpdateValidationRules($id)
     {
-        $rules = $this->validationRules;
-        $rules['name']['rules'] = "required|min_length[3]|max_length[100]|is_unique[divisions.name,id,{$id}]";
-        $rules['name']['errors']['is_unique'] = 'This division name already exists.';
-        return $rules;
+        return $this->validationRules;
     }
 
     /**
@@ -246,7 +267,73 @@ class DivisionModel extends Model
         if (!$validation->run($data)) {
             return $validation->getErrors();
         }
+
+        // Check for uniqueness within section
+        if (!empty($data['name']) && !empty($data['section_id'])) {
+            if (!$this->isUniqueInSection($data['name'], 'name', $data, $id)) {
+                return ['name' => 'This position name already exists in the selected section.'];
+            }
+        }
         
         return true;
+    }
+
+    /**
+     * Get validation rules for create (basic rules, custom uniqueness handled separately)
+     */
+    public function getCreateValidationRules()
+    {
+        return $this->validationRules;
+    }
+
+    /**
+     * Validate data for create
+     */
+    public function validateForCreate($data)
+    {
+        $validation = \Config\Services::validation();
+        $validation->setRules($this->getCreateValidationRules());
+        
+        if (!$validation->run($data)) {
+            return $validation->getErrors();
+        }
+
+        // Check for uniqueness within section
+        if (!empty($data['name']) && !empty($data['section_id'])) {
+            if (!$this->isUniqueInSection($data['name'], 'name', $data)) {
+                return ['name' => 'This position name already exists in the selected section.'];
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Custom validation: Check if position name is unique within the same section
+     */
+    public function isUniqueInSection($name, $field, $data, $updateId = null)
+    {
+        $sectionId = $data['section_id'] ?? null;
+        
+        if (!$sectionId) {
+            return true; // If no section specified, skip this validation
+        }
+        
+        $query = $this->where('name', $name)
+                     ->where('section_id', $sectionId);
+        
+        if ($updateId) {
+            $query->where('id !=', $updateId);
+        }
+        
+        return $query->countAllResults() === 0;
+    }
+
+    /**
+     * Get positions by section
+     */
+    public function getPositionsBySection($sectionId)
+    {
+        return $this->where('section_id', $sectionId)->findAll();
     }
 }

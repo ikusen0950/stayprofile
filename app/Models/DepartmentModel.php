@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class DivisionModel extends Model
+class DepartmentModel extends Model
 {
-    protected $table      = 'divisions';
+    protected $table      = 'departments';
     protected $primaryKey = 'id';
 
     protected $useAutoIncrement = true;
@@ -16,6 +16,7 @@ class DivisionModel extends Model
 
     protected $allowedFields = [
         'name', 
+        'division_id', 
         'description', 
         'status_id',
         'created_by', 
@@ -30,12 +31,19 @@ class DivisionModel extends Model
 
     protected $validationRules = [
         'name' => [
-            'label'  => 'Division Name',
+            'label'  => 'Department Name',
             'rules'  => 'required|min_length[3]|max_length[100]',
             'errors' => [
-                'required'    => 'Division name is required.',
-                'min_length'  => 'Division name must be at least 3 characters long.',
-                'max_length'  => 'Division name cannot exceed 100 characters.'
+                'required'    => 'Department name is required.',
+                'min_length'  => 'Department name must be at least 3 characters long.',
+                'max_length'  => 'Department name cannot exceed 100 characters.'
+            ]
+        ],
+        'division_id' => [
+            'label'  => 'Division',
+            'rules'  => 'permit_empty|numeric',
+            'errors' => [
+                'numeric'  => 'Division must be a valid number.'
             ]
         ],
         'status_id' => [
@@ -135,21 +143,23 @@ class DivisionModel extends Model
     public function getActiveStatuses()
     {
         $statusModel = new \App\Models\StatusModel();
-        return $statusModel->where('module_id', 1)->findAll(); // Module ID 1 for divisions
+        return $statusModel->where('module_id', 1)->findAll(); // Module ID 1 for divisions/departments
     }
 
     /**
-     * Get division by ID with validation
+     * Get department by ID with validation
      */
-    public function getDivision($id)
+    public function getDepartment($id)
     {
-        $builder = $this->db->table('divisions d');
+        $builder = $this->db->table('departments d');
         
         return $builder->select('d.*, 
+                               div.name as division_name,
                                s.name as status_name,
                                s.color as status_color,
                                CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                                CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
+                      ->join('divisions div', 'div.id = d.division_id', 'left')
                       ->join('status s', 's.id = d.status_id', 'left')
                       ->join('users cu', 'cu.id = d.created_by', 'left')
                       ->join('users uu', 'uu.id = d.updated_by', 'left')
@@ -159,18 +169,29 @@ class DivisionModel extends Model
     }
 
     /**
-     * Get divisions with pagination and search
+     * Get all active divisions for dropdown
      */
-    public function getDivisionsWithPagination($search = '', $limit = 10, $offset = 0)
+    public function getActiveDivisions()
     {
-        $builder = $this->db->table('divisions d');
+        $divisionModel = new \App\Models\DivisionModel();
+        return $divisionModel->findAll();
+    }
+
+    /**
+     * Get departments with pagination and search
+     */
+    public function getDepartmentsWithPagination($search = '', $limit = 10, $offset = 0)
+    {
+        $builder = $this->db->table('departments d');
         
-        // Join with status and users tables
+        // Join with divisions, status and users tables
         $builder->select('d.*, 
+                         div.name as division_name,
                          s.name as status_name,
                          s.color as status_color,
                          CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                          CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
+                ->join('divisions div', 'div.id = d.division_id', 'left')
                 ->join('status s', 's.id = d.status_id', 'left')
                 ->join('users cu', 'cu.id = d.created_by', 'left')
                 ->join('users uu', 'uu.id = d.updated_by', 'left');
@@ -179,6 +200,7 @@ class DivisionModel extends Model
             $builder->groupStart()
                     ->like('d.name', $search)
                     ->orLike('d.description', $search)
+                    ->orLike('div.name', $search)
                     ->orLike('s.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
@@ -192,14 +214,15 @@ class DivisionModel extends Model
     }
 
     /**
-     * Count divisions with search filter
+     * Count departments with search filter
      */
-    public function getDivisionsCount($search = '')
+    public function getDepartmentsCount($search = '')
     {
-        $builder = $this->db->table('divisions d');
+        $builder = $this->db->table('departments d');
         
-        // Join with status and users tables for consistent search results
-        $builder->join('status s', 's.id = d.status_id', 'left')
+        // Join with divisions, status and users tables for consistent search results
+        $builder->join('divisions div', 'div.id = d.division_id', 'left')
+                ->join('status s', 's.id = d.status_id', 'left')
                 ->join('users cu', 'cu.id = d.created_by', 'left')
                 ->join('users uu', 'uu.id = d.updated_by', 'left');
         
@@ -207,6 +230,7 @@ class DivisionModel extends Model
             $builder->groupStart()
                     ->like('d.name', $search)
                     ->orLike('d.description', $search)
+                    ->orLike('div.name', $search)
                     ->orLike('s.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
@@ -230,8 +254,8 @@ class DivisionModel extends Model
     public function getUpdateValidationRules($id)
     {
         $rules = $this->validationRules;
-        $rules['name']['rules'] = "required|min_length[3]|max_length[100]|is_unique[divisions.name,id,{$id}]";
-        $rules['name']['errors']['is_unique'] = 'This division name already exists.';
+        $rules['name']['rules'] = "required|min_length[3]|max_length[100]|is_unique[departments.name,id,{$id}]";
+        $rules['name']['errors']['is_unique'] = 'This department name already exists.';
         return $rules;
     }
 
@@ -248,5 +272,13 @@ class DivisionModel extends Model
         }
         
         return true;
+    }
+
+    /**
+     * Get departments by division
+     */
+    public function getDepartmentsByDivision($divisionId)
+    {
+        return $this->where('division_id', $divisionId)->findAll();
     }
 }

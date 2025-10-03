@@ -57,6 +57,74 @@ $routes->group('modules', ['filter' => 'login'], function($routes) {
     $routes->get('statuses', 'ModulesController::getStatuses');
 });
 
+// Divisions CRUD routes
+$routes->group('divisions', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'DivisionsController::index');
+    $routes->get('create', 'DivisionsController::create');
+    $routes->post('store', 'DivisionsController::store');
+    $routes->get('show/(:num)', 'DivisionsController::show/$1');
+    $routes->get('(:num)', 'DivisionsController::show/$1');
+    $routes->get('(:num)/edit', 'DivisionsController::edit/$1');
+    $routes->post('(:num)/update', 'DivisionsController::update/$1');
+    $routes->post('update/(:num)', 'DivisionsController::update/$1');
+    $routes->post('(:num)/delete', 'DivisionsController::delete/$1');
+    $routes->post('delete/(:num)', 'DivisionsController::delete/$1');
+    $routes->get('api', 'DivisionsController::api');
+    $routes->get('divisions', 'DivisionsController::getDivisions');
+    $routes->get('statuses', 'DivisionsController::getStatuses');
+});
+
+// Departments CRUD routes
+$routes->group('departments', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'DepartmentsController::index');
+    $routes->get('create', 'DepartmentsController::create');
+    $routes->post('store', 'DepartmentsController::store');
+    $routes->get('show/(:num)', 'DepartmentsController::show/$1');
+    $routes->get('(:num)', 'DepartmentsController::show/$1');
+    $routes->get('(:num)/edit', 'DepartmentsController::edit/$1');
+    $routes->post('(:num)/update', 'DepartmentsController::update/$1');
+    $routes->post('update/(:num)', 'DepartmentsController::update/$1');
+    $routes->post('(:num)/delete', 'DepartmentsController::delete/$1');
+    $routes->post('delete/(:num)', 'DepartmentsController::delete/$1');
+    $routes->get('api', 'DepartmentsController::api');
+    $routes->get('divisions', 'DepartmentsController::getDivisions');
+    $routes->get('statuses', 'DepartmentsController::getStatuses');
+});
+
+// Sections CRUD routes
+$routes->group('sections', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'SectionsController::index');
+    $routes->get('create', 'SectionsController::create');
+    $routes->post('store', 'SectionsController::store');
+    $routes->get('show/(:num)', 'SectionsController::show/$1');
+    $routes->get('(:num)', 'SectionsController::show/$1');
+    $routes->get('(:num)/edit', 'SectionsController::edit/$1');
+    $routes->post('(:num)/update', 'SectionsController::update/$1');
+    $routes->post('update/(:num)', 'SectionsController::update/$1');
+    $routes->post('(:num)/delete', 'SectionsController::delete/$1');
+    $routes->post('delete/(:num)', 'SectionsController::delete/$1');
+    $routes->get('api', 'SectionsController::api');
+    $routes->get('departments', 'SectionsController::getDepartments');
+    $routes->get('statuses', 'SectionsController::getStatuses');
+});
+
+// Positions CRUD routes
+$routes->group('positions', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'PositionsController::index');
+    $routes->get('create', 'PositionsController::create');
+    $routes->post('store', 'PositionsController::store');
+    $routes->get('show/(:num)', 'PositionsController::show/$1');
+    $routes->get('(:num)', 'PositionsController::show/$1');
+    $routes->get('(:num)/edit', 'PositionsController::edit/$1');
+    $routes->post('(:num)/update', 'PositionsController::update/$1');
+    $routes->post('update/(:num)', 'PositionsController::update/$1');
+    $routes->post('(:num)/delete', 'PositionsController::delete/$1');
+    $routes->post('delete/(:num)', 'PositionsController::delete/$1');
+    $routes->get('api', 'PositionsController::api');
+    $routes->get('sections', 'PositionsController::getSections');
+    $routes->get('statuses', 'PositionsController::getStatuses');
+});
+
 // Log Management Routes
 $routes->group('logs', ['filter' => 'auth'], function($routes) {
     $routes->get('/', 'LogController::index');
