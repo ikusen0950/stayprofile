@@ -74,6 +74,23 @@ $routes->group('divisions', ['filter' => 'login'], function($routes) {
     $routes->get('statuses', 'DivisionsController::getStatuses');
 });
 
+// Houses CRUD routes
+$routes->group('houses', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'HousesController::index');
+    $routes->get('create', 'HousesController::create');
+    $routes->post('store', 'HousesController::store');
+    $routes->get('show/(:num)', 'HousesController::show/$1');
+    $routes->get('(:num)', 'HousesController::show/$1');
+    $routes->get('(:num)/edit', 'HousesController::edit/$1');
+    $routes->post('(:num)/update', 'HousesController::update/$1');
+    $routes->post('update/(:num)', 'HousesController::update/$1');
+    $routes->post('(:num)/delete', 'HousesController::delete/$1');
+    $routes->post('delete/(:num)', 'HousesController::delete/$1');
+    $routes->get('api', 'HousesController::api');
+    $routes->get('getHouses', 'HousesController::getHouses');
+    $routes->get('statuses', 'HousesController::getStatuses');
+});
+
 // Genders CRUD routes
 $routes->group('genders', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'GendersController::index');
@@ -157,6 +174,36 @@ $routes->group('positions', ['filter' => 'login'], function($routes) {
     $routes->get('api', 'PositionsController::api');
     $routes->get('sections', 'PositionsController::getSections');
     $routes->get('statuses', 'PositionsController::getStatuses');
+});
+
+// Islanders CRUD routes
+$routes->group('islanders', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'IslandersController::index');
+    $routes->post('/', 'IslandersController::store');
+    $routes->get('create', 'IslandersController::create');
+    $routes->post('store', 'IslandersController::store');
+    $routes->get('show/(:num)', 'IslandersController::show/$1');
+    $routes->get('(:num)', 'IslandersController::show/$1');
+    $routes->get('(:num)/edit', 'IslandersController::edit/$1');
+    $routes->put('(:num)', 'IslandersController::update/$1');
+    $routes->post('(:num)/update', 'IslandersController::update/$1');
+    $routes->post('update/(:num)', 'IslandersController::update/$1');
+    $routes->delete('(:num)', 'IslandersController::delete/$1');
+    $routes->post('(:num)/delete', 'IslandersController::delete/$1');
+    $routes->post('delete/(:num)', 'IslandersController::delete/$1');
+    $routes->get('api', 'IslandersController::api');
+    $routes->get('divisions', 'IslandersController::getDivisions');
+    $routes->get('departments', 'IslandersController::getDepartments');
+    $routes->get('sections', 'IslandersController::getSections');
+    $routes->get('positions', 'IslandersController::getPositions');
+    $routes->get('genders', 'IslandersController::getGenders');
+    $routes->get('houses', 'IslandersController::getHouses');
+    $routes->get('nationalities', 'IslandersController::getNationalities');
+    $routes->get('statuses', 'IslandersController::getStatuses');
+    // Cascading dropdown routes
+    $routes->get('departments-by-division', 'IslandersController::getDepartmentsByDivision');
+    $routes->get('sections-by-department', 'IslandersController::getSectionsByDepartment');
+    $routes->get('positions-by-section', 'IslandersController::getPositionsBySection');
 });
 
 // Log Management Routes

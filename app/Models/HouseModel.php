@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class NationalityModel extends Model
+class HouseModel extends Model
 {
-    protected $table      = 'nationalities';
+    protected $table      = 'houses';
     protected $primaryKey = 'id';
 
     protected $useAutoIncrement = true;
@@ -17,7 +17,7 @@ class NationalityModel extends Model
     protected $allowedFields = [
         'name', 
         'description', 
-        'country_code',
+        'color',
         'status_id',
         'created_by', 
         'updated_by',
@@ -31,20 +31,20 @@ class NationalityModel extends Model
 
     protected $validationRules = [
         'name' => [
-            'label'  => 'Nationality Name',
+            'label'  => 'House Name',
             'rules'  => 'required|min_length[3]|max_length[100]',
             'errors' => [
-                'required'    => 'Nationality name is required.',
-                'min_length'  => 'Nationality name must be at least 3 characters long.',
-                'max_length'  => 'Nationality name cannot exceed 100 characters.'
+                'required'    => 'House name is required.',
+                'min_length'  => 'House name must be at least 3 characters long.',
+                'max_length'  => 'House name cannot exceed 100 characters.'
             ]
         ],
-        'country_code' => [
-            'label'  => 'Country Code',
-            'rules'  => 'permit_empty|exact_length[3]|alpha',
+        'color' => [
+            'label'  => 'House Color',
+            'rules'  => 'permit_empty|max_length[7]|regex_match[/^#[0-9A-Fa-f]{6}$/]',
             'errors' => [
-                'exact_length' => 'Country code must be exactly 3 characters.',
-                'alpha'        => 'Country code must contain only alphabetic characters.'
+                'max_length'   => 'Color code cannot exceed 7 characters.',
+                'regex_match'  => 'Color must be a valid hex color code (e.g., #FF0000).'
             ]
         ],
         'status_id' => [
@@ -144,50 +144,51 @@ class NationalityModel extends Model
     public function getActiveStatuses()
     {
         $statusModel = new \App\Models\StatusModel();
-        return $statusModel->where('module_id', 1)->findAll(); // Module ID 1 for nationalities
+        return $statusModel->where('module_id', 1)->findAll(); // Module ID 1 for houses
     }
 
     /**
-     * Get nationality by ID with validation
+     * Get house by ID with validation
      */
-    public function getNationality($id)
+    public function getHouse($id)
     {
-        $builder = $this->db->table('nationalities n');
+        $builder = $this->db->table('houses h');
         
-        return $builder->select('n.*, 
+        return $builder->select('h.*, 
                                s.name as status_name,
                                s.color as status_color,
                                CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                                CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                      ->join('status s', 's.id = n.status_id', 'left')
-                      ->join('users cu', 'cu.id = n.created_by', 'left')
-                      ->join('users uu', 'uu.id = n.updated_by', 'left')
-                      ->where('n.id', $id)
+                      ->join('status s', 's.id = h.status_id', 'left')
+                      ->join('users cu', 'cu.id = h.created_by', 'left')
+                      ->join('users uu', 'uu.id = h.updated_by', 'left')
+                      ->where('h.id', $id)
                       ->get()
                       ->getRowArray();
     }
 
     /**
-     * Get nationalities with pagination and search
+     * Get houses with pagination and search
      */
-    public function getNationalitiesWithPagination($search = '', $limit = 10, $offset = 0)
+    public function getHousesWithPagination($search = '', $limit = 10, $offset = 0)
     {
-        $builder = $this->db->table('nationalities n');
+        $builder = $this->db->table('houses h');
         
         // Join with status and users tables
-        $builder->select('n.*, 
+        $builder->select('h.*, 
                          s.name as status_name,
                          s.color as status_color,
                          CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                          CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                ->join('status s', 's.id = n.status_id', 'left')
-                ->join('users cu', 'cu.id = n.created_by', 'left')
-                ->join('users uu', 'uu.id = n.updated_by', 'left');
+                ->join('status s', 's.id = h.status_id', 'left')
+                ->join('users cu', 'cu.id = h.created_by', 'left')
+                ->join('users uu', 'uu.id = h.updated_by', 'left');
         
         if (!empty($search)) {
             $builder->groupStart()
-                    ->like('n.name', $search)
-                    ->orLike('n.description', $search)
+                    ->like('h.name', $search)
+                    ->orLike('h.description', $search)
+                    ->orLike('h.color', $search)
                     ->orLike('s.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
@@ -195,27 +196,28 @@ class NationalityModel extends Model
         }
         
         return $builder->limit($limit, $offset)
-                      ->orderBy('n.created_at', 'DESC')
+                      ->orderBy('h.created_at', 'DESC')
                       ->get()
                       ->getResultArray();
     }
 
     /**
-     * Count nationalities with search filter
+     * Count houses with search filter
      */
-    public function getNationalitiesCount($search = '')
+    public function getHousesCount($search = '')
     {
-        $builder = $this->db->table('nationalities n');
+        $builder = $this->db->table('houses h');
         
         // Join with status and users tables for consistent search results
-        $builder->join('status s', 's.id = n.status_id', 'left')
-                ->join('users cu', 'cu.id = n.created_by', 'left')
-                ->join('users uu', 'uu.id = n.updated_by', 'left');
+        $builder->join('status s', 's.id = h.status_id', 'left')
+                ->join('users cu', 'cu.id = h.created_by', 'left')
+                ->join('users uu', 'uu.id = h.updated_by', 'left');
         
         if (!empty($search)) {
             $builder->groupStart()
-                    ->like('n.name', $search)
-                    ->orLike('n.description', $search)
+                    ->like('h.name', $search)
+                    ->orLike('h.description', $search)
+                    ->orLike('h.color', $search)
                     ->orLike('s.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
@@ -239,8 +241,8 @@ class NationalityModel extends Model
     public function getUpdateValidationRules($id)
     {
         $rules = $this->validationRules;
-        $rules['name']['rules'] = "required|min_length[3]|max_length[100]|is_unique[nationalities.name,id,{$id}]";
-        $rules['name']['errors']['is_unique'] = 'This nationality name already exists.';
+        $rules['name']['rules'] = "required|min_length[3]|max_length[100]|is_unique[houses.name,id,{$id}]";
+        $rules['name']['errors']['is_unique'] = 'This house name already exists.';
         return $rules;
     }
 

@@ -8,6 +8,7 @@
     <meta name="description" content="Islanders App" />
     <meta name="keywords" content="Islanders, App" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="<?= csrf_hash() ?>" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Islanders App" />
@@ -116,7 +117,7 @@
                         <?php endif; ?>
 
                         <!--begin::Logo image-->
-                        <a href="/bold-html-pro/index.html">
+                        <a href="/">
                             <img alt="Logo" src="/assets/media/logos/default.svg" class="h-20px theme-light-show" />
                             <img alt="Logo" src="/assets/media/logos/default-dark.svg" class="h-20px theme-dark-show" />
                         </a>

@@ -6,7 +6,7 @@
 
     <div class="app-sidebar-header d-flex flex-stack d-none d-lg-flex pt-8 pb-2 px-8" id="kt_app_sidebar_header">
         <!--begin::Logo-->
-        <a href="/bold-html-pro/index.html" class="app-sidebar-logo">
+        <a href="/" class="app-sidebar-logo">
             <img alt="Logo" src="/assets/media/logos/default.svg"
                 class="h-20px d-none d-sm-inline app-sidebar-logo-default theme-light-show" />
             <img alt="Logo" src="/assets/media/logos/default-dark.svg" class="h-20px theme-dark-show" />
@@ -359,10 +359,15 @@
                     // You can add specific permissions for these later if needed
                     $hasIslanderAccess = has_permission('system.admin') || in_groups(['admin', 'manager']);
                     
-                    // Check if user has access to any settings
-                    $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess;
+                    // Check permissions for user management items
+                    $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
+                                             has_permission('groups.view') || has_permission('permissions.view') || 
+                                             in_groups(['admin', 'manager']);
                     
-                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']) && $hasAnySettingsAccess;
+                    // Check if user has access to any settings
+                    $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
+                    
+                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorizations-sequence', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
                     ?>
                     <?php if ($hasAnySettingsAccess): ?>
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion ms-n5 <?= $isActive ? 'here show' : '' ?>">
@@ -380,6 +385,153 @@
                         <!--end:Menu link-->
                         <!--begin:Menu sub-->
                         <div class="menu-sub menu-sub-accordion">
+                            <!--begin:Menu item User Management-->
+                            <?php 
+                            // Check permissions for user management items
+                            $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
+                                                     has_permission('groups.view') || has_permission('permissions.view') || 
+                                                     in_groups(['admin', 'manager']);
+                            $userMgmtActive = isMenuActive(['/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorizations-sequence', '/roles', '/group-permissions', '/user-permissions']) && $hasUserManagementAccess;
+                            ?>
+                            <?php if ($hasUserManagementAccess): ?>
+                            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $userMgmtActive ? 'here show' : '' ?>">
+                                <!--begin:Menu link-->
+                                <span class="menu-link <?= $userMgmtActive ? 'active bg-dark' : '' ?>" <?= $userMgmtActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">User Management</span>
+                                    <span class="menu-arrow"></span>
+                                </span>
+                                <!--end:Menu link-->
+                                <!--begin:Menu sub-->
+                                <div class="menu-sub menu-sub-accordion">
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('users.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive1 = isMenuActive(['/islanders']); ?>
+                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>" href="/islanders" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Islanders</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('visitors.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive2 = isMenuActive(['/visitors']); ?>
+                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/visitors" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Visitors</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('sessions.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive3 = isMenuActive(['/sessions']); ?>
+                                        <a class="menu-link <?= $subActive3 ? 'active bg-dark' : '' ?>" href="/sessions" <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Sessions</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('sequence.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive4 = isMenuActive(['/requesting-sequence']); ?>
+                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>" href="/requesting-sequence" <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Requesting Sequence</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('sequence.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive5 = isMenuActive(['/authorizations-sequence']); ?>
+                                        <a class="menu-link <?= $subActive5 ? 'active bg-dark' : '' ?>" href="/authorizations-sequence" <?= $subActive5 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Authorizations Sequence</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('groups.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive6 = isMenuActive(['/roles']); ?>
+                                        <a class="menu-link <?= $subActive6 ? 'active bg-dark' : '' ?>" href="/roles" <?= $subActive6 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Roles</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('permissions.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive7 = isMenuActive(['/group-permissions']); ?>
+                                        <a class="menu-link <?= $subActive7 ? 'active bg-dark' : '' ?>" href="/group-permissions" <?= $subActive7 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Group Permissions</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('permissions.view') || $hasUserManagementAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive8 = isMenuActive(['/user-permissions']); ?>
+                                        <a class="menu-link <?= $subActive8 ? 'active bg-dark' : '' ?>" href="/user-permissions" <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">User Permissions</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                </div>
+                                <!--end:Menu sub-->
+                            </div>
+                            <?php endif; ?>
+                            <!--end:Menu item-->
+
                             <!--begin:Menu item-->
                             <?php 
                             $islanderActive = isMenuActive(['/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']) && $hasIslanderAccess;
@@ -482,6 +634,7 @@
                                     </div>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
+                                    <?php if (has_permission('houses.view') || $hasIslanderAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive7 = isMenuActive(['/houses']); ?>
@@ -493,6 +646,7 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
+                                    <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
