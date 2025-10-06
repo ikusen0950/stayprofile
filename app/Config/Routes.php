@@ -53,6 +53,16 @@ $routes->group('status', ['filter' => 'login'], function($routes) {
     $routes->get('modules', 'StatusController::getModules');
 });
 
+// Sessions CRUD routes
+$routes->group('sessions', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'SessionsController::index');
+    $routes->post('cleanup-expired', 'SessionsController::cleanupExpired');
+    $routes->get('api', 'SessionsController::api');
+    $routes->get('show/(.+)', 'SessionsController::show/$1');
+    $routes->post('(.+)/force-logout', 'SessionsController::forceLogout/$1');
+    $routes->get('(.+)', 'SessionsController::show/$1');
+});
+
 // Modules CRUD routes
 $routes->group('modules', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'ModulesController::index');
