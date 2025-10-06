@@ -37,10 +37,10 @@ class LogModel extends Model
         ],
         'status_id' => [
             'label'  => 'Status',
-            'rules'  => 'required|in_list[1,2,3,4,5]',
+            'rules'  => 'required|integer',
             'errors' => [
                 'required' => 'Status is required.',
-                'in_list'  => 'Invalid status value.'
+                'integer'  => 'Status ID must be a valid integer.'
             ]
         ],
         'module_id' => [
@@ -65,25 +65,30 @@ class LogModel extends Model
         // Load auth helper if not already loaded
         helper('auth');
         
-        // Set logged_at timestamp for new records
-        $data['data']['logged_at'] = date('Y-m-d H:i:s');
+        // Set logged_at timestamp for new records only if not already provided
+        if (!isset($data['data']['logged_at'])) {
+            $data['data']['logged_at'] = date('Y-m-d H:i:s');
+        }
         
-        try {
-            // Try Myth/Auth user() function first
-            if (function_exists('user') && user() !== null && isset(user()->id)) {
-                $data['data']['user_id'] = user()->id;
+        // Set user_id only if not already provided
+        if (!isset($data['data']['user_id'])) {
+            try {
+                // Try Myth/Auth user() function first
+                if (function_exists('user') && user() !== null && isset(user()->id)) {
+                    $data['data']['user_id'] = user()->id;
+                }
+                // Try session-based approach
+                elseif (session()->has('logged_in') && session()->has('user_id')) {
+                    $data['data']['user_id'] = session('user_id');
+                }
+                // Try alternative session key
+                elseif (session()->has('user') && is_array(session('user')) && isset(session('user')['id'])) {
+                    $data['data']['user_id'] = session('user')['id'];
+                }
+            } catch (\Exception $e) {
+                // Log the error but continue without setting user_id
+                log_message('error', 'Failed to set user_id: ' . $e->getMessage());
             }
-            // Try session-based approach
-            elseif (session()->has('logged_in') && session()->has('user_id')) {
-                $data['data']['user_id'] = session('user_id');
-            }
-            // Try alternative session key
-            elseif (session()->has('user') && is_array(session('user')) && isset(session('user')['id'])) {
-                $data['data']['user_id'] = session('user')['id'];
-            }
-        } catch (\Exception $e) {
-            // Log the error but continue without setting user_id
-            log_message('error', 'Failed to set user_id: ' . $e->getMessage());
         }
         
         return $data;

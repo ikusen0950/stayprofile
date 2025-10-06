@@ -74,20 +74,7 @@
                     <!--begin::Row-->
                     <div class="row mb-7">
                         <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Visitor Number</label>
-                        <!--end::Label-->
-                        <!--begin::Col-->
-                        <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_visitor_no">-</span>
-                        </div>
-                        <!--end::Col-->
-                    </div>
-                    <!--end::Row-->
-
-                    <!--begin::Row-->
-                    <div class="row mb-7">
-                        <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">NID/PP/WP #</label>
+                        <label class="col-lg-4 fw-semibold text-muted">NID/PP/WP # (Username)</label>
                         <!--end::Label-->
                         <!--begin::Col-->
                         <div class="col-lg-8">
@@ -149,44 +136,18 @@
                     </div>
                     <!--end::Row-->
 
-                    <!--begin::Row-->
-                    <div class="row mb-7">
-                        <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Date of Birth</label>
-                        <!--end::Label-->
-                        <!--begin::Col-->
-                        <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_date_of_birth">-</span>
-                        </div>
-                        <!--end::Col-->
-                    </div>
-                    <!--end::Row-->
-
-                    <!--begin::Row-->
-                    <div class="row mb-7">
-                        <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Address</label>
-                        <!--end::Label-->
-                        <!--begin::Col-->
-                        <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_address">-</span>
-                        </div>
-                        <!--end::Col-->
-                    </div>
-                    <!--end::Row-->
-
-                    <!--begin::Visit Information Section-->
-                    <h4 class="fw-bold text-gray-800 mb-5 mt-10">Visit Information</h4>
+                    <!--begin::Work Information Section-->
+                    <h4 class="fw-bold text-gray-800 mb-5 mt-10">Work Information</h4>
                     <div class="separator separator-dashed mt-2 mb-7"></div>
 
                     <!--begin::Row-->
                     <div class="row mb-7">
                         <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Visit Purpose</label>
+                        <label class="col-lg-4 fw-semibold text-muted">Division</label>
                         <!--end::Label-->
                         <!--begin::Col-->
                         <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_visit_purpose">-</span>
+                            <span class="fw-bold fs-6 text-gray-800" id="view_division">-</span>
                         </div>
                         <!--end::Col-->
                     </div>
@@ -195,11 +156,11 @@
                     <!--begin::Row-->
                     <div class="row mb-7">
                         <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Check-in Date</label>
+                        <label class="col-lg-4 fw-semibold text-muted">Department</label>
                         <!--end::Label-->
                         <!--begin::Col-->
                         <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_checkin_date">-</span>
+                            <span class="fw-bold fs-6 text-gray-800" id="view_department">-</span>
                         </div>
                         <!--end::Col-->
                     </div>
@@ -208,11 +169,11 @@
                     <!--begin::Row-->
                     <div class="row mb-7">
                         <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Check-out Date</label>
+                        <label class="col-lg-4 fw-semibold text-muted">Section</label>
                         <!--end::Label-->
                         <!--begin::Col-->
                         <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_checkout_date">-</span>
+                            <span class="fw-bold fs-6 text-gray-800" id="view_section">-</span>
                         </div>
                         <!--end::Col-->
                     </div>
@@ -221,11 +182,24 @@
                     <!--begin::Row-->
                     <div class="row mb-7">
                         <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Accommodation</label>
+                        <label class="col-lg-4 fw-semibold text-muted">Position</label>
                         <!--end::Label-->
                         <!--begin::Col-->
                         <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_accommodation">-</span>
+                            <span class="fw-bold fs-6 text-gray-800" id="view_position">-</span>
+                        </div>
+                        <!--end::Col-->
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <!--begin::Label-->
+                        <label class="col-lg-4 fw-semibold text-muted">Company</label>
+                        <!--end::Label-->
+                        <!--begin::Col-->
+                        <div class="col-lg-8">
+                            <span class="fw-bold fs-6 text-gray-800" id="view_company">-</span>
                         </div>
                         <!--end::Col-->
                     </div>
@@ -239,19 +213,6 @@
                         <!--begin::Col-->
                         <div class="col-lg-8">
                             <span class="fw-bold fs-6 text-gray-800" id="view_status">-</span>
-                        </div>
-                        <!--end::Col-->
-                    </div>
-                    <!--end::Row-->
-
-                    <!--begin::Row-->
-                    <div class="row mb-7">
-                        <!--begin::Label-->
-                        <label class="col-lg-4 fw-semibold text-muted">Notes</label>
-                        <!--end::Label-->
-                        <!--begin::Col-->
-                        <div class="col-lg-8">
-                            <span class="fw-bold fs-6 text-gray-800" id="view_notes">-</span>
                         </div>
                         <!--end::Col-->
                     </div>
@@ -335,6 +296,15 @@
                     </i>Edit Visitor
                 </button>
                 <?php endif; ?>
+                <?php if ($permissions['canEdit'] && has_permission('visitors.enrol')): ?>
+                <button type="button" id="viewVisitorModal_enrol" class="btn btn-success ms-3">
+                    <i class="ki-duotone ki-user-tick fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>Enrol as Islander
+                </button>
+                <?php endif; ?>
                 <!--end::Edit Button-->
             </div>
             <!--end::Modal footer-->
@@ -353,6 +323,7 @@ var ViewVisitorModal = function () {
     var modal;
     var closeButton;
     var editButton;
+    var enrolButton;
 
     // Initialize modal
     var initModal = function () {
@@ -363,6 +334,7 @@ var ViewVisitorModal = function () {
     var initButtons = function () {
         closeButton = document.querySelector('#viewVisitorModal_close');
         editButton = document.querySelector('#viewVisitorModal_edit');
+        enrolButton = document.querySelector('#viewVisitorModal_enrol');
 
         // Handle close button
         closeButton.addEventListener('click', function (e) {
@@ -385,6 +357,21 @@ var ViewVisitorModal = function () {
                     modal.hide();
                     // Load and show edit modal
                     loadEditModal(visitorId);
+                }
+            });
+        }
+
+        // Handle enrol button
+        if (enrolButton) {
+            enrolButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                const visitorId = this.getAttribute('data-visitor-id');
+                if (visitorId && typeof window.enrolAsIslander === 'function') {
+                    modal.hide();
+                    window.enrolAsIslander(visitorId);
+                } else if (visitorId) {
+                    // Fallback if the function is not available globally
+                    window.location.reload();
                 }
             });
         }
@@ -424,6 +411,7 @@ var ViewVisitorModal = function () {
             return;
         }
         
+        
         // Header information
         const avatarElement = document.getElementById('view_visitor_avatar');
         const nameElement = document.getElementById('view_visitor_name');
@@ -437,7 +425,8 @@ var ViewVisitorModal = function () {
             nameElement.textContent = visitor.full_name || 'N/A';
         }
         if (numberElement) {
-            numberElement.textContent = visitor.visitor_no ? visitor.visitor_no.toUpperCase() : 'N/A';
+            numberElement.textContent = visitor.id_pp_wp_no ? visitor.id_pp_wp_no.toUpperCase() : 
+                                       (visitor.visitor_no ? visitor.visitor_no.toUpperCase() : 'N/A');
         }
         if (statusElement) {
             statusElement.textContent = visitor.status_name ? visitor.status_name.toUpperCase() : 'N/A';
@@ -451,23 +440,18 @@ var ViewVisitorModal = function () {
 
         // Personal information
         document.getElementById('view_full_name').textContent = visitor.full_name || '-';
-        document.getElementById('view_visitor_no').textContent = visitor.visitor_no || '-';
-        document.getElementById('view_id_pp_wp_no').textContent = visitor.id_pp_wp_no || '-';
+        document.getElementById('view_id_pp_wp_no').textContent = visitor.id_pp_wp_no || visitor.visitor_no || '-';
         document.getElementById('view_email').textContent = visitor.email || '-';
         document.getElementById('view_phone').textContent = visitor.phone || '-';
         document.getElementById('view_gender').textContent = visitor.gender_name || '-';
         document.getElementById('view_nationality').textContent = visitor.nationality_name || '-';
-        document.getElementById('view_date_of_birth').textContent = visitor.date_of_birth ? 
-            new Date(visitor.date_of_birth).toLocaleDateString() : '-';
-        document.getElementById('view_address').textContent = visitor.address || '-';
 
-        // Visit information
-        document.getElementById('view_visit_purpose').textContent = visitor.visit_purpose || '-';
-        document.getElementById('view_checkin_date').textContent = visitor.checkin_date ? 
-            new Date(visitor.checkin_date).toLocaleDateString() : '-';
-        document.getElementById('view_checkout_date').textContent = visitor.checkout_date ? 
-            new Date(visitor.checkout_date).toLocaleDateString() : '-';
-        document.getElementById('view_accommodation').textContent = visitor.accommodation || '-';
+        // Work information
+        document.getElementById('view_division').textContent = visitor.division_name || '-';
+        document.getElementById('view_department').textContent = visitor.department_name || '-';
+        document.getElementById('view_section').textContent = visitor.section_name || '-';
+        document.getElementById('view_position').textContent = visitor.position_name || '-';
+        document.getElementById('view_company').textContent = visitor.company || '-';
 
         // Status information
         const statusDetailElement = document.getElementById('view_status');
@@ -481,12 +465,7 @@ var ViewVisitorModal = function () {
                 statusDetailElement.style.fontSize = '11px';
                 statusDetailElement.style.lineHeight = '1.2';
             }
-        } else {
-            statusDetailElement.textContent = '-';
         }
-
-        // Additional information
-        document.getElementById('view_notes').textContent = visitor.notes || '-';
 
         // Audit information
         document.getElementById('view_created_by').textContent = visitor.created_by_name || '-';
@@ -536,9 +515,12 @@ var ViewVisitorModal = function () {
             coverImageSection.style.display = 'none';
         }
 
-        // Set visitor ID for edit button
+        // Set visitor ID for edit and enrol buttons
         if (editButton) {
             editButton.setAttribute('data-visitor-id', visitor.id);
+        }
+        if (enrolButton) {
+            enrolButton.setAttribute('data-visitor-id', visitor.id);
         }
     };
 

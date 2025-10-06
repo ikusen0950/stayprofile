@@ -94,23 +94,8 @@
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-4">
                                     <!--begin::Label-->
-                                    <label class="fs-6 fw-semibold mb-2 required">Visitor #</label>
-                                    <small>(This will be the username.)</small>
-                                    <!--end::Label-->
-                                    <!--begin::Input-->
-                                    <input type="text" name="visitor_no" id="edit_visitor_no"
-                                        class="form-control form-control-solid mb-3 mb-lg-0"
-                                        placeholder="Enter visitor number" value="" />
-                                    <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="visitor_no"></div>
-                                    </div>
-                                    <!--end::Input-->
-                                </div>
-                                <!--end::Input group-->
-                                <!--begin::Input group-->
-                                <div class="fv-row mb-4">
-                                    <!--begin::Label-->
                                     <label class="fs-6 fw-semibold mb-2 required">NID/PP/WP #</label>
+                                    <small>(This will be the username.)</small>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <input type="text" name="id_pp_wp_no" id="edit_id_pp_wp_no"
@@ -250,49 +235,8 @@
                         </div>
                         <!--end::Input group-->
 
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Date of Birth</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="date" name="date_of_birth" id="edit_date_of_birth"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Select date of birth" value="" required />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="date_of_birth"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-12">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Address</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <textarea name="address" id="edit_address" class="form-control form-control-solid" rows="3"
-                                    placeholder="Enter address"></textarea>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
                         <!--begin::Section-->
-                        <h4 class="fw-bold text-gray-800">Visit Information</h4>
+                        <h4 class="fw-bold text-gray-800">Work Information</h4>
                         <div class="separator separator-dashed mt-2 mb-7"></div>
 
                         <!--begin::Input group-->
@@ -300,103 +244,20 @@
                             <!--begin::Col-->
                             <div class="col-md-6">
                                 <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Visit Purpose</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" name="visit_purpose" id="edit_visit_purpose" class="form-control form-control-solid"
-                                    placeholder="Enter purpose of visit" value="" />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="visit_purpose"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Check-in Date</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="date" name="checkin_date" id="edit_checkin_date" class="form-control form-control-solid"
-                                    placeholder="Select check-in date" value="" />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="checkin_date"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Check-out Date</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="date" name="checkout_date" id="edit_checkout_date" class="form-control form-control-solid"
-                                    placeholder="Select check-out date" value="" />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="checkout_date"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Accommodation</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" name="accommodation" id="edit_accommodation" class="form-control form-control-solid"
-                                    placeholder="Enter accommodation details" value="" />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-12">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Notes</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <textarea name="notes" id="edit_notes" class="form-control form-control-solid" rows="3"
-                                    placeholder="Enter any additional notes"></textarea>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Section-->
-                        <h4 class="fw-bold text-gray-800">User Account</h4>
-                        <div class="separator separator-dashed mt-2 mb-7"></div>
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Role</label>
+                                <label class="required fw-semibold fs-6 mb-2">Division</label>
                                 <!--end::Label-->
                                 <!--begin::Select-->
-                                <select name="role_id" id="edit_role_id" class="form-select form-select-solid" data-control="select2"
-                                    data-placeholder="Select role" data-dropdown-parent="#editVisitorModal" required>
-                                    <option value="">Select Role</option>
-                                    <?php if (!empty($auth_groups)): ?>
-                                    <?php foreach ($auth_groups as $group): ?>
-                                    <option value="<?= esc($group->id) ?>"><?= esc($group->name) ?></option>
+                                <select name="division_id" id="edit_division_id" class="form-select form-select-solid" data-control="select2"
+                                    data-placeholder="Select division" data-dropdown-parent="#editVisitorModal" required>
+                                    <option value="">Select Division</option>
+                                    <?php if (!empty($divisions)): ?>
+                                    <?php foreach ($divisions as $division): ?>
+                                    <option value="<?= esc($division['id']) ?>"><?= esc($division['name']) ?></option>
                                     <?php endforeach; ?>
                                     <?php endif; ?>
                                 </select>
                                 <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="role_id"></div>
+                                    <div class="fv-help-block" data-field="division_id"></div>
                                 </div>
                                 <!--end::Select-->
                             </div>
@@ -404,20 +265,83 @@
                             <!--begin::Col-->
                             <div class="col-md-6">
                                 <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Password</label>
-                                <small>(Leave blank to keep current password)</small>
+                                <label class="required fw-semibold fs-6 mb-2">Department</label>
+                                <!--end::Label-->
+                                <!--begin::Select-->
+                                <select name="department_id" id="edit_department_id" class="form-select form-select-solid"
+                                    data-control="select2" data-placeholder="Select department"
+                                    data-dropdown-parent="#editVisitorModal" required disabled>
+                                    <option value="">Select Department</option>
+                                </select>
+                                <div class="fv-plugins-message-container invalid-feedback">
+                                    <div class="fv-help-block" data-field="department_id"></div>
+                                </div>
+                                <!--end::Select-->
+                            </div>
+                            <!--end::Col-->
+                        </div>
+                        <!--end::Input group-->
+
+                        <!--begin::Input group-->
+                        <div class="row mb-7">
+                            <!--begin::Col-->
+                            <div class="col-md-6">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Section</label>
+                                <!--end::Label-->
+                                <!--begin::Select-->
+                                <select name="section_id" id="edit_section_id" class="form-select form-select-solid" data-control="select2"
+                                    data-placeholder="Select section" data-dropdown-parent="#editVisitorModal" required disabled>
+                                    <option value="">Select Section</option>
+                                </select>
+                                <div class="fv-plugins-message-container invalid-feedback">
+                                    <div class="fv-help-block" data-field="section_id"></div>
+                                </div>
+                                <!--end::Select-->
+                            </div>
+                            <!--end::Col-->
+                            <!--begin::Col-->
+                            <div class="col-md-6">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Position</label>
+                                <!--end::Label-->
+                                <!--begin::Select-->
+                                <select name="position_id" id="edit_position_id" class="form-select form-select-solid"
+                                    data-control="select2" data-placeholder="Select position"
+                                    data-dropdown-parent="#editVisitorModal" required disabled>
+                                    <option value="">Select Position</option>
+                                </select>
+                                <div class="fv-plugins-message-container invalid-feedback">
+                                    <div class="fv-help-block" data-field="position_id"></div>
+                                </div>
+                                <!--end::Select-->
+                            </div>
+                            <!--end::Col-->
+                        </div>
+                        <!--end::Input group-->
+
+                        <!--begin::Input group-->
+                        <div class="row mb-7">
+                            <!--begin::Col-->
+                            <div class="col-md-12">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Company</label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
-                                <input type="password" name="password" id="edit_password" class="form-control form-control-solid"
-                                    placeholder="Enter new password (optional)" value="" autocomplete="new-password" />
+                                <input type="text" name="company" id="edit_company" class="form-control form-control-solid"
+                                    placeholder="Enter company name" value="" required />
                                 <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="password"></div>
+                                    <div class="fv-help-block" data-field="company"></div>
                                 </div>
                                 <!--end::Input-->
                             </div>
                             <!--end::Col-->
                         </div>
                         <!--end::Input group-->
+
+                        <!-- Hidden fields for default values -->
+                        <input type="hidden" name="password" value="123" />
+                        <input type="hidden" name="role_id" value="8" />
 
                     </div>
                     <!--end::Scroll-->
@@ -484,7 +408,6 @@ var EditVisitorModal = function() {
             // Clear all previous errors
             clearAllErrors();
 
-            const visitorNo = form.querySelector('input[name="visitor_no"]');
             const idPpWpNo = form.querySelector('input[name="id_pp_wp_no"]');
             const statusId = form.querySelector('select[name="status_id"]');
             const fullName = form.querySelector('input[name="full_name"]');
@@ -492,16 +415,15 @@ var EditVisitorModal = function() {
             const phone = form.querySelector('input[name="phone"]');
             const genderId = form.querySelector('select[name="gender_id"]');
             const nationalityId = form.querySelector('select[name="nationality_id"]');
-            const dateOfBirth = form.querySelector('input[name="date_of_birth"]');
-            const roleId = form.querySelector('select[name="role_id"]');
+            const divisionId = form.querySelector('select[name="division_id"]');
+            const departmentId = form.querySelector('select[name="department_id"]');
+            const sectionId = form.querySelector('select[name="section_id"]');
+            const positionId = form.querySelector('select[name="position_id"]');
+            const company = form.querySelector('input[name="company"]');
 
             let hasErrors = false;
 
             // Check all required fields and show errors
-            if (!visitorNo || !visitorNo.value.trim()) {
-                showFieldError('visitor_no', 'Visitor number is required');
-                hasErrors = true;
-            }
             if (!idPpWpNo || !idPpWpNo.value.trim()) {
                 showFieldError('id_pp_wp_no', 'NID/PP/WP number is required');
                 hasErrors = true;
@@ -533,12 +455,24 @@ var EditVisitorModal = function() {
                 showFieldError('nationality_id', 'Nationality is required');
                 hasErrors = true;
             }
-            if (!dateOfBirth || !dateOfBirth.value) {
-                showFieldError('date_of_birth', 'Date of birth is required');
+            if (!divisionId || !divisionId.value) {
+                showFieldError('division_id', 'Division is required');
                 hasErrors = true;
             }
-            if (!roleId || !roleId.value) {
-                showFieldError('role_id', 'Role is required');
+            if (!departmentId || !departmentId.value) {
+                showFieldError('department_id', 'Department is required');
+                hasErrors = true;
+            }
+            if (!sectionId || !sectionId.value) {
+                showFieldError('section_id', 'Section is required');
+                hasErrors = true;
+            }
+            if (!positionId || !positionId.value) {
+                showFieldError('position_id', 'Position is required');
+                hasErrors = true;
+            }
+            if (!company || !company.value.trim()) {
+                showFieldError('company', 'Company name is required');
                 hasErrors = true;
             }
 
@@ -736,7 +670,7 @@ var EditVisitorModal = function() {
             try {
                 KTImageInput.createInstances('#editVisitorModal [data-kt-image-input="true"]');
             } catch (e) {
-                console.log('KTImageInput not available:', e);
+                // KTImageInput not available, continue without it
             }
         }
 
@@ -777,6 +711,378 @@ var EditVisitorModal = function() {
         });
     };
 
+    // Initialize cascading dropdowns
+    var initCascadingDropdowns = function() {
+        // Check if jQuery is available
+        if (typeof $ === 'undefined') {
+            return;
+        }
+
+        // Division change handler - attach immediately, not just on modal shown
+        $(document).off('change', '#editVisitorModal select[name="division_id"]').on('change', '#editVisitorModal select[name="division_id"]', function() {
+            const divisionId = $(this).val();
+            const departmentSelect = $('#editVisitorModal select[name="department_id"]');
+            const sectionSelect = $('#editVisitorModal select[name="section_id"]');
+            const positionSelect = $('#editVisitorModal select[name="position_id"]');
+            
+            // Reset and disable department, section, and position
+            departmentSelect.val('').trigger('change');
+            sectionSelect.val('').trigger('change');
+            positionSelect.val('').trigger('change');
+            
+            departmentSelect.prop('disabled', true);
+            sectionSelect.prop('disabled', true);
+            positionSelect.prop('disabled', true);
+            
+            if (divisionId) {
+                // Load departments for selected division
+                $.ajax({
+                    url: '<?= base_url("api/departments-by-division") ?>',
+                    type: 'GET',
+                    data: { division_id: divisionId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            // Clear existing options except the default
+                            departmentSelect.find('option:not(:first)').remove();
+                            
+                            // Add new options
+                            $.each(response.data, function(index, department) {
+                                departmentSelect.append(
+                                    $('<option>', {
+                                        value: department.id,
+                                        text: department.name
+                                    })
+                                );
+                            });
+                            
+                            // Enable department select
+                            departmentSelect.prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading departments:', error, xhr.responseText);
+                        // Show user-friendly error message
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Failed to load departments. Please try again.');
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Department change handler
+        $(document).off('change', '#editVisitorModal select[name="department_id"]').on('change', '#editVisitorModal select[name="department_id"]', function() {
+            const departmentId = $(this).val();
+            const sectionSelect = $('#editVisitorModal select[name="section_id"]');
+            const positionSelect = $('#editVisitorModal select[name="position_id"]');
+            
+            // Reset and disable section and position
+            sectionSelect.val('').trigger('change');
+            positionSelect.val('').trigger('change');
+            
+            sectionSelect.prop('disabled', true);
+            positionSelect.prop('disabled', true);
+            
+            if (departmentId) {
+                // Load sections for selected department
+                $.ajax({
+                    url: '<?= base_url("api/sections-by-department") ?>',
+                    type: 'GET',
+                    data: { department_id: departmentId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            // Clear existing options except the default
+                            sectionSelect.find('option:not(:first)').remove();
+                            
+                            // Add new options
+                            $.each(response.data, function(index, section) {
+                                sectionSelect.append(
+                                    $('<option>', {
+                                        value: section.id,
+                                        text: section.name
+                                    })
+                                );
+                            });
+                            
+                            // Enable section select
+                            sectionSelect.prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading sections:', error, xhr.responseText);
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Failed to load sections. Please try again.');
+                        }
+                    }
+                });
+                
+                // Load positions with status_id = 3
+                $.ajax({
+                    url: '<?= base_url("api/positions-by-status") ?>',
+                    type: 'GET',
+                    data: { status_id: 3 },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            // Clear existing options except the default
+                            positionSelect.find('option:not(:first)').remove();
+                            
+                            // Add new options
+                            $.each(response.data, function(index, position) {
+                                positionSelect.append(
+                                    $('<option>', {
+                                        value: position.id,
+                                        text: position.name
+                                    })
+                                );
+                            });
+                            
+                            // Enable position select
+                            positionSelect.prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading positions:', error, xhr.responseText);
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Failed to load positions. Please try again.');
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Reset form when modal is hidden
+        $('#editVisitorModal').on('hidden.bs.modal', function() {
+            const departmentSelect = $('#editVisitorModal select[name="department_id"]');
+            const sectionSelect = $('#editVisitorModal select[name="section_id"]');
+            const positionSelect = $('#editVisitorModal select[name="position_id"]');
+            
+            // Reset and disable dependent dropdowns
+            departmentSelect.find('option:not(:first)').remove();
+            sectionSelect.find('option:not(:first)').remove();
+            positionSelect.find('option:not(:first)').remove();
+            
+            departmentSelect.prop('disabled', true);
+            sectionSelect.prop('disabled', true);
+            positionSelect.prop('disabled', true);
+        });
+    };
+
+    // Populate form with visitor data
+    var populateForm = function(visitor) {
+        if (!visitor) {
+            console.error('Visitor data is required');
+            return;
+        }
+
+        // Helper function to clear all errors
+        function clearAllErrors() {
+            if (!form) return;
+            
+            const fields = form.querySelectorAll('.is-invalid');
+            fields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+            
+            const errorContainers = form.querySelectorAll('.fv-plugins-message-container');
+            errorContainers.forEach(container => {
+                container.style.display = 'none';
+            });
+        }
+
+        try {
+            // Clear form first
+            form.reset();
+
+            // Clear all error states
+            clearAllErrors();
+
+            // Populate basic fields that exist in the form
+            const fieldMappings = {
+                'id': visitor.id,
+                'id_pp_wp_no': visitor.id_pp_wp_no || visitor.islander_no || visitor.id_number || visitor.visitor_no,
+                'status_id': visitor.status_id,
+                'full_name': visitor.full_name || visitor.name,
+                'email': visitor.email,
+                'phone': visitor.phone,
+                'gender_id': visitor.gender_id,
+                'nationality_id': visitor.nationality || visitor.nationality_id, // nationality field in DB, nationality_id in form
+                'division_id': visitor.division_id,
+                'department_id': visitor.department_id,
+                'section_id': visitor.section_id,
+                'position_id': visitor.position_id,
+                'company': visitor.company,
+                'role_id': visitor.role_id
+            };
+
+            // Populate form fields
+            Object.keys(fieldMappings).forEach(fieldName => {
+                const field = form.querySelector(`[name="${fieldName}"]`);
+                const value = fieldMappings[fieldName];
+                
+                if (field && value !== undefined && value !== null && value !== '') {
+                    try {
+                        if (field.type === 'date' && value) {
+                            // Handle date fields - ensure proper format
+                            const date = new Date(value);
+                            if (!isNaN(date.getTime())) {
+                                field.value = date.toISOString().split('T')[0];
+                            }
+                        } else {
+                            field.value = value;
+                        }
+                    } catch (fieldError) {
+                        console.error(`Error setting field ${fieldName}:`, fieldError);
+                    }
+                }
+            });
+
+            // Handle profile image if it exists
+            const imageField = visitor.image || visitor.profile_image;
+            if (imageField && imageField.trim() !== '') {
+                try {
+                    const profileImagePreview = document.getElementById('edit_profile_image_preview');
+                    if (profileImagePreview) {
+                        let imageUrl;
+                        if (imageField.startsWith('http')) {
+                            imageUrl = imageField;
+                        } else if (imageField.startsWith('/')) {
+                            imageUrl = '<?= base_url() ?>' + imageField;
+                        } else {
+                            imageUrl = '<?= base_url('assets/media/users/') ?>' + imageField;
+                        }
+                        profileImagePreview.style.backgroundImage = `url('${imageUrl}')`;
+                    }
+                } catch (imageError) {
+                    console.warn('Error setting profile image:', imageError);
+                }
+            }
+
+            // Trigger change events for select2 dropdowns after a small delay
+            setTimeout(function() {
+                try {
+                    if (typeof $ !== 'undefined') {
+                        // First, set values for non-cascading dropdowns
+                        $('#editVisitorModal select[data-control="select2"]').each(function() {
+                            const fieldName = $(this).attr('name');
+                            const value = fieldMappings[fieldName];
+                            
+                            // Skip cascading dropdowns for now
+                            if (!['division_id', 'department_id', 'section_id', 'position_id'].includes(fieldName)) {
+                                if (value) {
+                                    $(this).val(value).trigger('change');
+                                }
+                            }
+                        });
+                        
+                        // Handle cascading dropdown population for edit
+                        if (visitor.division_id) {
+                            // First populate division, then trigger cascade
+                            const divisionSelect = $('#editVisitorModal select[name="division_id"]');
+                            if (divisionSelect.length) {
+                                divisionSelect.val(visitor.division_id).trigger('change');
+                                
+                                // Wait for division change to complete and load departments
+                                if (visitor.department_id) {
+                                    // Use a longer timeout and check for options availability
+                                    const checkAndSetDepartment = function(attempts = 0) {
+                                        const maxAttempts = 10; // Max 5 seconds wait
+                                        const departmentSelect = $('#editVisitorModal select[name="department_id"]');
+                                        
+                                        if (departmentSelect.find(`option[value="${visitor.department_id}"]`).length > 0) {
+                                            // Department option is available, set it
+                                            departmentSelect.val(visitor.department_id).trigger('change');
+                                            
+                                            // Now wait for section/position options to load
+                                            if (visitor.section_id || visitor.position_id) {
+                                                const checkAndSetSectionPosition = function(attempts = 0) {
+                                                    const maxAttempts = 10;
+                                                    
+                                                    setTimeout(function() {
+                                                        if (visitor.section_id) {
+                                                            const sectionSelect = $('#editVisitorModal select[name="section_id"]');
+                                                            if (sectionSelect.find(`option[value="${visitor.section_id}"]`).length > 0) {
+                                                                sectionSelect.val(visitor.section_id).trigger('change');
+                                                            } else if (attempts < maxAttempts) {
+                                                                checkAndSetSectionPosition(attempts + 1);
+                                                                return;
+                                                            } else {
+                                                                console.warn('Section option not found after waiting:', visitor.section_id);
+                                                            }
+                                                        }
+                                                        
+                                                        if (visitor.position_id) {
+                                                            const positionSelect = $('#editVisitorModal select[name="position_id"]');
+                                                            if (positionSelect.find(`option[value="${visitor.position_id}"]`).length > 0) {
+                                                                positionSelect.val(visitor.position_id).trigger('change');
+                                                            } else if (attempts < maxAttempts) {
+                                                                checkAndSetSectionPosition(attempts + 1);
+                                                                return;
+                                                            } else {
+                                                                console.warn('Position option not found after waiting:', visitor.position_id);
+                                                            }
+                                                        }
+                                                    }, 500);
+                                                };
+                                                
+                                                checkAndSetSectionPosition();
+                                            }
+                                        } else if (attempts < maxAttempts) {
+                                            setTimeout(function() {
+                                                checkAndSetDepartment(attempts + 1);
+                                            }, 500);
+                                        } else {
+                                            console.warn('Department option not found after waiting:', visitor.department_id);
+                                        }
+                                    };
+                                    
+                                    // Start checking for department options
+                                    setTimeout(function() {
+                                        checkAndSetDepartment();
+                                    }, 1000);
+                                }
+                            } else {
+                                console.warn('Division select not found');
+                            }
+                        }
+                    }
+                } catch (select2Error) {
+                    console.warn('Error triggering select2 change events:', select2Error);
+                }
+            }, 200);
+
+        } catch (error) {
+            console.error('Error populating visitor form:', error);
+        }
+    };
+
+    // Helper function to check if all dropdowns are properly populated
+    var validateDropdownsPopulated = function() {
+        const requiredDropdowns = ['division_id', 'department_id', 'section_id', 'position_id'];
+        const missingOptions = [];
+        
+        requiredDropdowns.forEach(fieldName => {
+            const field = form.querySelector(`select[name="${fieldName}"]`);
+            if (field) {
+                const selectedValue = field.value;
+                const hasOptions = field.options.length > 1; // More than just the default option
+                
+                if (selectedValue && !hasOptions) {
+                    missingOptions.push(fieldName);
+                }
+            }
+        });
+        
+        if (missingOptions.length > 0) {
+            console.warn('Some dropdowns are missing options:', missingOptions);
+            return false;
+        }
+        
+        return true;
+    };
+
     // Public methods
     return {
         init: function() {
@@ -784,6 +1090,19 @@ var EditVisitorModal = function() {
             initForm();
             initSelect2();
             initImageInputs();
+            initCascadingDropdowns();
+        },
+        populateForm: populateForm,
+        validateDropdowns: validateDropdownsPopulated,
+        show: function() {
+            if (modal) {
+                modal.show();
+            }
+        },
+        hide: function() {
+            if (modal) {
+                modal.hide();
+            }
         }
     };
 }();

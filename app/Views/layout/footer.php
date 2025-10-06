@@ -71,6 +71,24 @@ var hostUrl = "/assets/";
 <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>
 <!--end::Vendors Javascript-->
 
+<!--begin::AOS Initialization-->
+<script>
+// Initialize AOS (Animate On Scroll) globally
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 600,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false,
+            offset: 50,
+            delay: 0
+        });
+    }
+});
+</script>
+<!--end::AOS Initialization-->
+
 <!--end::Javascript-->
 </body>
 <!--end::Body-->

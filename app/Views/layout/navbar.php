@@ -15,7 +15,18 @@
         <div class="cursor-pointer symbol symbol-30px symbol-md-35px"
             data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
             data-kt-menu-placement="bottom-end">
-            <img class="symbol symbol-30px symbol-md-35px" src="/assets/media/avatars/300-3.jpg" alt="user" />
+            <!-- <img class="symbol symbol-30px symbol-md-35px" src="/assets/media/avatars/300-3.jpg" alt="user" /> -->
+             <?php if (!empty(user()->image)): ?>
+                <?php
+                // Display the user's avatar image, name, and islander number
+                echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
+                ?>
+            <?php else: ?>
+                <?php
+                // Display the user's initials, name, and islander number
+                echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=d9dbe1&color=f4f4f4&font-size=.5">';
+                ?>
+            <?php endif; ?>
         </div>
 
         <!--begin::User account menu-->
@@ -26,18 +37,29 @@
                 <div class="menu-content d-flex align-items-center px-3">
                     <!--begin::Avatar-->
                     <div class="symbol symbol-50px me-5">
-                        <img alt="Logo" src="/assets/media/avatars/300-3.jpg" />
+                        <!-- <img alt="Logo" src="/assets/media/avatars/300-3.jpg" /> -->
+                        <?php if (!empty(user()->image)): ?>
+                            <?php
+                            // Display the user's avatar image, name, and islander number
+                            echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
+                            ?>
+                        <?php else: ?>
+                            <?php
+                            // Display the user's initials, name, and islander number
+                            echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=f4f4f4&color=9ba1b6&font-size=.5">';
+                            ?>
+                        <?php endif; ?>
                     </div>
                     <!--end::Avatar-->
 
                     <!--begin::Username-->
                     <div class="d-flex flex-column">
                         <div class="fw-bold d-flex align-items-center fs-5">
-                            Max Smith <span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">Pro</span>
+                            <?= user()->full_name ?>
                         </div>
 
                         <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">
-                            max@kt.com </a>
+                            <?= user()->email ?> </a>
                     </div>
                     <!--end::Username-->
                 </div>

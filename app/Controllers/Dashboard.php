@@ -73,6 +73,9 @@ class Dashboard extends BaseController
         $result = $userModel->update($user->id, ['has_accepted_agreement' => 0]);
         
         if ($result) {
+            // Log agreement acceptance
+            $this->logAgreementAcceptance($user);
+            
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'Agreement accepted successfully!'
@@ -146,6 +149,9 @@ class Dashboard extends BaseController
             $result = $userModel->save($user);
 
             if ($result) {
+                // Log password change
+                $this->logPasswordChange($user);
+                
                 // Log success for debugging
                 log_message('info', 'Password changed successfully for user ID: ' . $user->id);
                 session()->setFlashdata('message', 'Password changed successfully! You can now continue using the system.');
@@ -180,6 +186,104 @@ class Dashboard extends BaseController
         } else {
             session()->setFlashdata('error', 'Failed to reset password flag.');
             return redirect()->to('/dashboard');
+        }
+    }
+
+    /**
+     * Log password change activity
+     */
+    protected function logPasswordChange($user)
+    {
+        try {
+            // Get browser and device information
+            $agent = $this->request->getUserAgent();
+            $browser = $agent->getBrowser();
+            $version = $agent->getVersion();
+            $platform = $agent->getPlatform();
+            $ipAddress = $this->request->getIPAddress();
+
+            // Create detailed log message
+            $logMessage = sprintf(
+                "%s - %s has changed their password!\nIP Address: %s\nBrowser: %s\nVersion: %s\nPlatform: %s\nUser Agent: %s",
+                $user->islander_no ?? $user->username,
+                $user->full_name ?? $user->username,
+                $ipAddress,
+                $browser,
+                $version,
+                $platform,
+                (string) $agent
+            );
+
+            // Load the LogModel
+            $logModel = new \App\Models\LogModel();
+
+            // Insert the log entry
+            $result = $logModel->insert([
+                'status_id' => 11, // Password Changed status
+                'module_id' => 1,  // System module
+                'action' => $logMessage,
+                'user_id' => $user->id,
+                'logged_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if ($result) {
+                log_message('info', 'Password change logged successfully for user: ' . ($user->islander_no ?? $user->username));
+            } else {
+                $errors = $logModel->errors();
+                log_message('error', 'Failed to log password change. Validation errors: ' . json_encode($errors));
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Exception in password change logging: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Log agreement acceptance activity
+     */
+    protected function logAgreementAcceptance($user)
+    {
+        try {
+            // Get browser and device information
+            $agent = $this->request->getUserAgent();
+            $browser = $agent->getBrowser();
+            $version = $agent->getVersion();
+            $platform = $agent->getPlatform();
+            $ipAddress = $this->request->getIPAddress();
+
+            // Create detailed log message
+            $logMessage = sprintf(
+                "%s - %s has accepted the user agreement!\nIP Address: %s\nBrowser: %s\nVersion: %s\nPlatform: %s\nUser Agent: %s",
+                $user->islander_no ?? $user->username,
+                $user->full_name ?? $user->username,
+                $ipAddress,
+                $browser,
+                $version,
+                $platform,
+                (string) $agent
+            );
+
+            // Load the LogModel
+            $logModel = new \App\Models\LogModel();
+
+            // Insert the log entry
+            $result = $logModel->insert([
+                'status_id' => 12, // Agreement Accepted status
+                'module_id' => 1,  // System module
+                'action' => $logMessage,
+                'user_id' => $user->id,
+                'logged_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if ($result) {
+                log_message('info', 'Agreement acceptance logged successfully for user: ' . ($user->islander_no ?? $user->username));
+            } else {
+                $errors = $logModel->errors();
+                log_message('error', 'Failed to log agreement acceptance. Validation errors: ' . json_encode($errors));
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Exception in agreement acceptance logging: ' . $e->getMessage());
         }
     }
 }

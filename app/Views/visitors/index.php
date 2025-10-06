@@ -293,7 +293,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <div class="row mb-4">
                             <div class="col-3 mt-2 text-start">
                                 <?php if (!empty($visitor['image'])): ?>
-                                    <img src="<?= base_url() ?>/assets/media/visitors/<?= esc($visitor['image']) ?>" class="ms-2 rounded" width="80" height="80"
+                                    <img src="<?= base_url() ?>/assets/media/users/<?= esc($visitor['image']) ?>" class="ms-2 rounded" width="80" height="80"
                                         style="max-width: 80px; max-height: 80px; object-fit: cover;">
                                 <?php else: ?>
                                     <img src="https://ui-avatars.com/api/?name=<?= urlencode($visitor['full_name']) ?>&background=f4f4f4&color=9ba1b6&font-size=.5"
@@ -355,17 +355,18 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     </button>
                                 </div>
                                 <?php endif; ?>
-                                <?php if (isset($permissions) && $permissions['canEdit']): ?>
+                                <?php if (isset($permissions) && $permissions['canEdit'] && has_permission('visitors.enrol')): ?>
                                 <div class="col-3">
                                     <button type="button"
-                                        class="btn btn-light-info btn-sm w-100 d-flex align-items-center justify-content-center reset-password-btn"
+                                        class="btn btn-light-success btn-sm w-100 d-flex align-items-center justify-content-center enrol-islander-btn"
                                         data-visitor-id="<?= esc($visitor['id']) ?>"
-                                        title="Reset Password to 1234">
-                                        <i class="ki-duotone ki-key fs-1 me-1">
+                                        title="Enrol as Islander">
+                                        <i class="ki-duotone ki-user-tick fs-1 me-1">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
+                                            <span class="path3"></span>
                                         </i>
-                                        <span class="d-none d-sm-inline">Reset</span>
+                                        <span class="d-none d-sm-inline">Enrol</span>
                                     </button>
                                 </div>
                                 <?php endif; ?>
@@ -612,7 +613,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             <div class="d-flex align-items-center">
                                                 <?php 
                                                 $imageUrl = !empty($visitor['image']) ? 
-                                                    base_url() . '/assets/media/visitors/' . $visitor['image'] : 
+                                                    base_url() . '/assets/media/users/' . $visitor['image'] : 
                                                     'https://ui-avatars.com/api/?name=' . urlencode($visitor['full_name']) . '&background=f4f4f4&color=9ba1b6&font-size=0.5';
                                                 ?>
                                                 <img src="<?= esc($imageUrl) ?>" class="me-2 rounded align-self-start"
@@ -700,11 +701,11 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
-                                                <?php if ($permissions['canEdit']): ?>
+                                                <?php if ($permissions['canEdit'] && has_permission('visitors.enrol')): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 reset-password-btn"
+                                                    <a class="menu-link px-3 enrol-islander-btn"
                                                         data-visitor-id="<?= esc($visitor['id']) ?>"
-                                                        title="Reset Password to 1234">Reset Pass</a>
+                                                        title="Enrol as Islander">Enrol Islander</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -901,6 +902,11 @@ var VisitorsIndex = function() {
                     appendVisitors(response.visitors);
                     currentPage = response.currentPage;
                     totalPages = response.totalPages;
+                    
+                    // Refresh AOS animations for new content
+                    if (typeof AOS !== 'undefined') {
+                        AOS.refresh();
+                    }
                 }
             },
             error: function(xhr, status, error) {
@@ -966,10 +972,10 @@ var VisitorsIndex = function() {
             deleteVisitor(visitorId);
         });
 
-        // Reset visitor password
-        $(document).on('click', '.reset-password-btn', function() {
+        // Enrol visitor as islander
+        $(document).on('click', '.enrol-islander-btn', function() {
             const visitorId = $(this).data('visitor-id');
-            resetVisitorPassword(visitorId);
+            enrolAsIslander(visitorId);
         });
     };
 
@@ -1071,57 +1077,113 @@ var VisitorsIndex = function() {
         });
     };
 
-    // Reset visitor password to 1234
-    var resetVisitorPassword = function(visitorId) {
+    // Enrol visitor as islander
+    var enrolAsIslander = function(visitorId) {
         if (typeof Swal === 'undefined' || typeof $ === 'undefined') {
-            console.log('SweetAlert or jQuery not available, cannot reset password');
+            console.log('SweetAlert or jQuery not available, cannot enrol as islander');
             return;
         }
 
+        // First, prompt for islander number
         Swal.fire({
-            title: 'Reset Password?',
-            text: "This will reset the visitor's password to '1234'",
-            icon: 'question',
+            title: 'Enrol as Islander',
+            text: 'Enter the Islander Number:',
+            input: 'text',
+            inputAttributes: {
+                autocapitalize: 'off',
+                placeholder: 'e.g., ISL001'
+            },
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, reset it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `<?= base_url('visitors') ?>/${visitorId}/reset-password`,
+            confirmButtonText: 'Verify & Enrol',
+            showLoaderOnConfirm: true,
+            preConfirm: (islanderNo) => {
+                if (!islanderNo) {
+                    Swal.showValidationMessage('Islander number is required');
+                    return false;
+                }
+                
+                // Verify islander number doesn't already exist
+                return $.ajax({
+                    url: '<?= base_url('api/check-islander-number') ?>',
                     type: 'POST',
+                    data: { islander_no: islanderNo },
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/json'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            if (typeof toastr !== 'undefined') {
-                                toastr.success(response.message || 'Password reset successfully to 1234');
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }).then(response => {
+                    if (!response.success) {
+                        throw new Error(response.message || 'Failed to verify islander number');
+                    }
+                    if (!response.available) {
+                        throw new Error('This islander number is already in use');
+                    }
+                    return islanderNo;
+                }).catch(error => {
+                    Swal.showValidationMessage(`Verification failed: ${error.message}`);
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const islanderNo = result.value;
+                
+                // Show confirmation dialog
+                Swal.fire({
+                    title: 'Confirm Enrolment',
+                    html: `Convert this visitor to an islander with number <strong>${islanderNo}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, enrol as Islander!',
+                    cancelButtonText: 'Cancel'
+                }).then((confirmResult) => {
+                    if (confirmResult.isConfirmed) {
+                        // Perform the enrolment
+                        $.ajax({
+                            url: `<?= base_url('visitors') ?>/${visitorId}/enrol-as-islander`,
+                            type: 'POST',
+                            data: { islander_no: islanderNo },
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: 'Enrolment Successful!',
+                                        html: `Visitor has been successfully enrolled as Islander <strong>${islanderNo}</strong>`,
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Enrolment Failed',
+                                        text: response.message || 'Failed to enrol as islander',
+                                        icon: 'error'
+                                    });
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error enrolling as islander:', error);
+                                Swal.fire({
+                                    title: 'Enrolment Failed',
+                                    text: 'An error occurred while enrolling as islander',
+                                    icon: 'error'
+                                });
                             }
-                            Swal.fire({
-                                title: 'Password Reset!',
-                                text: 'The password has been reset to "1234"',
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            });
-                        } else {
-                            if (typeof toastr !== 'undefined') {
-                                toastr.error(response.message || 'Failed to reset password');
-                            }
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error resetting password:', error);
-                        if (typeof toastr !== 'undefined') {
-                            toastr.error('Failed to reset password');
-                        }
+                        });
                     }
                 });
             }
         });
     };
+
+    // Make enrolAsIslander available globally
+    window.enrolAsIslander = enrolAsIslander;
 
     // Change table limit (records per page)
     window.changeTableLimit = function(newLimit) {

@@ -319,6 +319,25 @@
                         </div>
                         <!--end::Input group-->
 
+                        <!--begin::Input group-->
+                        <div class="row mb-7">
+                            <!--begin::Col-->
+                            <div class="col-md-12">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Company</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="company" class="form-control form-control-solid"
+                                    placeholder="Enter company name" value="" required />
+                                <div class="fv-plugins-message-container invalid-feedback">
+                                    <div class="fv-help-block" data-field="company"></div>
+                                </div>
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Col-->
+                        </div>
+                        <!--end::Input group-->
+
                         <!-- Hidden fields for default values -->
                         <input type="hidden" name="role_id" value="8" />
                         <input type="hidden" name="password" value="123" />
@@ -465,6 +484,13 @@ var CreateVisitorModal = function() {
                                 message: 'Position is required'
                             }
                         }
+                    },
+                    'company': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Company name is required'
+                            }
+                        }
                     }
                 },
                 plugins: {
@@ -510,6 +536,7 @@ var CreateVisitorModal = function() {
                 const departmentId = form.querySelector('select[name="department_id"]');
                 const sectionId = form.querySelector('select[name="section_id"]');
                 const positionId = form.querySelector('select[name="position_id"]');
+                const company = form.querySelector('input[name="company"]');
 
                 let hasErrors = false;
 
@@ -559,6 +586,10 @@ var CreateVisitorModal = function() {
                 }
                 if (!positionId || !positionId.value) {
                     showFieldError('position_id', 'Position is required');
+                    hasErrors = true;
+                }
+                if (!company || !company.value.trim()) {
+                    showFieldError('company', 'Company name is required');
                     hasErrors = true;
                 }
 
@@ -643,7 +674,7 @@ var CreateVisitorModal = function() {
                     cancelButton: "btn btn-active-light"
                 }
             }).then(function(result) {
-                if (result.value) {
+                if (result.isConfirmed) {
                     form.reset();
                     modal.hide();
                 }

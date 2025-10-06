@@ -80,7 +80,7 @@ class VisitorsController extends BaseController
     {
         $sanitized = [
             'status_id' => isset($data['status_id']) ? (int)$data['status_id'] : 1,
-            'islander_no' => isset($data['visitor_no']) ? trim(strip_tags($data['visitor_no'])) : (isset($data['islander_no']) ? trim(strip_tags($data['islander_no'])) : ''),
+            'islander_no' => isset($data['id_pp_wp_no']) ? trim(strip_tags($data['id_pp_wp_no'])) : (isset($data['visitor_no']) ? trim(strip_tags($data['visitor_no'])) : (isset($data['islander_no']) ? trim(strip_tags($data['islander_no'])) : '')),
             'full_name' => isset($data['full_name']) ? trim(strip_tags($data['full_name'])) : '',
             'id_pp_wp_no' => isset($data['id_pp_wp_no']) ? trim(strip_tags($data['id_pp_wp_no'])) : '',
             'division_id' => isset($data['division_id']) ? (int)$data['division_id'] : null,
@@ -100,7 +100,7 @@ class VisitorsController extends BaseController
             'email' => isset($data['email']) ? trim(strip_tags($data['email'])) : '',
             'address' => isset($data['address']) ? trim(strip_tags($data['address'])) : '',
             'notes' => isset($data['notes']) ? trim(strip_tags($data['notes'])) : '',
-            'username' => isset($data['visitor_no']) && !empty(trim($data['visitor_no'])) ? trim(strip_tags($data['visitor_no'])) : (isset($data['islander_no']) && !empty(trim($data['islander_no'])) ? trim(strip_tags($data['islander_no'])) : null),
+            'username' => isset($data['id_pp_wp_no']) && !empty(trim($data['id_pp_wp_no'])) ? trim(strip_tags($data['id_pp_wp_no'])) : (isset($data['visitor_no']) && !empty(trim($data['visitor_no'])) ? trim(strip_tags($data['visitor_no'])) : (isset($data['islander_no']) && !empty(trim($data['islander_no'])) ? trim(strip_tags($data['islander_no'])) : null)),
         ];
 
         // Get current user ID for tracking
@@ -874,7 +874,7 @@ class VisitorsController extends BaseController
 
         // Determine upload directory based on field type
         if ($fieldName === 'profile' || $fieldName === 'image') {
-            $uploadDir = 'assets/media/visitors/';
+            $uploadDir = 'assets/media/users/';
         } elseif ($fieldName === 'cover' || $fieldName === 'cover_image') {
             $uploadDir = 'assets/media/visitors_cover/';
         } else {
@@ -911,7 +911,7 @@ class VisitorsController extends BaseController
         // If imagePath is just a filename, construct the full path
         if (strpos($imagePath, '/') === false) {
             if (strpos($imagePath, 'profile_') === 0) {
-                $fullPath = FCPATH . 'assets/media/visitors/' . $imagePath;
+                $fullPath = FCPATH . 'assets/media/users/' . $imagePath;
             } elseif (strpos($imagePath, 'cover_') === 0) {
                 $fullPath = FCPATH . 'assets/media/visitors_cover/' . $imagePath;
             } else {
@@ -1024,5 +1024,131 @@ class VisitorsController extends BaseController
                                    ->findAll();
 
         return $this->response->setJSON($positions);
+    }
+
+    /**
+     * Check if islander number is available
+     */
+    public function checkIslanderNumber()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        $islanderNo = $this->request->getPost('islander_no');
+        
+        if (empty($islanderNo)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Islander number is required'
+            ]);
+        }
+
+        // Check if islander number already exists in users table
+        $existingUser = $this->visitorModel
+            ->where('islander_no', $islanderNo)
+            ->where('deleted_at IS NULL')
+            ->first();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'available' => !$existingUser,
+            'message' => $existingUser ? 'Islander number already exists' : 'Islander number is available'
+        ]);
+    }
+
+    /**
+     * Enrol visitor as islander
+     */
+    public function enrolAsIslander($id = null)
+    {
+        // Check if user has permission to edit visitors
+        if (!has_permission('visitors.edit') && !has_permission('users.edit')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to enrol visitors.'
+            ]);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        if ($id === null) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Visitor ID is required.'
+            ]);
+        }
+
+        $islanderNo = $this->request->getPost('islander_no');
+        
+        if (empty($islanderNo)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Islander number is required'
+            ]);
+        }
+
+        // Get the visitor
+        $visitor = $this->visitorModel->find($id);
+        if (!$visitor) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Visitor not found.'
+            ]);
+        }
+
+        // Check if visitor is already an islander
+        if ($visitor['type'] == 1) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'This person is already an islander.'
+            ]);
+        }
+
+        // Double-check islander number availability
+        $existingUser = $this->visitorModel
+            ->where('islander_no', $islanderNo)
+            ->where('deleted_at IS NULL')
+            ->first();
+
+        if ($existingUser) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Islander number already exists.'
+            ]);
+        }
+
+        // Prepare update data
+        $updateData = [
+            'islander_no' => $islanderNo,
+            'username' => $islanderNo,
+            'type' => 1, // Islander type
+            'type_description' => 'Islander',
+            'password_changed' => 1,
+            'has_accepted_agreement' => 1,
+            'updated_at' => date('Y-m-d H:i:s'),
+            'updated_by' => user_id()
+        ];
+
+        // Update the visitor record
+        if ($this->visitorModel->update($id, $updateData)) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Visitor successfully enrolled as Islander {$islanderNo}"
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Failed to enrol visitor as islander'
+            ]);
+        }
     }
 }

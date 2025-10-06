@@ -24,9 +24,11 @@ $routes->get('check-permissions/visitors', 'CheckPermissions::visitors');
 
 // API routes for cascading dropdowns (authenticated AJAX calls)
 $routes->group('api', function($routes) {
+    $routes->get('test', 'Api::test');
     $routes->get('departments-by-division', 'Api::departmentsByDivision');
     $routes->get('sections-by-department', 'Api::sectionsByDepartment');
     $routes->get('positions-by-status', 'Api::positionsByStatus');
+    $routes->post('check-islander-number', 'VisitorsController::checkIslanderNumber');
 });
 
 // Password change routes
@@ -232,7 +234,7 @@ $routes->group('visitors', ['filter' => 'login'], function($routes) {
     $routes->delete('(:num)', 'VisitorsController::delete/$1');
     $routes->post('(:num)/delete', 'VisitorsController::delete/$1');
     $routes->post('delete/(:num)', 'VisitorsController::delete/$1');
-    $routes->post('(:num)/reset-password', 'VisitorsController::resetPassword/$1');
+    $routes->post('(:num)/enrol-as-islander', 'VisitorsController::enrolAsIslander/$1');
     $routes->get('api', 'VisitorsController::api');
     $routes->get('genders', 'VisitorsController::getGenders');
     $routes->get('nationalities', 'VisitorsController::getNationalities');

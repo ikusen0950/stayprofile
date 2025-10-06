@@ -88,6 +88,9 @@ class AuthController extends Controller
             return redirect()->back()->withInput()->with('error', $this->auth->error() ?? lang('Auth.badAttempt'));
         }
 
+        // Log successful login
+        $this->logUserLogin();
+
         // Is the user being forced to reset their password?
         if ($this->auth->user()->force_pass_reset === true) {
             return redirect()->to(route_to('reset-password') . '?token=' . $this->auth->user()->reset_hash)->withCookies();
@@ -410,5 +413,67 @@ class AuthController extends Controller
     protected function _render(string $view, array $data = [])
     {
         return view($view, $data);
+    }
+
+    /**
+     * Log user login activity
+     */
+    protected function logUserLogin()
+    {
+        try {
+            // Get user information
+            $user = $this->auth->user();
+            if (!$user) {
+                log_message('error', 'Login logging failed: No user found after successful authentication');
+                return;
+            }
+
+            // Get browser and device information
+            $agent = $this->request->getUserAgent();
+            $browser = $agent->getBrowser();
+            $version = $agent->getVersion();
+            $platform = $agent->getPlatform();
+            $ipAddress = $this->request->getIPAddress();
+
+            // Create detailed log message
+            $logMessage = sprintf(
+                "%s - %s has successfully logged in!\nIP Address: %s\nBrowser: %s\nVersion: %s\nPlatform: %s\nUser Agent: %s",
+                $user->islander_no ?? $user->username,
+                $user->full_name ?? $user->username,
+                $ipAddress,
+                $browser,
+                $version,
+                $platform,
+                (string) $agent
+            );
+
+            // Load the LogModel
+            $logModel = new \App\Models\LogModel();
+
+            // Prepare log data
+            $logData = [
+                'status_id' => 10, // Logged In status
+                'module_id' => 1,  // System module
+                'action' => $logMessage,
+                'user_id' => $user->id,
+                'logged_at' => date('Y-m-d H:i:s')
+            ];
+
+            // Insert the log entry
+            $result = $logModel->insert($logData);
+            
+            if ($result) {
+                log_message('info', 'Login logged successfully for user: ' . ($user->islander_no ?? $user->username));
+            } else {
+                $errors = $logModel->errors();
+                log_message('error', 'Failed to log user login. Validation errors: ' . json_encode($errors));
+                log_message('error', 'Login log data attempted: ' . json_encode($logData));
+            }
+
+        } catch (\Exception $e) {
+            // Log the error but don't interrupt the login process
+            log_message('error', 'Exception in login logging: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+        }
     }
 }

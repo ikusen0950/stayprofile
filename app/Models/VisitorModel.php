@@ -66,14 +66,22 @@ class VisitorModel extends Model
     protected $deletedField  = 'deleted_at';
 
     protected $validationRules = [
+        'id_pp_wp_no' => [
+            'label'  => 'NID/PP/WP Number',
+            'rules'  => 'required|min_length[3]|max_length[100]|is_unique[users.id_pp_wp_no]',
+            'errors' => [
+                'required'    => 'NID/PP/WP number is required.',
+                'min_length'  => 'NID/PP/WP number must be at least 3 characters long.',
+                'max_length'  => 'NID/PP/WP number cannot exceed 100 characters.',
+                'is_unique'   => 'This NID/PP/WP number already exists.'
+            ]
+        ],
         'islander_no' => [
             'label'  => 'Visitor Number',
-            'rules'  => 'required|min_length[3]|max_length[50]|is_unique[users.islander_no]',
+            'rules'  => 'permit_empty|min_length[3]|max_length[50]',
             'errors' => [
-                'required'    => 'Visitor number is required.',
                 'min_length'  => 'Visitor number must be at least 3 characters long.',
-                'max_length'  => 'Visitor number cannot exceed 50 characters.',
-                'is_unique'   => 'This visitor number already exists.'
+                'max_length'  => 'Visitor number cannot exceed 50 characters.'
             ]
         ],
         'full_name' => [
@@ -87,8 +95,9 @@ class VisitorModel extends Model
         ],
         'email' => [
             'label'  => 'Email',
-            'rules'  => 'permit_empty|valid_email|max_length[255]|is_unique[users.email]',
+            'rules'  => 'required|valid_email|max_length[255]|is_unique[users.email]',
             'errors' => [
+                'required'    => 'Email is required.',
                 'valid_email' => 'Please enter a valid email address.',
                 'max_length'  => 'Email cannot exceed 255 characters.',
                 'is_unique'   => 'This email address is already registered.'
@@ -96,22 +105,18 @@ class VisitorModel extends Model
         ],
         'phone' => [
             'label'  => 'Phone',
-            'rules'  => 'permit_empty|max_length[20]',
+            'rules'  => 'required|max_length[20]',
             'errors' => [
+                'required'   => 'Phone number is required.',
                 'max_length' => 'Phone number cannot exceed 20 characters.'
-            ]
-        ],
-        'id_pp_wp_no' => [
-            'label'  => 'ID/PP/WP Number',
-            'rules'  => 'permit_empty|max_length[100]',
-            'errors' => [
-                'max_length' => 'ID/PP/WP number cannot exceed 100 characters.'
             ]
         ],
         'company' => [
             'label'  => 'Company',
-            'rules'  => 'permit_empty|max_length[255]',
+            'rules'  => 'required|min_length[2]|max_length[255]',
             'errors' => [
+                'required'   => 'Company name is required.',
+                'min_length' => 'Company name must be at least 2 characters long.',
                 'max_length' => 'Company name cannot exceed 255 characters.'
             ]
         ],
@@ -124,29 +129,33 @@ class VisitorModel extends Model
         ],
         'division_id' => [
             'label'  => 'Division',
-            'rules'  => 'permit_empty|numeric',
+            'rules'  => 'required|numeric',
             'errors' => [
+                'required' => 'Division is required.',
                 'numeric'  => 'Division must be a valid number.'
             ]
         ],
         'department_id' => [
             'label'  => 'Department',
-            'rules'  => 'permit_empty|numeric',
+            'rules'  => 'required|numeric',
             'errors' => [
+                'required' => 'Department is required.',
                 'numeric'  => 'Department must be a valid number.'
             ]
         ],
         'section_id' => [
             'label'  => 'Section',
-            'rules'  => 'permit_empty|numeric',
+            'rules'  => 'required|numeric',
             'errors' => [
+                'required' => 'Section is required.',
                 'numeric'  => 'Section must be a valid number.'
             ]
         ],
         'position_id' => [
             'label'  => 'Position',
-            'rules'  => 'permit_empty|numeric',
+            'rules'  => 'required|numeric',
             'errors' => [
+                'required' => 'Position is required.',
                 'numeric'  => 'Position must be a valid number.'
             ]
         ],
@@ -159,8 +168,9 @@ class VisitorModel extends Model
         ],
         'gender_id' => [
             'label'  => 'Gender',
-            'rules'  => 'permit_empty|numeric',
+            'rules'  => 'required|numeric',
             'errors' => [
+                'required' => 'Gender is required.',
                 'numeric'  => 'Gender must be a valid number.'
             ]
         ],
@@ -178,19 +188,19 @@ class VisitorModel extends Model
     protected $skipValidation     = false;
 
     /**
-     * Custom validation for visitor updates (email and visitor number uniqueness)
+     * Custom validation for visitor updates (email and id_pp_wp_no uniqueness)
      */
     public function validateForUpdate(array $data, int $id): bool|array
     {
         $rules = $this->validationRules;
         
         // Modify unique rules to exclude current record
-        if (isset($data['islander_no'])) {
-            $rules['islander_no']['rules'] = 'required|min_length[3]|max_length[50]|is_unique[users.islander_no,id,' . $id . ']';
+        if (isset($data['id_pp_wp_no'])) {
+            $rules['id_pp_wp_no']['rules'] = 'required|min_length[3]|max_length[100]|is_unique[users.id_pp_wp_no,id,' . $id . ']';
         }
         
         if (isset($data['email']) && !empty($data['email'])) {
-            $rules['email']['rules'] = 'permit_empty|valid_email|max_length[255]|is_unique[users.email,id,' . $id . ']';
+            $rules['email']['rules'] = 'required|valid_email|max_length[255]|is_unique[users.email,id,' . $id . ']';
         }
 
         $validation = \Config\Services::validation();
