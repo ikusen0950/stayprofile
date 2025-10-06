@@ -686,6 +686,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         </table>
                     </div>
                     <!--end::Table-->
+                    
+                    <?php
+                    // Include table footer with pagination
+                    $footerData = [
+                        'baseUrl' => 'houses',
+                        'currentPage' => $currentPage,
+                        'totalPages' => $totalPages,
+                        'limit' => $limit,
+                        'totalRecords' => $totalHouses,
+                        'search' => $search,
+                        'tableId' => 'kt_house_table_length',
+                        'jsFunction' => 'changeHouseTableLimit'
+                    ];
+                    echo view('partials/table_footer', $footerData);
+                    ?>
                 </div>
                 <!--end::Card body-->
             </div>
@@ -1355,6 +1370,14 @@ function populateEditModal(house) {
     if (statusSelect && house.status_id) {
         statusSelect.value = house.status_id;
     }
+}
+
+// Change table limit (records per page)
+function changeHouseTableLimit(newLimit) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('limit', newLimit);
+    currentUrl.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = currentUrl.toString();
 }
 </script>
 

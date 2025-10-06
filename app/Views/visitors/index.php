@@ -80,21 +80,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 }
 
 /* Enhanced mobile card hover effects */
-.mobile-islander-card {
+.mobile-visitor-card {
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.mobile-islander-card:hover {
+.mobile-visitor-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-islander-card:active {
+.mobile-visitor-card:active {
     transform: translateY(0);
 }
 
-.mobile-islander-card.expanded {
+.mobile-visitor-card.expanded {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     border-color: #007bff;
 }
@@ -186,23 +186,22 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
     <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
         <div class="container-fluid">
             <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Islanders</h1>
+                <h1 class="text-dark fw-bold ms-2">Visitors</h1>
             </div>
             <div class="row align-items-stretch">
                 <div class="col-10">
                     <div class="position-relative h-100">
-                        <i
-                            class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
+                        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
                             <span class="path1"></span>
                             <span class="path2"></span>
                         </i>
                         <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search islanders..." value="<?= esc($search) ?>" />
+                            placeholder="Search visitors..." value="<?= esc($search) ?>" />
                     </div>
                 </div>
                 <div class="col-2">
                     <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createIslanderModal"
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#createVisitorModal"
                         class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
                         style="min-height: 48px;">
                         <i class="ki-duotone ki-plus-square fs-3x">
@@ -213,7 +212,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                     </button>
                     <?php else: ?>
                     <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create islanders">
+                        style="min-height: 48px;" title="No permission to create visitors">
                         <i class="ki-duotone ki-lock fs-3x">
                             <span class="path1"></span>
                             <span class="path2"></span>
@@ -257,33 +256,33 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
         <!-- Scrollable Card List -->
         <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($islanders)): ?>
-            <?php foreach ($islanders as $index => $islander): ?>
+            <?php if (!empty($visitors)): ?>
+            <?php foreach ($visitors as $index => $visitor): ?>
             <?php try { ?>
             <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-islander-card" data-islander-id="<?= esc($islander['id']) ?>"
+                <div class="card mobile-visitor-card" data-visitor-id="<?= esc($visitor['id']) ?>"
                     onclick="toggleMobileActions(this)">
                     <div class="card-body p-4">
                         <!-- Header with ID and Status -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
                                 <small style="color: #a0a0a0; font-size: 12px; font-weight: 500;">
-                                    <?= esc($islander['islander_no']) ?>
+                                    <?= esc($visitor['islander_no']) ?>
                                 </small>
                             </div>
                             <div>
-                                <?php if (!empty($islander['status_name'])): ?>
-                                <?php if (!empty($islander['status_color'])): ?>
+                                <?php if (!empty($visitor['status_name'])): ?>
+                                <?php if (!empty($visitor['status_color'])): ?>
                                 <?php 
-                                        $hex = ltrim($islander['status_color'], '#');
+                                        $hex = ltrim($visitor['status_color'], '#');
                                         $r = hexdec(substr($hex, 0, 2));
                                         $g = hexdec(substr($hex, 2, 2));
                                         $b = hexdec(substr($hex, 4, 2));
                                         $lightBg = "rgba($r, $g, $b, 0.15)";
                                         ?>
                                 <span
-                                    style="background: <?= $lightBg ?>; color: <?= esc($islander['status_color']) ?>; font-weight: 600; padding: 4px 12px; border-radius: 5px; font-size: 11px;">
-                                    <?= strtoupper(esc($islander['status_name'])) ?>
+                                    style="background: <?= $lightBg ?>; color: <?= esc($visitor['status_color']) ?>; font-weight: 600; padding: 4px 12px; border-radius: 5px; font-size: 11px;">
+                                    <?= strtoupper(esc($visitor['status_name'])) ?>
                                 </span>
                                 <?php endif; ?>
                                 <?php endif; ?>
@@ -293,36 +292,35 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <!-- Name Section -->
                         <div class="row mb-4">
                             <div class="col-3 mt-2 text-start">
-                                <?php if (!empty($islander['image'])): ?>
-                                    <img src="<?= base_url() ?>/assets/media/users/<?= esc($islander['image']) ?>" class="ms-2 rounded" width="80" height="80"
+                                <?php if (!empty($visitor['image'])): ?>
+                                    <img src="<?= base_url() ?>/assets/media/visitors/<?= esc($visitor['image']) ?>" class="ms-2 rounded" width="80" height="80"
                                         style="max-width: 80px; max-height: 80px; object-fit: cover;">
                                 <?php else: ?>
-                                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($islander['full_name']) ?>&background=f4f4f4&color=9ba1b6&font-size=.5"
+                                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($visitor['full_name']) ?>&background=f4f4f4&color=9ba1b6&font-size=.5"
                                         class="ms-2 rounded" width="80" height="80"
                                         style="max-width: 80px; max-height: 80px; object-fit: cover;">
                                 <?php endif; ?>
                             </div>
                             <div class="col-9 mt-2 text-start">
                                 <strong class="text-black text-uppercase text-truncate">
-                                    <?= esc($islander['full_name']) ?>
+                                    <?= esc($visitor['full_name']) ?>
                                 </strong>
-                                <br><small class=""><i class="ki-duotone ki-badge"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>&nbsp;<?= esc($islander['islander_no']) ?></small>
-                                <br><small class=""><i class="ki-duotone ki-setting-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>&nbsp;<?= esc($islander['department_name'] ?? 'N/A') ?></small>
-                                <br><small class=""><i class="ki-duotone ki-more-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>&nbsp;<?= esc($islander['position_name'] ?? 'N/A') ?></small>
-                                <br><small class=""><i class="ki-duotone ki-shield"><span class="path1"></span><span class="path2"></span></i>&nbsp;Islander / Islander</small>
+                                <br><small class=""><i class="ki-duotone ki-badge"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>&nbsp;<?= esc($visitor['islander_no']) ?></small>
+                                <br><small class=""><i class="ki-duotone ki-setting-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>&nbsp;<?= esc($visitor['department_name'] ?? 'N/A') ?></small>
+                                <br><small class=""><i class="ki-duotone ki-more-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>&nbsp;<?= esc($visitor['position_name'] ?? 'N/A') ?></small>
+                                <br><small class=""><i class="ki-duotone ki-shield"><span class="path1"></span><span class="path2"></span></i>&nbsp;Visitor / <?= esc($visitor['type_description']) ?></small>
                             </div>
                         </div>
-
 
                         <!-- Footer -->
                         <div class="d-flex justify-content-between align-items-center"
                             style="border-top: 1px solid #f0f0f0; padding-top: 15px;">
                             <small style="color: #999; font-size: 12px; font-weight: 500;">
-                                <?= !empty($islander['created_by_name']) ? esc($islander['created_by_name']) : 'System Administrator' ?>
+                                <?= !empty($visitor['created_by_name']) ? esc($visitor['created_by_name']) : 'System Administrator' ?>
                             </small>
                             <small style="color: #999; font-size: 12px; font-weight: 500;">
-                                <?php if (!empty($islander['created_at'])): ?>
-                                <?= date('M d, Y', strtotime($islander['created_at'])) ?>
+                                <?php if (!empty($visitor['created_at'])): ?>
+                                <?= date('M d, Y', strtotime($visitor['created_at'])) ?>
                                 <?php endif; ?>
                             </small>
                         </div>
@@ -333,8 +331,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <?php if (isset($permissions) && $permissions['canView']): ?>
                                 <div class="col-3">
                                     <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-islander-btn"
-                                        data-islander-id="<?= esc($islander['id']) ?>">
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-visitor-btn"
+                                        data-visitor-id="<?= esc($visitor['id']) ?>">
                                         <i class="ki-duotone ki-eye fs-1 me-1">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -347,8 +345,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <?php if (isset($permissions) && $permissions['canEdit']): ?>
                                 <div class="col-3">
                                     <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-islander-btn"
-                                        data-islander-id="<?= esc($islander['id']) ?>">
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-visitor-btn"
+                                        data-visitor-id="<?= esc($visitor['id']) ?>">
                                         <i class="ki-duotone ki-pencil fs-1 me-1">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -361,7 +359,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <div class="col-3">
                                     <button type="button"
                                         class="btn btn-light-info btn-sm w-100 d-flex align-items-center justify-content-center reset-password-btn"
-                                        data-islander-id="<?= esc($islander['id']) ?>"
+                                        data-visitor-id="<?= esc($visitor['id']) ?>"
                                         title="Reset Password to 1234">
                                         <i class="ki-duotone ki-key fs-1 me-1">
                                             <span class="path1"></span>
@@ -374,8 +372,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <?php if (isset($permissions) && $permissions['canDelete']): ?>
                                 <div class="col-3">
                                     <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-islander-btn"
-                                        data-islander-id="<?= esc($islander['id']) ?>">
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-visitor-btn"
+                                        data-visitor-id="<?= esc($visitor['id']) ?>">
                                         <i class="ki-duotone ki-trash fs-1 me-1">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -397,7 +395,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                 <div class="alert alert-danger">
                     <strong>Error rendering card <?= $index + 1 ?>:</strong><br>
                     <?= $e->getMessage() ?><br>
-                    Islander ID: <?= $islander['id'] ?? 'unknown' ?>
+                    Visitor ID: <?= $visitor['id'] ?? 'unknown' ?>
                 </div>
             </div>
             <?php } ?>
@@ -413,8 +411,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                     </i>
                     <?php if (!empty($search)): ?>
                         <h6 class="fw-bold text-gray-700 mb-2">No results found for "<?= esc($search) ?>"</h6>
-                        <p class="fs-7 text-gray-500 mb-4">Try adjusting your search terms or browse all islanders</p>
-                        <a href="<?= base_url('islanders') ?>" class="btn btn-primary btn-sm">
+                        <p class="fs-7 text-gray-500 mb-4">Try adjusting your search terms or browse all visitors</p>
+                        <a href="<?= base_url('visitors') ?>" class="btn btn-primary btn-sm">
                             <i class="ki-duotone ki-cross fs-6 me-1">
                                 <span class="path1"></span>
                                 <span class="path2"></span>
@@ -422,8 +420,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             Clear Search
                         </a>
                     <?php else: ?>
-                        <h6 class="fw-bold text-gray-700 mb-2">No islanders found</h6>
-                        <p class="fs-7 text-gray-500 mb-4">Start by creating your first islander entry</p>
+                        <h6 class="fw-bold text-gray-700 mb-2">No visitors found</h6>
+                        <p class="fs-7 text-gray-500 mb-4">Start by creating your first visitor entry</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -435,12 +433,12 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="mt-2 text-muted">Loading more islanders...</p>
+            <p class="mt-2 text-muted">Loading more visitors...</p>
         </div>
 
         <!-- No more data indicator -->
         <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more islanders to load</p>
+            <p class="text-muted">No more visitors to load</p>
         </div>
     </div>
 </div>
@@ -496,7 +494,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 </i>
                                 <input type="text" id="kt_filter_search"
                                     class="form-control form-control-solid w-250px ps-13"
-                                    placeholder="Search islanders..." value="<?= esc($search) ?>" />
+                                    placeholder="Search visitors..." value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
                         </div>
@@ -505,15 +503,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
                             <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-islander-table-toolbar="base">
-                                <!--begin::Add islander-->
+                            <div class="d-flex justify-content-end" data-kt-visitor-table-toolbar="base">
+                                <!--begin::Add visitor-->
                                 <?php if ($permissions['canCreate']): ?>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createIslanderModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Islander
+                                    data-bs-target="#createVisitorModal">
+                                    <i class="ki-duotone ki-plus fs-2"></i>Add Visitor
                                 </button>
                                 <?php endif; ?>
-                                <!--end::Add islander-->
+                                <!--end::Add visitor-->
                             </div>
                             <!--end::Toolbar-->
                         </div>
@@ -525,16 +523,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                     <div class="card-body py-4">
                         <!--begin::Table-->
                         <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_islander_table">
+                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_visitor_table">
                                 <!--begin::Table head-->
                                 <thead>
                                     <!--begin::Table row-->
                                     <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                                         <th class="w-10px pe-2">
-                                            <div
-                                                class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                                            <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                                 <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_islander_table .form-check-input"
+                                                    data-kt-check-target="#kt_visitor_table .form-check-input"
                                                     value="1" />
                                             </div>
                                         </th>
@@ -551,15 +548,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
                                 <!--begin::Table body-->
                                 <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($islanders)): ?>
-                                    <?php foreach ($islanders as $islander): ?>
+                                    <?php if (!empty($visitors)): ?>
+                                    <?php foreach ($visitors as $visitor): ?>
                                     <!--begin::Table row-->
                                     <tr>
                                         <!--begin::Checkbox-->
                                         <td>
                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                                 <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($islander['id']) ?>" />
+                                                    value="<?= esc($visitor['id']) ?>" />
                                             </div>
                                         </td>
                                         <!--end::Checkbox-->
@@ -567,40 +564,39 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::ID-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($islander['id']) ?></small>
+                                                <small class="text-muted">#<?= esc($visitor['id']) ?></small>
                                             </div>
                                         </td>
                                         <!--end::ID-->
 
-
                                         <!--begin::Status-->
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <?php if (!empty($islander['status_name'])): ?>
+                                                <?php if (!empty($visitor['status_name'])): ?>
                                                 <?php 
                                                     // Use custom color if available, otherwise fallback to status-based colors
-                                                    if (!empty($islander['status_color'])) {
+                                                    if (!empty($visitor['status_color'])) {
                                                         // Convert hex color to RGB for light background
-                                                        $hex = ltrim($islander['status_color'], '#');
+                                                        $hex = ltrim($visitor['status_color'], '#');
                                                         $r = hexdec(substr($hex, 0, 2));
                                                         $g = hexdec(substr($hex, 2, 2));
                                                         $b = hexdec(substr($hex, 4, 2));
                                                         $lightBg = "rgba($r, $g, $b, 0.1)";
-                                                        $textColor = $islander['status_color'];
+                                                        $textColor = $visitor['status_color'];
                                                         $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
                                                     } else {
                                                         // Fallback to default styling
                                                         $badgeStyle = "padding: 4px 8px; font-size: 11px; line-height: 1.2;";
                                                     }
                                                     ?>
-                                                <?php if (!empty($islander['status_color'])): ?>
+                                                <?php if (!empty($visitor['status_color'])): ?>
                                                 <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($islander['status_name'])) ?>
+                                                    <?= strtoupper(esc($visitor['status_name'])) ?>
                                                 </span>
                                                 <?php else: ?>
                                                 <span class="badge badge-light-success fw-bold"
                                                     style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($islander['status_name'])) ?>
+                                                    <?= strtoupper(esc($visitor['status_name'])) ?>
                                                 </span>
                                                 <?php endif; ?>
                                                 <?php else: ?>
@@ -613,56 +609,49 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
                                         <!--begin::Full Name-->
                                         <td>
-                                            <!-- <div class="d-flex flex-column">
-                                                <span class="text-gray-800 fw-bold"><?= esc($islander['full_name']) ?></span>
-                                                <?php if (!empty($islander['email'])): ?>
-                                                <small class="text-muted"><?= esc($islander['email']) ?></small>
-                                                <?php endif; ?>
-                                            </div> -->
                                             <div class="d-flex align-items-center">
                                                 <?php 
-                                                $imageUrl = !empty($islander['image']) ? 
-                                                    base_url() . '/assets/media/users/' . $islander['image'] : 
-                                                    'https://ui-avatars.com/api/?name=' . urlencode($islander['full_name']) . '&background=f4f4f4&color=9ba1b6&font-size=0.5';
+                                                $imageUrl = !empty($visitor['image']) ? 
+                                                    base_url() . '/assets/media/visitors/' . $visitor['image'] : 
+                                                    'https://ui-avatars.com/api/?name=' . urlencode($visitor['full_name']) . '&background=f4f4f4&color=9ba1b6&font-size=0.5';
                                                 ?>
                                                 <img src="<?= esc($imageUrl) ?>" class="me-2 rounded align-self-start"
                                                     width="80" height="80"
                                                     style="max-width: 80px; max-height: 80px; object-fit: cover;"
-                                                    alt="<?= esc($islander['full_name']) ?>">
+                                                    alt="<?= esc($visitor['full_name']) ?>">
                                                 <div>
                                                     <div class="fw-bold text-gray-800">
-                                                        <?= esc($islander['full_name']) ?></div>
+                                                        <?= esc($visitor['full_name']) ?></div>
                                                     <small class="text-muted">
                                                         <i class="ki-duotone ki-badge"><span class="path1"></span><span
                                                                 class="path2"></span><span class="path3"></span><span
                                                                 class="path4"></span><span
-                                                                class="path5"></span></i>&nbsp;<?= esc($islander['islander_no']) ?>
+                                                                class="path5"></span></i>&nbsp;<?= esc($visitor['islander_no']) ?>
                                                     </small><br>
                                                     <small class="text-muted">
                                                         <i class="ki-duotone ki-setting-3"><span
                                                                 class="path1"></span><span class="path2"></span><span
                                                                 class="path3"></span><span class="path4"></span><span
-                                                                class="path5"></span></i>&nbsp;<?= esc($islander['department_name'] ?? '-') ?>
+                                                                class="path5"></span></i>&nbsp;<?= esc($visitor['department_name'] ?? '-') ?>
                                                     </small><br>
                                                     <small class="text-muted">
                                                         <i class="ki-duotone ki-more-2"><span class="path1"></span><span
                                                                 class="path2"></span><span class="path3"></span><span
-                                                                class="path4"></span></i>&nbsp;<?= esc($islander['position_name'] ?? '-') ?>
+                                                                class="path4"></span></i>&nbsp;<?= esc($visitor['position_name'] ?? '-') ?>
                                                     </small>
                                                 </div>
                                             </div>
                                         </td>
                                         <!--end::Full Name-->
 
-
                                         <!--begin::Created By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($islander['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($islander['created_by_name']) ?></span>
-                                                <?php if (!empty($islander['created_at'])): ?>
+                                                <?php if (!empty($visitor['created_by_name'])): ?>
+                                                <span class="text-muted"><?= esc($visitor['created_by_name']) ?></span>
+                                                <?php if (!empty($visitor['created_at'])): ?>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($islander['created_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($visitor['created_at'])) ?></small>
                                                 <?php endif; ?>
                                                 <?php endif; ?>
                                             </div>
@@ -672,11 +661,11 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::Updated By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($islander['updated_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($islander['updated_by_name']) ?></span>
-                                                <?php if (!empty($islander['updated_at'])): ?>
+                                                <?php if (!empty($visitor['updated_by_name'])): ?>
+                                                <span class="text-muted"><?= esc($visitor['updated_by_name']) ?></span>
+                                                <?php if (!empty($visitor['updated_at'])): ?>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($islander['updated_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($visitor['updated_at'])) ?></small>
                                                 <?php endif; ?>
                                                 <?php endif; ?>
                                             </div>
@@ -697,16 +686,16 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canView']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-islander-btn"
-                                                        data-islander-id="<?= esc($islander['id']) ?>">View</a>
+                                                    <a class="menu-link px-3 view-visitor-btn"
+                                                        data-visitor-id="<?= esc($visitor['id']) ?>">View</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canEdit']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-islander-btn"
-                                                        data-islander-id="<?= esc($islander['id']) ?>">Edit</a>
+                                                    <a class="menu-link px-3 edit-visitor-btn"
+                                                        data-visitor-id="<?= esc($visitor['id']) ?>">Edit</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -714,7 +703,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 <?php if ($permissions['canEdit']): ?>
                                                 <div class="menu-item px-3">
                                                     <a class="menu-link px-3 reset-password-btn"
-                                                        data-islander-id="<?= esc($islander['id']) ?>"
+                                                        data-visitor-id="<?= esc($visitor['id']) ?>"
                                                         title="Reset Password to 1234">Reset Pass</a>
                                                 </div>
                                                 <?php endif; ?>
@@ -722,8 +711,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canDelete']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-islander-btn"
-                                                        data-islander-id="<?= esc($islander['id']) ?>">Delete</a>
+                                                    <a class="menu-link px-3 delete-visitor-btn"
+                                                        data-visitor-id="<?= esc($visitor['id']) ?>">Delete</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -745,8 +734,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                     <span class="path3"></span>
                                                     <span class="path4"></span>
                                                 </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No islanders found</div>
-                                                <div class="text-gray-500">Start by creating your first islander entry
+                                                <div class="fw-bold text-gray-700 mb-2">No visitors found</div>
+                                                <div class="text-gray-500">Start by creating your first visitor entry
                                                 </div>
                                             </div>
                                         </td>
@@ -760,82 +749,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <!--end::Table-->
                         
                         <!--begin::Table Footer-->
-                        <div class="row align-items-center py-3 border-top border-gray-200">
-                            <div class="col-sm-12 col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <label class="form-label fs-6 fw-semibold mb-0 me-2 text-gray-700">Show</label>
-                                    <select class="form-select form-select-sm w-auto me-2" id="kt_islander_table_length" onchange="changeTableLimit(this.value)" style="min-width: 65px;">
-                                        <option value="10" <?= $limit == 10 ? 'selected' : '' ?>>10</option>
-                                        <option value="25" <?= $limit == 25 ? 'selected' : '' ?>>25</option>
-                                        <option value="50" <?= $limit == 50 ? 'selected' : '' ?>>50</option>
-                                        <option value="100" <?= $limit == 100 ? 'selected' : '' ?>>100</option>
-                                    </select>
-                                    <label class="form-label fs-6 fw-semibold mb-0 text-gray-700">entries</label>
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-md-6">
-                                <div class="d-flex justify-content-end align-items-center">
-                                    <div class="dataTables_info me-4" role="status" aria-live="polite">
-                                        <span class="text-gray-700 fw-semibold fs-6">
-                                            Showing <?= (($currentPage - 1) * $limit) + 1 ?> to <?= min($currentPage * $limit, $totalIslanders) ?> of <?= $totalIslanders ?> entries
-                                        </span>
-                                    </div>
-                                    <div class="dataTables_paginate">
-                                        <ul class="pagination pagination-sm">
-                                            <?php if ($currentPage > 1): ?>
-                                            <li class="page-item">
-                                                <a href="<?= base_url('islanders?page=' . ($currentPage - 1) . ($search ? '&search=' . urlencode($search) : '') . '&limit=' . $limit) ?>" 
-                                                   class="page-link" data-page="<?= $currentPage - 1 ?>" title="Previous">
-                                                    <i class="ki-duotone ki-left fs-3"></i>
-                                                </a>
-                                            </li>
-                                            <?php else: ?>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">
-                                                    <i class="ki-duotone ki-left fs-3"></i>
-                                                </span>
-                                            </li>
-                                            <?php endif; ?>
-                                            
-                                            <?php
-                                            // Calculate page range for display
-                                            $startPage = max(1, $currentPage - 1);
-                                            $endPage = min($totalPages, $currentPage + 1);
-                                            
-                                            // Adjust if we're at the beginning or end
-                                            if ($currentPage <= 2) {
-                                                $endPage = min($totalPages, 4);
-                                            }
-                                            if ($currentPage >= $totalPages - 1) {
-                                                $startPage = max(1, $totalPages - 3);
-                                            }
-                                            
-                                            for ($i = $startPage; $i <= $endPage; $i++): ?>
-                                            <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
-                                                <a href="<?= base_url('islanders?page=' . $i . ($search ? '&search=' . urlencode($search) : '') . '&limit=' . $limit) ?>" 
-                                                   class="page-link" data-page="<?= $i ?>"><?= $i ?></a>
-                                            </li>
-                                            <?php endfor; ?>
-                                            
-                                            <?php if ($currentPage < $totalPages): ?>
-                                            <li class="page-item">
-                                                <a href="<?= base_url('islanders?page=' . ($currentPage + 1) . ($search ? '&search=' . urlencode($search) : '') . '&limit=' . $limit) ?>" 
-                                                   class="page-link" data-page="<?= $currentPage + 1 ?>" title="Next">
-                                                    <i class="ki-duotone ki-right fs-3"></i>
-                                                </a>
-                                            </li>
-                                            <?php else: ?>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">
-                                                    <i class="ki-duotone ki-right fs-3"></i>
-                                                </span>
-                                            </li>
-                                            <?php endif; ?>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <?= $this->include('partials/table_footer', [
+                            'currentPage' => $currentPage,
+                            'totalPages' => $totalPages,
+                            'totalRecords' => $totalVisitors,
+                            'limit' => $limit,
+                            'search' => $search,
+                            'baseUrl' => 'visitors',
+                            'tableId' => 'kt_visitor_table'
+                        ]) ?>
                         <!--end::Table Footer-->
                     </div>
                     <!--end::Card body-->
@@ -851,9 +773,9 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 <!--end::Main-->
 
 <!-- Include Modals -->
-<?= $this->include('islanders/create_modal') ?>
-<?= $this->include('islanders/edit_modal') ?>
-<?= $this->include('islanders/view_modal') ?>
+<?= $this->include('visitors/create_modal') ?>
+<?= $this->include('visitors/edit_modal') ?>
+<?= $this->include('visitors/view_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>
 
@@ -861,10 +783,10 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 "use strict";
 
 // Class definition
-var IslandersIndex = function() {
+var VisitorsIndex = function() {
     var table;
     var datatable;
-    var islanderList = <?= json_encode($islanders ?? []) ?>;
+    var visitorList = <?= json_encode($visitors ?? []) ?>;
     var currentPage = <?= $currentPage ?? 1 ?>;
     var totalPages = <?= $totalPages ?? 1 ?>;
     var search = '<?= esc($search) ?>';
@@ -884,7 +806,7 @@ var IslandersIndex = function() {
 
     // Desktop table initialization
     var initDesktopTable = function() {
-        table = document.querySelector('#kt_islander_table');
+        table = document.querySelector('#kt_visitor_table');
         if (!table) return;
 
         // Check if table has data before initializing DataTables
@@ -928,7 +850,7 @@ var IslandersIndex = function() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !isLoading && currentPage < totalPages) {
-                    loadMoreIslanders();
+                    loadMoreVisitors();
                 }
             });
         });
@@ -955,8 +877,8 @@ var IslandersIndex = function() {
         });
     };
 
-    // Load more islanders (for infinite scroll)
-    var loadMoreIslanders = function() {
+    // Load more visitors (for infinite scroll)
+    var loadMoreVisitors = function() {
         if (isLoading || currentPage >= totalPages || typeof $ === 'undefined') return;
 
         isLoading = true;
@@ -967,7 +889,7 @@ var IslandersIndex = function() {
 
         // Make AJAX request
         $.ajax({
-            url: '<?= base_url('islanders') ?>',
+            url: '<?= base_url('visitors') ?>',
             type: 'GET',
             data: {
                 page: currentPage + 1,
@@ -975,16 +897,16 @@ var IslandersIndex = function() {
                 ajax: 1
             },
             success: function(response) {
-                if (response.islanders && response.islanders.length > 0) {
-                    appendIslanders(response.islanders);
+                if (response.visitors && response.visitors.length > 0) {
+                    appendVisitors(response.visitors);
                     currentPage = response.currentPage;
                     totalPages = response.totalPages;
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error loading more islanders:', error);
+                console.error('Error loading more visitors:', error);
                 if (typeof toastr !== 'undefined') {
-                    toastr.error('Failed to load more islanders');
+                    toastr.error('Failed to load more visitors');
                 }
             },
             complete: function() {
@@ -996,256 +918,12 @@ var IslandersIndex = function() {
         });
     };
 
-    // Append islanders to mobile list
-    var appendIslanders = function(islanders) {
-        const container = document.getElementById('mobile-cards-container');
-        const sentinel = document.getElementById('scroll-sentinel');
-
-        islanders.forEach(islander => {
-            const card = createIslanderCard(islander);
-            container.insertBefore(card, sentinel);
-        });
-
-        // Refresh AOS animations
-        if (typeof AOS !== 'undefined') {
-            AOS.refresh();
-        }
-    };
-
-    // Create islander card for mobile view
-    var createIslanderCard = function(islander) {
-        const card = document.createElement('div');
-        card.className = 'col-12';
-        card.setAttribute('data-aos', 'fade-up');
-        card.setAttribute('data-aos-delay', '100');
-
-        // Determine house color styling
-        let houseBadge = '';
-        if (islander.house_name) {
-            if (islander.house_color) {
-                houseBadge =
-                    `<span class="badge fw-bold" style="background-color: ${islander.house_color}1a; color: ${islander.house_color}; padding: 4px 8px; font-size: 11px; line-height: 1.2;">${islander.house_name.toUpperCase()}</span>`;
-            } else {
-                houseBadge =
-                    `<span class="badge badge-light-secondary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${islander.house_name.toUpperCase()}</span>`;
-            }
-        } else {
-            houseBadge = '<span class="text-muted">-</span>';
-        }
-
-        // Determine status color styling
-        let statusBadge = '';
-        if (islander.status_name) {
-            if (islander.status_color) {
-                // Convert hex to light background
-                const hex = islander.status_color.replace('#', '');
-                const r = parseInt(hex.substr(0, 2), 16);
-                const g = parseInt(hex.substr(2, 2), 16);
-                const b = parseInt(hex.substr(4, 2), 16);
-                const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
-                statusBadge =
-                    `<span class="badge fw-bold" style="background-color: ${lightBg}; color: ${islander.status_color}; padding: 4px 8px; font-size: 11px; line-height: 1.2;">${islander.status_name.toUpperCase()}</span>`;
-            } else {
-                statusBadge =
-                    `<span class="badge badge-light-success fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${islander.status_name.toUpperCase()}</span>`;
-            }
-        } else {
-            statusBadge =
-                '<span class="badge badge-light-secondary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">N/A</span>';
-        }
-
-        // Determine image URL (match desktop logic)
-        let imageUrl = '';
-        if (islander.image) {
-            imageUrl = `${window.location.origin}/assets/media/users/${islander.image}`;
-        } else {
-            imageUrl =
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(islander.full_name || '')}&background=f4f4f4&color=9ba1b6&font-size=0.5`;
-        }
-
-        card.innerHTML = `
-            <div class="card card-flush h-xl-100 mobile-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: all 0.3s ease;">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="symbol symbol-35px me-3">
-                                <img src="${imageUrl}" alt="${islander.full_name || 'Avatar'}" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover; background: #f4f4f4;" />
-                            </div>
-                            <div>
-                                <h6 class="mb-0 text-white fw-bold">${islander.full_name || 'N/A'}</h6>
-                                <small class="text-white-75">${islander.position_name || 'No Position'}</small>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge badge-light-info fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                ${islander.islander_no ? islander.islander_no.toUpperCase() : 'N/A'}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <div class="d-flex flex-column">
-                                <small class="text-white-75 mb-1">Division</small>
-                                <span class="text-white fw-semibold">${islander.division_name || '-'}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex flex-column">
-                                <small class="text-white-75 mb-1">House</small>
-                                ${houseBadge}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <div class="d-flex flex-column">
-                                <small class="text-white-75 mb-1">Status</small>
-                                ${statusBadge}
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex flex-column">
-                                <small class="text-white-75 mb-1">ID</small>
-                                <span class="text-white fw-semibold">#${islander.id}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Expandable Actions -->
-                    <div class="actions-container">
-                        <button class="btn btn-sm btn-light-primary w-100 toggle-actions" type="button" data-islander-id="${islander.id}">
-                            <i class="fas fa-chevron-down me-2"></i>Actions
-                        </button>
-                        <div class="actions-content mt-2" style="display: none;">
-                            <div class="d-flex gap-2">
-                                <?php if ($permissions['canView']): ?>
-                                <button class="btn btn-sm btn-light flex-fill view-islander-btn" data-islander-id="${islander.id}">
-                                    <i class="fas fa-eye me-1"></i>View
-                                </button>
-                                <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
-                                <button class="btn btn-sm btn-light flex-fill edit-islander-btn" data-islander-id="${islander.id}">
-                                    <i class="fas fa-edit me-1"></i>Edit
-                                </button>
-                                <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
-                                <button class="btn btn-sm btn-light-info flex-fill reset-password-btn" data-islander-id="${islander.id}" title="Reset Password to 1234">
-                                    <i class="fas fa-key me-1"></i>Reset
-                                </button>
-                                <?php endif; ?>
-                                <?php if ($permissions['canDelete']): ?>
-                                <button class="btn btn-sm btn-light-danger flex-fill delete-islander-btn" data-islander-id="${islander.id}">
-                                    <i class="fas fa-trash me-1"></i>Delete
-                                </button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        return card;
-    };
-
     // Handle search
     var handleSearch = function(searchTerm) {
         search = searchTerm;
 
         // For both mobile and desktop, redirect with search parameter
-        window.location.href = `<?= base_url('islanders') ?>?search=${encodeURIComponent(searchTerm)}`;
-    };
-
-    // Reload mobile list
-    var reloadMobileList = function() {
-        const container = document.getElementById('mobile-cards-container');
-        if (!container) return;
-
-        // Clear current list except sentinel
-        const cards = container.querySelectorAll('.col-12:not(#scroll-sentinel)');
-        cards.forEach(card => card.remove());
-
-        // Reset pagination
-        currentPage = 1;
-        isLoading = false;
-
-        // Load first page
-        loadMoreIslanders();
-    };
-
-    // Initialize pagination for table
-    var initTablePagination = function() {
-        const paginationLinks = document.querySelectorAll('.page-link[data-page]');
-        
-        paginationLinks.forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const page = parseInt(this.getAttribute('data-page'));
-                if (page && page !== currentPage && !isLoading) {
-                    loadTablePage(page);
-                }
-            });
-        });
-    };
-
-    // Load specific page for table
-    var loadTablePage = function(page) {
-        if (isLoading) return;
-        
-        isLoading = true;
-        const tableBody = document.querySelector('#kt_islander_table tbody');
-        const loadingRow = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>';
-        
-        if (tableBody) {
-            tableBody.innerHTML = loadingRow;
-        }
-
-        // Make AJAX request
-        $.ajax({
-            url: '<?= base_url('islanders') ?>',
-            type: 'GET',
-            data: {
-                page: page,
-                search: search,
-                limit: <?= $limit ?>,
-                ajax: 1
-            },
-            success: function(response) {
-                if (response.success && response.islanders) {
-                    currentPage = response.currentPage;
-                    totalPages = response.totalPages;
-                    
-                    // Reload the entire page to update table and pagination
-                    const searchParam = search ? '&search=' + encodeURIComponent(search) : '';
-                    const limitParam = '&limit=' + <?= $limit ?>;
-                    window.location.href = '<?= base_url('islanders') ?>?page=' + page + searchParam + limitParam;
-                } else {
-                    if (typeof toastr !== 'undefined') {
-                        toastr.error('Failed to load page');
-                    }
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading page:', error);
-                if (typeof toastr !== 'undefined') {
-                    toastr.error('Failed to load page');
-                }
-            },
-            complete: function() {
-                isLoading = false;
-            }
-        });
-    };
-
-    // Change table limit (records per page)
-    window.changeTableLimit = function(newLimit) {
-        if (isLoading) return;
-        
-        const searchParam = search ? '&search=' + encodeURIComponent(search) : '';
-        window.location.href = '<?= base_url('islanders') ?>?page=1&limit=' + newLimit + searchParam;
+        window.location.href = `<?= base_url('visitors') ?>?search=${encodeURIComponent(searchTerm)}`;
     };
 
     // Initialize search functionality
@@ -1270,97 +948,83 @@ var IslandersIndex = function() {
             return;
         }
 
-        // Mobile action toggles
-        $(document).on('click', '.toggle-actions', function() {
-            const actionsContent = $(this).siblings('.actions-content');
-            const icon = $(this).find('i');
-
-            if (actionsContent.is(':visible')) {
-                actionsContent.slideUp(200);
-                icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
-            } else {
-                actionsContent.slideDown(200);
-                icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
-            }
+        // View visitor
+        $(document).on('click', '.view-visitor-btn', function() {
+            const visitorId = $(this).data('visitor-id');
+            loadVisitorModal('view', visitorId);
         });
 
-        // View islander
-        $(document).on('click', '.view-islander-btn', function() {
-            const islanderId = $(this).data('islander-id');
-            loadIslanderModal('view', islanderId);
+        // Edit visitor
+        $(document).on('click', '.edit-visitor-btn', function() {
+            const visitorId = $(this).data('visitor-id');
+            loadVisitorModal('edit', visitorId);
         });
 
-        // Edit islander
-        $(document).on('click', '.edit-islander-btn', function() {
-            const islanderId = $(this).data('islander-id');
-            loadIslanderModal('edit', islanderId);
+        // Delete visitor
+        $(document).on('click', '.delete-visitor-btn', function() {
+            const visitorId = $(this).data('visitor-id');
+            deleteVisitor(visitorId);
         });
 
-        // Delete islander
-        $(document).on('click', '.delete-islander-btn', function() {
-            const islanderId = $(this).data('islander-id');
-            deleteIslander(islanderId);
-        });
-
-        // Reset islander password
+        // Reset visitor password
         $(document).on('click', '.reset-password-btn', function() {
-            const islanderId = $(this).data('islander-id');
-            resetIslanderPassword(islanderId);
+            const visitorId = $(this).data('visitor-id');
+            resetVisitorPassword(visitorId);
         });
     };
 
-    // Load islander modal
-    var loadIslanderModal = function(action, islanderId) {
+    // Load visitor modal
+    var loadVisitorModal = function(action, visitorId) {
         if (typeof $ === 'undefined') {
             console.log('jQuery not available, cannot load modal');
             return;
         }
 
-        const modalId = action === 'view' ? '#viewIslanderModal' : '#editIslanderModal';
+        const modalId = action === 'view' ? '#viewVisitorModal' : '#editVisitorModal';
 
         $.ajax({
-            url: `<?= base_url('islanders') ?>/${islanderId}`,
+            url: `<?= base_url('visitors') ?>/${visitorId}`,
             type: 'GET',
             data: {
                 ajax: 1
             },
             success: function(response) {
-                if (response.success && response.islander) {
-                    populateModal(action, response.islander);
+                if (response.success && response.visitor) {
+                    populateModal(action, response.visitor);
                     $(modalId).modal('show');
                 } else {
-                    console.error('Invalid response or missing islander data:', response);
+                    console.error('Invalid response or missing visitor data:', response);
                     if (typeof toastr !== 'undefined') {
-                        toastr.error(response.message || 'Failed to load islander details');
+                        toastr.error(response.message || 'Failed to load visitor details');
                     }
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error loading islander:', error);
+                console.error('Error loading visitor:', error);
                 if (typeof toastr !== 'undefined') {
-                    toastr.error('Failed to load islander details');
+                    toastr.error('Failed to load visitor details');
                 }
             }
         });
     };
 
-    // Populate modal with islander data
-    var populateModal = function(action, islander) {
-        // Check if islander data exists
-        if (!islander) {
-            console.error('Islander data is undefined or null');
+    // Populate modal with visitor data
+    var populateModal = function(action, visitor) {
+        // Check if visitor data exists
+        if (!visitor) {
+            console.error('Visitor data is undefined or null');
             return;
         }
 
-        if (action === 'view' && typeof ViewIslanderModal !== 'undefined') {
-            ViewIslanderModal.populateModal(islander);
-        } else if (action === 'edit' && typeof EditIslanderModal !== 'undefined') {
-            EditIslanderModal.populateForm(islander);
+        if (action === 'view' && typeof ViewVisitorModal !== 'undefined') {
+            ViewVisitorModal.populateModal(visitor);
+        } else if (action === 'edit' && typeof EditVisitorModal !== 'undefined') {
+            EditVisitorModal.populateForm(visitor);
         }
     };
 
-    // Delete islander
-    var deleteIslander = function(islanderId) {
+    // Delete visitor
+    var deleteVisitor = function(visitorId) {
         if (typeof Swal === 'undefined' || typeof $ === 'undefined') {
             console.log('SweetAlert or jQuery not available, cannot delete');
             return;
@@ -1377,7 +1041,7 @@ var IslandersIndex = function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: `<?= base_url('islanders') ?>/${islanderId}`,
+                    url: `<?= base_url('visitors') ?>/${visitorId}`,
                     type: 'DELETE',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -1386,22 +1050,20 @@ var IslandersIndex = function() {
                     success: function(response) {
                         if (response.success) {
                             if (typeof toastr !== 'undefined') {
-                                toastr.success(response.message ||
-                                    'Islander deleted successfully');
+                                toastr.success(response.message || 'Visitor deleted successfully');
                             }
                             // Reload page or remove item from list
                             window.location.reload();
                         } else {
                             if (typeof toastr !== 'undefined') {
-                                toastr.error(response.message ||
-                                    'Failed to delete islander');
+                                toastr.error(response.message || 'Failed to delete visitor');
                             }
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error deleting islander:', error);
+                        console.error('Error deleting visitor:', error);
                         if (typeof toastr !== 'undefined') {
-                            toastr.error('Failed to delete islander');
+                            toastr.error('Failed to delete visitor');
                         }
                     }
                 });
@@ -1409,8 +1071,8 @@ var IslandersIndex = function() {
         });
     };
 
-    // Reset islander password to 1234
-    var resetIslanderPassword = function(islanderId) {
+    // Reset visitor password to 1234
+    var resetVisitorPassword = function(visitorId) {
         if (typeof Swal === 'undefined' || typeof $ === 'undefined') {
             console.log('SweetAlert or jQuery not available, cannot reset password');
             return;
@@ -1418,7 +1080,7 @@ var IslandersIndex = function() {
 
         Swal.fire({
             title: 'Reset Password?',
-            text: "This will reset the islander's password to '1234'",
+            text: "This will reset the visitor's password to '1234'",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -1427,7 +1089,7 @@ var IslandersIndex = function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: `<?= base_url('islanders') ?>/${islanderId}/reset-password`,
+                    url: `<?= base_url('visitors') ?>/${visitorId}/reset-password`,
                     type: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -1461,29 +1123,20 @@ var IslandersIndex = function() {
         });
     };
 
-    // Handle window resize with passive listener
-    var handleResize = function() {
-        window.addEventListener('resize', function() {
-            const wasMobile = isMobile;
-            isMobile = window.innerWidth <= 768;
-
-            if (wasMobile !== isMobile) {
-                // Screen size changed between mobile and desktop
-                window.location.reload();
-            }
-        }, {
-            passive: true
-        });
+    // Change table limit (records per page)
+    window.changeTableLimit = function(newLimit) {
+        if (isLoading) return;
+        
+        const searchParam = search ? '&search=' + encodeURIComponent(search) : '';
+        window.location.href = '<?= base_url('visitors') ?>?page=1&limit=' + newLimit + searchParam;
     };
 
     // Public methods
     return {
         init: function() {
             initTable();
-            initTablePagination();
             initSearch();
             initActionButtons();
-            handleResize();
         }
     };
 }();
@@ -1491,15 +1144,15 @@ var IslandersIndex = function() {
 // On document ready
 if (typeof $ !== 'undefined') {
     $(document).ready(function() {
-        IslandersIndex.init();
+        VisitorsIndex.init();
     });
 } else {
     // Fallback if jQuery is not available
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof $ !== 'undefined') {
-            IslandersIndex.init();
+            VisitorsIndex.init();
         } else {
-            console.log('jQuery not available for IslandersIndex');
+            console.log('jQuery not available for VisitorsIndex');
         }
     });
 }
@@ -1507,7 +1160,7 @@ if (typeof $ !== 'undefined') {
 // Toggle mobile action buttons
 function toggleMobileActions(cardElement) {
     const actionsDiv = cardElement.querySelector('.mobile-actions');
-    const allCards = document.querySelectorAll('.mobile-islander-card');
+    const allCards = document.querySelectorAll('.mobile-visitor-card');
     
     // Close all other expanded cards
     allCards.forEach(card => {
@@ -1535,8 +1188,8 @@ function toggleMobileActions(cardElement) {
 
 // Close action buttons when clicking outside
 document.addEventListener('click', function(event) {
-    if (!event.target.closest('.mobile-islander-card')) {
-        const allCards = document.querySelectorAll('.mobile-islander-card');
+    if (!event.target.closest('.mobile-visitor-card')) {
+        const allCards = document.querySelectorAll('.mobile-visitor-card');
         allCards.forEach(card => {
             const actionsDiv = card.querySelector('.mobile-actions');
             if (actionsDiv && !actionsDiv.classList.contains('d-none')) {
@@ -1547,64 +1200,4 @@ document.addEventListener('click', function(event) {
         });
     }
 });
-
-// Initialize AOS (Animate On Scroll) if available
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if AOS is available and initialize it
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 600,
-            easing: 'ease-in-out',
-            once: true, // Animation happens only once
-            offset: 50 // Trigger animation 50px before element comes into view
-        });
-        console.log('AOS initialized successfully');
-    } else {
-        console.log('AOS library not found, animations disabled');
-        // Remove any AOS attributes if library is not available
-        const elementsWithAOS = document.querySelectorAll('[data-aos]');
-        elementsWithAOS.forEach(element => {
-            element.removeAttribute('data-aos');
-            element.removeAttribute('data-aos-delay');
-            element.removeAttribute('data-aos-duration');
-        });
-    }
-});
-
-// Passive event listener optimization
-(function() {
-    'use strict';
-
-    // Override addEventListener to use passive listeners for scroll-blocking events
-    const supportsPassive = (() => {
-        let supports = false;
-        try {
-            window.addEventListener('test', null, {
-                get passive() {
-                    supports = true;
-                    return false;
-                }
-            });
-        } catch (e) {}
-        return supports;
-    })();
-
-    if (supportsPassive) {
-        // List of events that should use passive listeners by default
-        const passiveEvents = ['touchstart', 'touchmove', 'wheel', 'mousewheel'];
-
-        const originalAddEventListener = EventTarget.prototype.addEventListener;
-        EventTarget.prototype.addEventListener = function(type, listener, options) {
-            if (passiveEvents.includes(type) && typeof options !== 'object') {
-                options = {
-                    passive: true
-                };
-            } else if (passiveEvents.includes(type) && typeof options === 'object' && options.passive ===
-                undefined) {
-                options.passive = true;
-            }
-            return originalAddEventListener.call(this, type, listener, options);
-        };
-    }
-})();
 </script>

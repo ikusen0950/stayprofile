@@ -29,11 +29,10 @@ class LogModel extends Model
     protected $validationRules = [
         'action' => [
             'label'  => 'Action',
-            'rules'  => 'required|min_length[3]|max_length[255]',
+            'rules'  => 'required|min_length[3]',
             'errors' => [
                 'required'    => 'Action is required.',
-                'min_length'  => 'Action must be at least 3 characters long.',
-                'max_length'  => 'Action cannot exceed 255 characters.'
+                'min_length'  => 'Action must be at least 3 characters long.'
             ]
         ],
         'status_id' => [

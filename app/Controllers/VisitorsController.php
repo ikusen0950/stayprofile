@@ -2,17 +2,17 @@
 
 namespace App\Controllers;
 
-use App\Models\IslanderModel;
+use App\Models\VisitorModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
-class IslandersController extends BaseController
+class VisitorsController extends BaseController
 {
-    protected $islanderModel;
+    protected $visitorModel;
     protected $logModel;
 
     public function __construct()
     {
-        $this->islanderModel = new IslanderModel();
+        $this->visitorModel = new VisitorModel();
         $this->logModel = new \App\Models\LogModel();
     }
 
@@ -76,46 +76,11 @@ class IslandersController extends BaseController
         }
     }
 
-    /**
-     * Debug method to check session data (remove after testing)
-     */
-    public function debugSession()
-    {
-        $session = session();
-        $allSessionData = $session->get();
-        
-        echo "<h3>Session Debug Information:</h3>";
-        echo "<pre>";
-        print_r($allSessionData);
-        echo "</pre>";
-        
-        echo "<h3>Current User ID Methods:</h3>";
-        echo "<ul>";
-        
-        // Test different methods
-        if (function_exists('user_id')) {
-            echo "<li>user_id(): " . (user_id() ?? 'NULL') . "</li>";
-        } else {
-            echo "<li>user_id(): Function not available</li>";
-        }
-        
-        if (function_exists('user')) {
-            $user = user();
-            echo "<li>user(): " . ($user ? json_encode($user) : 'NULL') . "</li>";
-        } else {
-            echo "<li>user(): Function not available</li>";
-        }
-        
-        echo "<li>getCurrentUserId(): " . ($this->getCurrentUserId() ?? 'NULL') . "</li>";
-        echo "</ul>";
-        
-        die();
-    }
-    private function sanitizeIslanderInput(array $data, bool $isUpdate = false): array
+    private function sanitizeVisitorInput(array $data, bool $isUpdate = false): array
     {
         $sanitized = [
             'status_id' => isset($data['status_id']) ? (int)$data['status_id'] : 1,
-            'islander_no' => isset($data['islander_no']) ? trim(strip_tags($data['islander_no'])) : '',
+            'islander_no' => isset($data['visitor_no']) ? trim(strip_tags($data['visitor_no'])) : (isset($data['islander_no']) ? trim(strip_tags($data['islander_no'])) : ''),
             'full_name' => isset($data['full_name']) ? trim(strip_tags($data['full_name'])) : '',
             'id_pp_wp_no' => isset($data['id_pp_wp_no']) ? trim(strip_tags($data['id_pp_wp_no'])) : '',
             'division_id' => isset($data['division_id']) ? (int)$data['division_id'] : null,
@@ -135,32 +100,25 @@ class IslandersController extends BaseController
             'email' => isset($data['email']) ? trim(strip_tags($data['email'])) : '',
             'address' => isset($data['address']) ? trim(strip_tags($data['address'])) : '',
             'notes' => isset($data['notes']) ? trim(strip_tags($data['notes'])) : '',
-            'username' => isset($data['islander_no']) && !empty(trim($data['islander_no'])) ? trim(strip_tags($data['islander_no'])) : null,
+            'username' => isset($data['visitor_no']) && !empty(trim($data['visitor_no'])) ? trim(strip_tags($data['visitor_no'])) : (isset($data['islander_no']) && !empty(trim($data['islander_no'])) ? trim(strip_tags($data['islander_no'])) : null),
         ];
 
         // Get current user ID for tracking
         $currentUserId = $this->getCurrentUserId();
         
-        // Additional debugging - remove this after testing
-        log_message('debug', 'Current User ID: ' . ($currentUserId ?? 'NULL') . ' for ' . ($isUpdate ? 'UPDATE' : 'CREATE') . ' operation');
-
         // Set tracking fields
         if ($currentUserId) {
             if (!$isUpdate) {
                 // For new records, set created_by
                 $sanitized['created_by'] = $currentUserId;
-                log_message('debug', 'Setting created_by to: ' . $currentUserId);
             }
             // Always set updated_by for both create and update operations
             $sanitized['updated_by'] = $currentUserId;
-            log_message('debug', 'Setting updated_by to: ' . $currentUserId);
-        } else {
-            log_message('warning', 'No current user ID found for tracking - user may not be logged in properly');
         }
 
-        // Default values
+        // Default values for visitors
         if (!isset($data['active'])) {
-            $sanitized['active'] = 1;
+            $sanitized['active'] = 0; // Visitors are inactive by default
         } else {
             $sanitized['active'] = (int)$data['active'];
         }
@@ -172,13 +130,13 @@ class IslandersController extends BaseController
         }
 
         if (!isset($data['type'])) {
-            $sanitized['type'] = 1;
+            $sanitized['type'] = 2; // Visitors type
         } else {
             $sanitized['type'] = (int)$data['type'];
         }
 
         if (!isset($data['type_description'])) {
-            $sanitized['type_description'] = 'Islander';
+            $sanitized['type_description'] = 'Visitor';
         } else {
             $sanitized['type_description'] = trim(strip_tags($data['type_description']));
         }
@@ -193,20 +151,6 @@ class IslandersController extends BaseController
             $sanitized['has_accepted_agreement'] = 1;
         } else {
             $sanitized['has_accepted_agreement'] = (int)$data['has_accepted_agreement'];
-        }
-
-        // Add audit fields if present (these don't need sanitization as they're system-generated)
-        if (isset($data['created_by'])) {
-            $sanitized['created_by'] = (int)$data['created_by'];
-        }
-        if (isset($data['created_at'])) {
-            $sanitized['created_at'] = $data['created_at'];
-        }
-        if (isset($data['updated_by'])) {
-            $sanitized['updated_by'] = (int)$data['updated_by'];
-        }
-        if (isset($data['updated_at'])) {
-            $sanitized['updated_at'] = $data['updated_at'];
         }
 
         // Handle null values for empty fields
@@ -233,26 +177,26 @@ class IslandersController extends BaseController
     }
 
     /**
-     * Assign role to an islander
+     * Assign role to a visitor
      */
-    private function assignRoleToIslander(int $islanderId, int $roleId, string $operation = 'assign'): bool
+    private function assignRoleToVisitor(int $visitorId, int $roleId, string $operation = 'assign'): bool
     {
         try {
             $groupModel = new \Myth\Auth\Models\GroupModel();
             
             if ($operation === 'update') {
                 // For updates, remove from all groups first to avoid duplicates
-                $groupModel->removeUserFromAllGroups($islanderId);
+                $groupModel->removeUserFromAllGroups($visitorId);
             }
             
             // Add to the specified group
-            $success = $groupModel->addUserToGroup($islanderId, $roleId);
+            $success = $groupModel->addUserToGroup($visitorId, $roleId);
             
             if ($success) {
-                log_message('info', "Role {$roleId} {$operation}ed for islander {$islanderId}");
+                log_message('info', "Role {$roleId} {$operation}ed for visitor {$visitorId}");
                 return true;
             } else {
-                log_message('warning', "Failed to {$operation} role {$roleId} for islander {$islanderId}");
+                log_message('warning', "Failed to {$operation} role {$roleId} for visitor {$visitorId}");
                 return false;
             }
         } catch (\Exception $e) {
@@ -262,14 +206,14 @@ class IslandersController extends BaseController
     }
 
     /**
-     * Log islander operations to the logs table
+     * Log visitor operations to the logs table
      */
-    private function logIslanderOperation(string $action, array $islanderData, int $islanderId = null): void
+    private function logVisitorOperation(string $action, array $visitorData, int $visitorId = null): void
     {
         try {
-            log_message('info', 'logIslanderOperation called with action: ' . $action . ', islanderId: ' . $islanderId);
+            log_message('info', 'logVisitorOperation called with action: ' . $action . ', visitorId: ' . $visitorId);
             
-            $islanderNumber = $islanderId ?? ($islanderData['id'] ?? 0);
+            $visitorNumber = $visitorId ?? ($visitorData['id'] ?? 0);
             
             // Map actions to status IDs for logs
             $logStatusId = 1; // Default to active
@@ -277,167 +221,149 @@ class IslandersController extends BaseController
                 case 'created':
                 case 'create':
                     $logStatusId = 3; // Success status for create
-                    $actionPrefix = 'Islander Created';
+                    $actionPrefix = 'Visitor Created';
                     break;
                 case 'updated':
                 case 'update':
                     $logStatusId = 4; // Success status for update
-                    $actionPrefix = 'Islander Updated';
+                    $actionPrefix = 'Visitor Updated';
                     break;
                 case 'deleted':
                 case 'delete':
                     $logStatusId = 5; // Warning status for delete
-                    $actionPrefix = 'Islander Deleted';
+                    $actionPrefix = 'Visitor Deleted';
                     break;
                 case 'password reset':
                     $logStatusId = 4; // Success status for password reset
-                    $actionPrefix = 'Islander Password Reset';
+                    $actionPrefix = 'Visitor Password Reset';
                     break;
                 default:
                     $logStatusId = 1; // Default for other actions
-                    $actionPrefix = 'Islander ' . ucfirst($action);
+                    $actionPrefix = 'Visitor ' . ucfirst($action);
                     break;
             }
             
-            log_message('info', 'Mapped status ID: ' . $logStatusId . ' for action: ' . $action);
-            
             // Get related information if not already included
-            $sectionName = $islanderData['section_name'] ?? 'Unknown';
-            $positionName = $islanderData['position_name'] ?? 'Unknown';
-            $departmentName = $islanderData['department_name'] ?? 'Unknown';
+            $sectionName = $visitorData['section_name'] ?? 'Unknown';
+            $positionName = $visitorData['position_name'] ?? 'Unknown';
+            $departmentName = $visitorData['department_name'] ?? 'Unknown';
             
             // If we don't have the related names, try to fetch them
-            if ($sectionName === 'Unknown' && isset($islanderData['section_id'])) {
+            if ($sectionName === 'Unknown' && isset($visitorData['section_id'])) {
                 $sectionModel = new \App\Models\SectionModel();
-                $section = $sectionModel->find($islanderData['section_id']);
+                $section = $sectionModel->find($visitorData['section_id']);
                 $sectionName = $section['name'] ?? 'Unknown';
             }
             
-            if ($positionName === 'Unknown' && isset($islanderData['position_id'])) {
+            if ($positionName === 'Unknown' && isset($visitorData['position_id'])) {
                 $positionModel = new \App\Models\PositionModel();
-                $position = $positionModel->find($islanderData['position_id']);
+                $position = $positionModel->find($visitorData['position_id']);
                 $positionName = $position['name'] ?? 'Unknown';
             }
             
-            if ($departmentName === 'Unknown' && isset($islanderData['department_id'])) {
+            if ($departmentName === 'Unknown' && isset($visitorData['department_id'])) {
                 $departmentModel = new \App\Models\DepartmentModel();
-                $department = $departmentModel->find($islanderData['department_id']);
+                $department = $departmentModel->find($visitorData['department_id']);
                 $departmentName = $department['name'] ?? 'Unknown';
             }
             
             // Create structured action description in the requested format
             $actionDescription = $actionPrefix . "\n";
-            $actionDescription .= "#: " . $islanderNumber . "\n";
-            $actionDescription .= "Islander No: " . ($islanderData['islander_no'] ?? 'Unknown') . "\n";
-            $actionDescription .= "Name: " . ($islanderData['full_name'] ?? 'Unknown') . "\n";
-            $actionDescription .= "Username: " . ($islanderData['username'] ?? 'N/A') . "\n";
-            $actionDescription .= "Email: " . ($islanderData['email'] ?? 'N/A') . "\n";
-            $actionDescription .= "Phone: " . ($islanderData['phone'] ?? 'N/A') . "\n";
+            $actionDescription .= "#: " . $visitorNumber . "\n";
+            $actionDescription .= "Visitor No: " . ($visitorData['islander_no'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Name: " . ($visitorData['full_name'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Username: " . ($visitorData['username'] ?? 'N/A') . "\n";
+            $actionDescription .= "Email: " . ($visitorData['email'] ?? 'N/A') . "\n";
+            $actionDescription .= "Phone: " . ($visitorData['phone'] ?? 'N/A') . "\n";
             $actionDescription .= "Position: " . $positionName . "\n";
             $actionDescription .= "Section: " . $sectionName . "\n";
             $actionDescription .= "Department: " . $departmentName . "\n";
-            $actionDescription .= "Division: " . ($islanderData['division_name'] ?? 'Unknown') . "\n";
-            $actionDescription .= "Status: " . ($islanderData['status_name'] ?? 'Unknown') . "\n";
-            $actionDescription .= "Gender: " . ($islanderData['gender_name'] ?? 'N/A') . "\n";
-            $actionDescription .= "Nationality: " . ($islanderData['nationality_name'] ?? 'N/A') . "\n";
-            $actionDescription .= "Date of Birth: " . ($islanderData['date_of_birth'] ?? 'N/A') . "\n";
-            $actionDescription .= "Date of Joining: " . ($islanderData['date_of_joining'] ?? 'N/A') . "\n";
-            $actionDescription .= "Company: " . ($islanderData['company'] ?? 'N/A') . "\n";
-            $actionDescription .= "House: " . ($islanderData['house_name'] ?? 'N/A') . "\n";
-            $actionDescription .= "ID/PP/WP No: " . ($islanderData['id_pp_wp_no'] ?? 'N/A') . "\n";
-            $actionDescription .= "Address: " . ($islanderData['address'] ?? 'N/A') . "\n";
-            $actionDescription .= "Notes: " . ($islanderData['notes'] ?? 'No notes provided');
+            $actionDescription .= "Division: " . ($visitorData['division_name'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Status: " . ($visitorData['status_name'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Gender: " . ($visitorData['gender_name'] ?? 'N/A') . "\n";
+            $actionDescription .= "Nationality: " . ($visitorData['nationality_name'] ?? 'N/A') . "\n";
+            $actionDescription .= "Date of Birth: " . ($visitorData['date_of_birth'] ?? 'N/A') . "\n";
+            $actionDescription .= "Date of Joining: " . ($visitorData['date_of_joining'] ?? 'N/A') . "\n";
+            $actionDescription .= "Company: " . ($visitorData['company'] ?? 'N/A') . "\n";
+            $actionDescription .= "House: " . ($visitorData['house_name'] ?? 'N/A') . "\n";
+            $actionDescription .= "ID/PP/WP No: " . ($visitorData['id_pp_wp_no'] ?? 'N/A') . "\n";
+            $actionDescription .= "Address: " . ($visitorData['address'] ?? 'N/A') . "\n";
+            $actionDescription .= "Notes: " . ($visitorData['notes'] ?? 'No notes provided');
 
             $logData = [
-                'status_id' => $logStatusId, // Use mapped status ID based on action
-                'module_id' => 12, // Islanders module ID
-                'action' => $actionDescription, // Structured action text with details
+                'status_id' => $logStatusId,
+                'module_id' => 13, // Visitors module ID (assuming different from islanders)
+                'action' => $actionDescription,
             ];
 
-            log_message('info', 'Attempting to insert log data: ' . json_encode($logData));
-            log_message('info', 'Action description length: ' . strlen($actionDescription) . ' characters');
+            log_message('info', 'Attempting to insert visitor log data: ' . json_encode($logData));
             
             $result = $this->logModel->insert($logData);
             
             if ($result) {
-                log_message('info', 'Successfully inserted log with ID: ' . $result);
+                log_message('info', 'Successfully inserted visitor log with ID: ' . $result);
             } else {
                 $errors = $this->logModel->errors();
-                log_message('error', 'Failed to insert log. Errors: ' . json_encode($errors));
+                log_message('error', 'Failed to insert visitor log. Errors: ' . json_encode($errors));
             }
         } catch (\Exception $e) {
-            // Log the error but don't break the main operation
-            log_message('error', 'Failed to log islander operation: ' . $e->getMessage());
-            log_message('error', 'Exception trace: ' . $e->getTraceAsString());
+            log_message('error', 'Failed to log visitor operation: ' . $e->getMessage());
         }
     }
 
     /**
-     * Display a listing of islanders
+     * Display a listing of visitors
      */
     public function index()
     {
-        // Debug permissions
-        $hasIslandersView = has_permission('islanders.view');
-        $hasUsersView = has_permission('users.view');
-        log_message('info', "Permissions check: islanders.view = " . ($hasIslandersView ? 'true' : 'false') . ", users.view = " . ($hasUsersView ? 'true' : 'false'));
-        
-        // Temporarily disable permission check for now - will fix permissions later
-        // if (!$hasIslandersView && !$hasUsersView) {
-        //     log_message('error', 'User does not have permission to view islanders');
-        //     return redirect()->to('/')->with('error', 'You do not have permission to view islanders.');
-        // }
-
         $search = trim(strip_tags($this->request->getGet('search') ?? ''));
         $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 10); // Default 10 entries per page
+        $limit = (int)($this->request->getGet('limit') ?? 10);
         $offset = ($page - 1) * $limit;
 
-        $islanders = $this->islanderModel->getIslandersWithPagination($search, $limit, $offset);
-        $totalIslanders = $this->islanderModel->getIslandersCount($search);
-        $totalPages = ceil($totalIslanders / $limit);
+        $visitors = $this->visitorModel->getVisitorsWithPagination($search, $limit, $offset);
+        $totalVisitors = $this->visitorModel->getVisitorsCount($search);
+        $totalPages = ceil($totalVisitors / $limit);
 
         // Check if this is an AJAX request for pagination
         if ($this->request->isAJAX() || $this->request->getGet('ajax')) {
             return $this->response->setJSON([
                 'success' => true,
-                'islanders' => $islanders,
+                'visitors' => $visitors,
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
-                'totalIslanders' => $totalIslanders,
-                'hasMore' => ($offset + $limit) < $totalIslanders
+                'totalVisitors' => $totalVisitors,
+                'hasMore' => ($offset + $limit) < $totalVisitors
             ]);
         }
 
         // Get active statuses for dropdown
-        $statuses = $this->islanderModel->getActiveStatuses();
+        $statuses = $this->visitorModel->getActiveStatuses();
         
         // Get dropdown data
-        $divisions = $this->islanderModel->getActiveDivisions();
-        $departments = $this->islanderModel->getActiveDepartments();
-        $sections = $this->islanderModel->getActiveSections();
-        $positions = $this->islanderModel->getActivePositions();
-        $genders = $this->islanderModel->getActiveGenders();
-        $houses = $this->islanderModel->getActiveHouses();
-        $nationalities = $this->islanderModel->getActiveNationalities();
+        $divisions = $this->visitorModel->getActiveDivisions();
+        $departments = $this->visitorModel->getActiveDepartments();
+        $sections = $this->visitorModel->getActiveSections();
+        $positions = $this->visitorModel->getActivePositions();
+        $genders = $this->visitorModel->getActiveGenders();
+        $houses = $this->visitorModel->getActiveHouses();
+        $nationalities = $this->visitorModel->getActiveNationalities();
         
         // Get auth groups for role dropdown
         $authGroupsModel = new \Myth\Auth\Models\GroupModel();
         $auth_groups = $authGroupsModel->findAll();
 
-        log_message('info', 'Statuses data: ' . json_encode($statuses));
-
         // Check user permissions for buttons
         $permissions = [
-            'canCreate' => has_permission('islanders.create') || has_permission('users.create'),
-            'canEdit' => has_permission('islanders.edit') || has_permission('users.edit'),
-            'canView' => has_permission('islanders.view') || has_permission('users.view'),
-            'canDelete' => has_permission('islanders.delete') || has_permission('users.delete')
+            'canCreate' => has_permission('visitors.create') || has_permission('users.create'),
+            'canEdit' => has_permission('visitors.edit') || has_permission('users.edit'),
+            'canView' => has_permission('visitors.view') || has_permission('users.view'),
+            'canDelete' => has_permission('visitors.delete') || has_permission('users.delete')
         ];
 
         $data = [
-            'title' => 'Islander Management',
-            'islanders' => $islanders,
+            'title' => 'Visitor Management',
+            'visitors' => $visitors,
             'statuses' => $statuses,
             'divisions' => $divisions,
             'departments' => $departments,
@@ -450,36 +376,32 @@ class IslandersController extends BaseController
             'search' => $search,
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'totalIslanders' => $totalIslanders,
+            'totalVisitors' => $totalVisitors,
             'limit' => $limit,
             'permissions' => $permissions
         ];
 
-        return view('islanders/index', $data);
+        return view('visitors/index', $data);
     }
 
     /**
-     * Store a newly created islander in database
+     * Store a newly created visitor in database
      */
     public function store()
     {
-        // Check if user has permission to create islanders
-        if (!has_permission('islanders.create') && !has_permission('users.create')) {
+        // Check if user has permission to create visitors
+        if (!has_permission('visitors.create') && !has_permission('users.create')) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'You do not have permission to create islanders.'
+                    'message' => 'You do not have permission to create visitors.'
                 ]);
             }
-            return redirect()->back()->with('error', 'You do not have permission to create islanders.');
+            return redirect()->back()->with('error', 'You do not have permission to create visitors.');
         }
 
-        // Debug: Log the incoming request
-        log_message('info', 'Islander store called. POST data: ' . json_encode($this->request->getPost()));
-        log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
-        
         // Validate the input
-        if (!$this->validate($this->islanderModel->getValidationRules())) {
+        if (!$this->validate($this->visitorModel->getValidationRules())) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -494,79 +416,79 @@ class IslandersController extends BaseController
 
         // Prepare data for insertion with sanitization
         $rawData = $this->request->getPost();
-        $data = $this->sanitizeIslanderInput($rawData, false); // false = create operation
+        $data = $this->sanitizeVisitorInput($rawData, false);
         
         // Extract role_id for later use
         $roleId = isset($rawData['role_id']) ? (int)$rawData['role_id'] : null;
 
-        // Insert the islander
-        if ($islanderId = $this->islanderModel->insert($data)) {
+        // Insert the visitor
+        if ($visitorId = $this->visitorModel->insert($data)) {
             try {
-                // Handle image uploads after islander is created
-                $imagePaths = $this->handleIslanderImages($islanderId);
+                // Handle image uploads after visitor is created
+                $imagePaths = $this->handleVisitorImages($visitorId);
                 
-                // Update islander with image paths if any were uploaded
+                // Update visitor with image paths if any were uploaded
                 if (!empty($imagePaths)) {
-                    $this->islanderModel->update($islanderId, $imagePaths);
+                    $this->visitorModel->update($visitorId, $imagePaths);
                 }
                 
-                // Get the full islander data for logging
-                $islanderData = $this->islanderModel->getIslander($islanderId);
+                // Get the full visitor data for logging
+                $visitorData = $this->visitorModel->getVisitor($visitorId);
                 
-                // Assign role to the islander if role_id is provided
+                // Assign role to the visitor if role_id is provided
                 if ($roleId) {
-                    $this->assignRoleToIslander($islanderId, $roleId, 'assign');
+                    $this->assignRoleToVisitor($visitorId, $roleId, 'assign');
                 }
                 
                 // Log the create operation
-                $this->logIslanderOperation('create', $islanderData, $islanderId);
+                $this->logVisitorOperation('create', $visitorData, $visitorId);
                 
             } catch (\Exception $e) {
-                // If image upload fails, delete the created islander record
-                $this->islanderModel->delete($islanderId);
+                // If image upload fails, delete the created visitor record
+                $this->visitorModel->delete($visitorId);
                 
                 if ($this->request->isAJAX()) {
                     return $this->response->setJSON([
                         'success' => false,
-                        'message' => 'Islander creation failed: ' . $e->getMessage()
+                        'message' => 'Visitor creation failed: ' . $e->getMessage()
                     ]);
                 }
                 return redirect()->back()
                                ->withInput()
-                               ->with('error', 'Islander creation failed: ' . $e->getMessage());
+                               ->with('error', 'Visitor creation failed: ' . $e->getMessage());
             }
             
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => true,
-                    'message' => 'Islander created successfully!'
+                    'message' => 'Visitor created successfully!'
                 ]);
             }
-            return redirect()->to('/islanders')
-                           ->with('success', 'Islander created successfully!');
+            return redirect()->to('/visitors')
+                           ->with('success', 'Visitor created successfully!');
         } else {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'Failed to create islander. Please try again.'
+                    'message' => 'Failed to create visitor. Please try again.'
                 ]);
             }
             return redirect()->back()
                            ->withInput()
-                           ->with('error', 'Failed to create islander. Please try again.');
+                           ->with('error', 'Failed to create visitor. Please try again.');
         }
     }
 
     /**
-     * Display the specified islander (AJAX only for modals)
+     * Display the specified visitor (AJAX only for modals)
      */
     public function show($id = null)
     {
-        // Check if user has permission to view islanders
-        if (!has_permission('islanders.view') && !has_permission('users.view')) {
+        // Check if user has permission to view visitors
+        if (!has_permission('visitors.view') && !has_permission('users.view')) {
             return $this->response->setStatusCode(403)->setJSON([
                 'success' => false,
-                'message' => 'You do not have permission to view islanders.'
+                'message' => 'You do not have permission to view visitors.'
             ]);
         }
 
@@ -581,89 +503,85 @@ class IslandersController extends BaseController
         if ($id === null) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Islander ID is required.'
+                'message' => 'Visitor ID is required.'
             ]);
         }
 
-        $islander = $this->islanderModel->getIslander($id);
+        $visitor = $this->visitorModel->getVisitor($id);
 
-        if (!$islander) {
+        if (!$visitor) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Islander not found.'
+                'message' => 'Visitor not found.'
             ]);
         }
 
-        // Get the islander's current role
+        // Get the visitor's current role
         try {
             $groupModel = new \Myth\Auth\Models\GroupModel();
             $userGroups = $groupModel->getGroupsForUser($id);
             
-            // Add role_id to islander data (assuming user has only one role)
-            $islander['role_id'] = !empty($userGroups) ? $userGroups[0]['group_id'] : null;
+            // Add role_id to visitor data (assuming user has only one role)
+            $visitor['role_id'] = !empty($userGroups) ? $userGroups[0]['group_id'] : null;
         } catch (\Exception $e) {
             log_message('error', 'Failed to get user groups: ' . $e->getMessage());
-            $islander['role_id'] = null;
+            $visitor['role_id'] = null;
         }
 
         return $this->response->setJSON([
             'success' => true,
-            'islander' => $islander
+            'visitor' => $visitor
         ]);
     }
 
     /**
-     * Update the specified islander in database
+     * Update the specified visitor in database
      */
     public function update($id = null)
     {
-        // Check if user has permission to edit islanders
-        if (!has_permission('islanders.edit') && !has_permission('users.edit')) {
+        // Check if user has permission to edit visitors
+        if (!has_permission('visitors.edit') && !has_permission('users.edit')) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'You do not have permission to edit islanders.'
+                    'message' => 'You do not have permission to edit visitors.'
                 ]);
             }
-            return redirect()->back()->with('error', 'You do not have permission to edit islanders.');
+            return redirect()->back()->with('error', 'You do not have permission to edit visitors.');
         }
 
-        // Debug: Log the incoming request
-        log_message('info', 'Islander update called for ID: ' . $id . '. POST data: ' . json_encode($this->request->getPost()));
-        log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
-        
         if ($id === null) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'Islander ID is required.'
+                    'message' => 'Visitor ID is required.'
                 ]);
             }
-            return redirect()->to('/islanders')
-                           ->with('error', 'Islander ID is required.');
+            return redirect()->to('/visitors')
+                           ->with('error', 'Visitor ID is required.');
         }
 
-        $islander = $this->islanderModel->getIslander($id);
+        $visitor = $this->visitorModel->getVisitor($id);
 
-        if (!$islander) {
+        if (!$visitor) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'Islander not found.'
+                    'message' => 'Visitor not found.'
                 ]);
             }
-            return redirect()->to('/islanders')
-                           ->with('error', 'Islander not found.');
+            return redirect()->to('/visitors')
+                           ->with('error', 'Visitor not found.');
         }
 
-        // Sanitize and validate the input using model's custom validation for updates
+        // Sanitize and validate the input
         $rawData = $this->request->getPost();
-        $inputData = $this->sanitizeIslanderInput($rawData, true); // true = update operation
+        $inputData = $this->sanitizeVisitorInput($rawData, true);
         
         // Extract role_id for later use
         $roleId = isset($rawData['role_id']) ? (int)$rawData['role_id'] : null;
         
-        $validationResult = $this->islanderModel->validateForUpdate($inputData, $id);
+        $validationResult = $this->visitorModel->validateForUpdate($inputData, $id);
         
         if ($validationResult !== true) {
             if ($this->request->isAJAX()) {
@@ -681,10 +599,10 @@ class IslandersController extends BaseController
         // Prepare data for update
         $data = $inputData;
 
-        // Update the islander
+        // Update the visitor
         try {
             // Handle image uploads first
-            $imagePaths = $this->handleIslanderImages($id, $islander['image'] ?? null, $islander['cover_image'] ?? null);
+            $imagePaths = $this->handleVisitorImages($id, $visitor['image'] ?? null, $visitor['cover_image'] ?? null);
             
             // Add image paths to update data if any were uploaded
             if (!empty($imagePaths)) {
@@ -692,44 +610,43 @@ class IslandersController extends BaseController
             }
             
             // Skip model validation since we already validated
-            $this->islanderModel->skipValidation(true);
-            $result = $this->islanderModel->update($id, $data);
-            $this->islanderModel->skipValidation(false); // Reset validation
+            $this->visitorModel->skipValidation(true);
+            $result = $this->visitorModel->update($id, $data);
+            $this->visitorModel->skipValidation(false);
             
             if ($result) {
-                // Get the updated islander data for logging
-                $updatedIslander = $this->islanderModel->getIslander($id);
+                // Get the updated visitor data for logging
+                $updatedVisitor = $this->visitorModel->getVisitor($id);
                 
                 // Update role assignment if role_id is provided
                 if ($roleId) {
-                    $this->assignRoleToIslander($id, $roleId, 'update');
+                    $this->assignRoleToVisitor($id, $roleId, 'update');
                 }
                 
                 // Log the update operation
-                $this->logIslanderOperation('update', $updatedIslander, $id);
+                $this->logVisitorOperation('update', $updatedVisitor, $id);
                 
                 if ($this->request->isAJAX()) {
                     return $this->response->setJSON([
                         'success' => true,
-                        'message' => 'Islander updated successfully!'
+                        'message' => 'Visitor updated successfully!'
                     ]);
                 }
-                return redirect()->to('/islanders')
-                               ->with('success', 'Islander updated successfully!');
+                return redirect()->to('/visitors')
+                               ->with('success', 'Visitor updated successfully!');
             } else {
-                // Get model errors if any
-                $errors = $this->islanderModel->errors();
+                $errors = $this->visitorModel->errors();
                 $errorMessage = !empty($errors) ? implode(', ', $errors) : 'Unknown database error occurred.';
                 
                 if ($this->request->isAJAX()) {
                     return $this->response->setJSON([
                         'success' => false,
-                        'message' => 'Failed to update islander: ' . $errorMessage
+                        'message' => 'Failed to update visitor: ' . $errorMessage
                     ]);
                 }
                 return redirect()->back()
                                ->withInput()
-                               ->with('error', 'Failed to update islander: ' . $errorMessage);
+                               ->with('error', 'Failed to update visitor: ' . $errorMessage);
             }
         } catch (\Exception $e) {
             if ($this->request->isAJAX()) {
@@ -745,66 +662,66 @@ class IslandersController extends BaseController
     }
 
     /**
-     * Remove the specified islander from database
+     * Remove the specified visitor from database
      */
     public function delete($id = null)
     {
-        // Check if user has permission to delete islanders
-        if (!has_permission('islanders.delete') && !has_permission('users.delete')) {
+        // Check if user has permission to delete visitors
+        if (!has_permission('visitors.delete') && !has_permission('users.delete')) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'You do not have permission to delete islanders.'
+                'message' => 'You do not have permission to delete visitors.'
             ]);
         }
 
         if ($id === null) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Islander ID is required.'
+                'message' => 'Visitor ID is required.'
             ]);
         }
 
-        $islander = $this->islanderModel->getIslander($id);
+        $visitor = $this->visitorModel->getVisitor($id);
 
-        if (!$islander) {
+        if (!$visitor) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Islander not found.'
+                'message' => 'Visitor not found.'
             ]);
         }
 
-        // Delete the islander
-        if ($this->islanderModel->delete($id)) {
+        // Delete the visitor
+        if ($this->visitorModel->delete($id)) {
             // Clean up uploaded images
-            if (!empty($islander['image'])) {
-                $this->deleteImage($islander['image']);
+            if (!empty($visitor['image'])) {
+                $this->deleteImage($visitor['image']);
             }
-            if (!empty($islander['cover_image'])) {
-                $this->deleteImage($islander['cover_image']);
+            if (!empty($visitor['cover_image'])) {
+                $this->deleteImage($visitor['cover_image']);
             }
             
             // Log the delete operation
-            $this->logIslanderOperation('delete', $islander, $id);
+            $this->logVisitorOperation('delete', $visitor, $id);
             
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Islander deleted successfully!'
+                'message' => 'Visitor deleted successfully!'
             ]);
         } else {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Failed to delete islander. Please try again.'
+                'message' => 'Failed to delete visitor. Please try again.'
             ]);
         }
     }
 
     /**
-     * Reset islander password to 1234
+     * Reset visitor password to 1234
      */
     public function resetPassword($id = null)
     {
-        // Check if user has permission to edit islanders
-        if (!has_permission('islanders.edit') && !has_permission('users.edit')) {
+        // Check if user has permission to edit visitors
+        if (!has_permission('visitors.edit') && !has_permission('users.edit')) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'You do not have permission to reset passwords.'
@@ -814,50 +731,36 @@ class IslandersController extends BaseController
         if ($id === null) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Islander ID is required.'
+                'message' => 'Visitor ID is required.'
             ]);
         }
 
-        $islander = $this->islanderModel->getIslander($id);
+        $visitor = $this->visitorModel->getVisitor($id);
 
-        if (!$islander) {
+        if (!$visitor) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Islander not found.'
+                'message' => 'Visitor not found.'
             ]);
         }
 
         // Prepare data for password reset
         $data = [
-            'password_hash' => password_hash( base64_encode( hash( 'sha384', '1234', true ) ), PASSWORD_DEFAULT ),
-            'password_changed' => 1, // Force user to change password on next login
+            'password_hash' => password_hash('1234', PASSWORD_DEFAULT),
+            'password_changed' => 1,
             'updated_by' => $this->getCurrentUserId()
         ];
 
-        // Debug: Log the reset data
-        log_message('info', 'Password reset data for user ' . $id . ': ' . json_encode([
-            'password_hash_length' => strlen($data['password_hash']),
-            'password_changed' => $data['password_changed'],
-            'updated_by' => $data['updated_by']
-        ]));
-
-        // Update the islander's password
+        // Update the visitor's password
         try {
-            $this->islanderModel->skipValidation(true);
-            $result = $this->islanderModel->update($id, $data);
-            $this->islanderModel->skipValidation(false);
-            
-            // Debug: Log the result
-            log_message('info', 'Password reset update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
-            if (!$result) {
-                $errors = $this->islanderModel->errors();
-                log_message('error', 'Password reset errors: ' . json_encode($errors));
-            }
+            $this->visitorModel->skipValidation(true);
+            $result = $this->visitorModel->update($id, $data);
+            $this->visitorModel->skipValidation(false);
             
             if ($result) {
                 // Log the password reset operation
-                $logData = array_merge($islander, ['action' => 'password_reset']);
-                $this->logIslanderOperation('password reset', $logData, $id);
+                $logData = array_merge($visitor, ['action' => 'password_reset']);
+                $this->logVisitorOperation('password reset', $logData, $id);
                 
                 return $this->response->setJSON([
                     'success' => true,
@@ -879,21 +782,21 @@ class IslandersController extends BaseController
     }
 
     /**
-     * Get islanders for AJAX requests
+     * Get visitors for AJAX requests
      */
-    public function getIslanders()
+    public function getVisitors()
     {
         $search = trim(strip_tags($this->request->getGet('search') ?? ''));
         $limit = (int)($this->request->getGet('limit') ?? 10);
         $offset = (int)($this->request->getGet('offset') ?? 0);
 
-        $islanders = $this->islanderModel->getIslandersWithPagination($search, $limit, $offset);
-        $totalIslanders = $this->islanderModel->getIslandersCount($search);
+        $visitors = $this->visitorModel->getVisitorsWithPagination($search, $limit, $offset);
+        $totalVisitors = $this->visitorModel->getVisitorsCount($search);
 
         return $this->response->setJSON([
             'success' => true,
-            'data' => $islanders,
-            'total' => $totalIslanders
+            'data' => $visitors,
+            'total' => $totalVisitors
         ]);
     }
 
@@ -909,7 +812,7 @@ class IslandersController extends BaseController
             ]);
         }
 
-        $statuses = $this->islanderModel->getActiveStatuses();
+        $statuses = $this->visitorModel->getActiveStatuses();
 
         return $this->response->setJSON([
             'success' => true,
@@ -935,23 +838,23 @@ class IslandersController extends BaseController
         $limit = (int)($this->request->getGet('limit') ?? 10);
         $offset = ($page - 1) * $limit;
 
-        $islanders = $this->islanderModel->getIslandersWithPagination($search, $limit, $offset);
-        $totalIslanders = $this->islanderModel->getIslandersCount($search);
+        $visitors = $this->visitorModel->getVisitorsWithPagination($search, $limit, $offset);
+        $totalVisitors = $this->visitorModel->getVisitorsCount($search);
 
         return $this->response->setJSON([
             'success' => true,
-            'data' => $islanders,
-            'total' => $totalIslanders,
+            'data' => $visitors,
+            'total' => $totalVisitors,
             'page' => $page,
             'limit' => $limit,
-            'hasMore' => ($offset + $limit) < $totalIslanders
+            'hasMore' => ($offset + $limit) < $totalVisitors
         ]);
     }
 
     /**
      * Handle image upload
      */
-    private function handleImageUpload($file, $fieldName, $islanderId = null)
+    private function handleImageUpload($file, $fieldName, $visitorId = null)
     {
         if (!$file || !$file->isValid() || $file->hasMoved()) {
             return null;
@@ -971,12 +874,11 @@ class IslandersController extends BaseController
 
         // Determine upload directory based on field type
         if ($fieldName === 'profile' || $fieldName === 'image') {
-            $uploadDir = 'assets/media/users/';
+            $uploadDir = 'assets/media/visitors/';
         } elseif ($fieldName === 'cover' || $fieldName === 'cover_image') {
-            $uploadDir = 'assets/media/cover_image/';
+            $uploadDir = 'assets/media/visitors_cover/';
         } else {
-            // Fallback for other types
-            $uploadDir = 'uploads/islanders/';
+            $uploadDir = 'uploads/visitors/';
         }
 
         // Create upload directory if it doesn't exist
@@ -987,7 +889,7 @@ class IslandersController extends BaseController
 
         // Generate unique filename
         $extension = $file->getClientExtension();
-        $fileName = $fieldName . '_' . ($islanderId ?: uniqid()) . '_' . time() . '.' . $extension;
+        $fileName = $fieldName . '_' . ($visitorId ?: uniqid()) . '_' . time() . '.' . $extension;
 
         // Move file to upload directory
         if ($file->move($uploadPath, $fileName)) {
@@ -1006,18 +908,16 @@ class IslandersController extends BaseController
             return;
         }
 
-        // If imagePath is just a filename (no directory), construct the full path
+        // If imagePath is just a filename, construct the full path
         if (strpos($imagePath, '/') === false) {
-            // Determine directory based on filename prefix
             if (strpos($imagePath, 'profile_') === 0) {
-                $fullPath = FCPATH . 'assets/media/users/' . $imagePath;
+                $fullPath = FCPATH . 'assets/media/visitors/' . $imagePath;
             } elseif (strpos($imagePath, 'cover_') === 0) {
-                $fullPath = FCPATH . 'assets/media/cover_image/' . $imagePath;
+                $fullPath = FCPATH . 'assets/media/visitors_cover/' . $imagePath;
             } else {
-                $fullPath = FCPATH . 'uploads/islanders/' . $imagePath;
+                $fullPath = FCPATH . 'uploads/visitors/' . $imagePath;
             }
         } else {
-            // imagePath already contains directory structure
             $fullPath = FCPATH . $imagePath;
         }
 
@@ -1027,9 +927,9 @@ class IslandersController extends BaseController
     }
 
     /**
-     * Handle multiple image uploads for an islander
+     * Handle multiple image uploads for a visitor
      */
-    private function handleIslanderImages($islanderId, $oldImagePath = null, $oldCoverImagePath = null)
+    private function handleVisitorImages($visitorId, $oldImagePath = null, $oldCoverImagePath = null)
     {
         $imagePaths = [];
 
@@ -1037,12 +937,11 @@ class IslandersController extends BaseController
         $imageFile = $this->request->getFile('image') ?: $this->request->getFile('profile_image');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
             try {
-                // Delete old image if exists
                 if ($oldImagePath) {
                     $this->deleteImage($oldImagePath);
                 }
                 
-                $imagePaths['image'] = $this->handleImageUpload($imageFile, 'profile', $islanderId);
+                $imagePaths['image'] = $this->handleImageUpload($imageFile, 'profile', $visitorId);
             } catch (\Exception $e) {
                 log_message('error', 'Profile image upload failed: ' . $e->getMessage());
                 throw new \Exception('Profile image upload failed: ' . $e->getMessage());
@@ -1053,12 +952,11 @@ class IslandersController extends BaseController
         $coverImageFile = $this->request->getFile('cover_image');
         if ($coverImageFile && $coverImageFile->isValid() && !$coverImageFile->hasMoved()) {
             try {
-                // Delete old cover image if exists
                 if ($oldCoverImagePath) {
                     $this->deleteImage($oldCoverImagePath);
                 }
                 
-                $imagePaths['cover_image'] = $this->handleImageUpload($coverImageFile, 'cover', $islanderId);
+                $imagePaths['cover_image'] = $this->handleImageUpload($coverImageFile, 'cover', $visitorId);
             } catch (\Exception $e) {
                 log_message('error', 'Cover image upload failed: ' . $e->getMessage());
                 throw new \Exception('Cover image upload failed: ' . $e->getMessage());

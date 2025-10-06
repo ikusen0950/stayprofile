@@ -660,6 +660,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             </table>
                         </div>
                         <!--end::Table-->
+                        
+                        <?php
+                        // Include table footer with pagination
+                        $footerData = [
+                            'baseUrl' => 'positions',
+                            'currentPage' => $currentPage,
+                            'totalPages' => $totalPages,
+                            'limit' => $limit,
+                            'totalRecords' => $totalPositions,
+                            'search' => $search,
+                            'tableId' => 'kt_position_table_length',
+                            'jsFunction' => 'changePositionTableLimit'
+                        ];
+                        echo view('partials/table_footer', $footerData);
+                        ?>
                     </div>
                     <!--end::Card body-->
                 </div>
@@ -1320,6 +1335,14 @@ function populateEditModal(position) {
     if (sectionSelect && typeof $(sectionSelect).select2 === 'function') {
         $(sectionSelect).trigger('change');
     }
+}
+
+// Change table limit (records per page)
+function changePositionTableLimit(newLimit) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('limit', newLimit);
+    currentUrl.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = currentUrl.toString();
 }
 </script>
 

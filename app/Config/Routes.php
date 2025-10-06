@@ -19,6 +19,16 @@ $routes->post('accept-agreement', 'Dashboard::acceptAgreement', ['filter' => 'lo
 // Testing route to reset current user's agreement
 $routes->get('reset-my-agreement', 'Dashboard::resetMyAgreement', ['filter' => 'login']);
 
+// Check permissions route (for debugging)
+$routes->get('check-permissions/visitors', 'CheckPermissions::visitors');
+
+// API routes for cascading dropdowns (authenticated AJAX calls)
+$routes->group('api', function($routes) {
+    $routes->get('departments-by-division', 'Api::departmentsByDivision');
+    $routes->get('sections-by-department', 'Api::sectionsByDepartment');
+    $routes->get('positions-by-status', 'Api::positionsByStatus');
+});
+
 // Password change routes
 $routes->get('change-password', 'Dashboard::changePassword', ['filter' => 'login']);
 $routes->post('change-password', 'Dashboard::updatePassword', ['filter' => 'login']);
@@ -191,6 +201,7 @@ $routes->group('islanders', ['filter' => 'login'], function($routes) {
     $routes->delete('(:num)', 'IslandersController::delete/$1');
     $routes->post('(:num)/delete', 'IslandersController::delete/$1');
     $routes->post('delete/(:num)', 'IslandersController::delete/$1');
+    $routes->post('(:num)/reset-password', 'IslandersController::resetPassword/$1');
     $routes->get('api', 'IslandersController::api');
     $routes->get('divisions', 'IslandersController::getDivisions');
     $routes->get('departments', 'IslandersController::getDepartments');
@@ -204,6 +215,28 @@ $routes->group('islanders', ['filter' => 'login'], function($routes) {
     $routes->get('departments-by-division', 'IslandersController::getDepartmentsByDivision');
     $routes->get('sections-by-department', 'IslandersController::getSectionsByDepartment');
     $routes->get('positions-by-section', 'IslandersController::getPositionsBySection');
+});
+
+// Visitors CRUD routes
+$routes->group('visitors', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'VisitorsController::index');
+    $routes->post('/', 'VisitorsController::store');
+    $routes->get('create', 'VisitorsController::create');
+    $routes->post('store', 'VisitorsController::store');
+    $routes->get('show/(:num)', 'VisitorsController::show/$1');
+    $routes->get('(:num)', 'VisitorsController::show/$1');
+    $routes->get('(:num)/edit', 'VisitorsController::edit/$1');
+    $routes->put('(:num)', 'VisitorsController::update/$1');
+    $routes->post('(:num)/update', 'VisitorsController::update/$1');
+    $routes->post('update/(:num)', 'VisitorsController::update/$1');
+    $routes->delete('(:num)', 'VisitorsController::delete/$1');
+    $routes->post('(:num)/delete', 'VisitorsController::delete/$1');
+    $routes->post('delete/(:num)', 'VisitorsController::delete/$1');
+    $routes->post('(:num)/reset-password', 'VisitorsController::resetPassword/$1');
+    $routes->get('api', 'VisitorsController::api');
+    $routes->get('genders', 'VisitorsController::getGenders');
+    $routes->get('nationalities', 'VisitorsController::getNationalities');
+    $routes->get('statuses', 'VisitorsController::getStatuses');
 });
 
 // Log Management Routes

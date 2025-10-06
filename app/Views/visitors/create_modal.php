@@ -1,16 +1,16 @@
-<!--begin::Modal - Create Islander-->
-<div class="modal fade" id="createIslanderModal" tabindex="-1" aria-hidden="true">
+<!--begin::Modal - Create Visitor-->
+<div class="modal fade" id="createVisitorModal" tabindex="-1" aria-hidden="true">
     <!--begin::Modal dialog-->
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <!--begin::Modal content-->
         <div class="modal-content">
             <!--begin::Modal header-->
-            <div class="modal-header" id="createIslanderModal_header">
+            <div class="modal-header" id="createVisitorModal_header">
                 <!--begin::Modal title-->
-                <h2 class="fw-bold">Add New Islander</h2>
+                <h2 class="fw-bold">Add New Visitor</h2>
                 <!--end::Modal title-->
                 <!--begin::Close-->
-                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-islanders-modal-action="close">
+                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-visitors-modal-action="close">
                     <i class="ki-duotone ki-cross fs-1">
                         <span class="path1"></span>
                         <span class="path2"></span>
@@ -22,12 +22,12 @@
             <!--begin::Modal body-->
             <div class="modal-body px-5 my-7">
                 <!--begin::Form-->
-                <form id="createIslanderModal_form" class="form" action="#">
+                <form id="createVisitorModal_form" class="form" action="#">
                     <!--begin::Scroll-->
-                    <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="createIslanderModal_scroll"
+                    <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="createVisitorModal_scroll"
                         data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
-                        data-kt-scroll-dependencies="#createIslanderModal_header"
-                        data-kt-scroll-wrappers="#createIslanderModal_scroll" data-kt-scroll-offset="300px">
+                        data-kt-scroll-dependencies="#createVisitorModal_header"
+                        data-kt-scroll-wrappers="#createVisitorModal_scroll" data-kt-scroll-offset="300px">
 
                         <!--begin::Input group-->
                         <div class="row mb-7">
@@ -93,23 +93,8 @@
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-4">
                                     <!--begin::Label-->
-                                    <label class="fs-6 fw-semibold mb-2 required">Islander #</label>
-                                    <small>(This will be the username.)</small>
-                                    <!--end::Label-->
-                                    <!--begin::Input-->
-                                    <input type="text" name="islander_no"
-                                        class="form-control form-control-solid mb-3 mb-lg-0"
-                                        placeholder="Enter islander number" value="" />
-                                    <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="islander_no"></div>
-                                    </div>
-                                    <!--end::Input-->
-                                </div>
-                                <!--end::Input group-->
-                                <!--begin::Input group-->
-                                <div class="fv-row mb-4">
-                                    <!--begin::Label-->
                                     <label class="fs-6 fw-semibold mb-2 required">NID/PP/WP #</label>
+                                    <small>(This will be the username.)</small>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <input type="text" name="id_pp_wp_no"
@@ -129,7 +114,7 @@
                                     <!--begin::Select-->
                                     <select name="status_id" class="form-select form-select-solid"
                                         data-control="select2" data-placeholder="Select status"
-                                        data-dropdown-parent="#createIslanderModal">
+                                        data-dropdown-parent="#createVisitorModal">
                                         <option value="">Select Status</option>
                                         <?php if (!empty($statuses)): ?>
                                         <?php foreach ($statuses as $status): ?>
@@ -165,7 +150,9 @@
             </div>
             <!--end::Input-->
         </div>
-        <!--end::Input group-->                        <!--begin::Input group-->
+        <!--end::Input group-->                        
+        
+        <!--begin::Input group-->
                         <div class="row mb-7">
                             <!--begin::Col-->
                             <div class="col-md-6">
@@ -207,7 +194,7 @@
                                 <!--end::Label-->
                                 <!--begin::Select-->
                                 <select name="gender_id" class="form-select form-select-solid" data-control="select2"
-                                    data-placeholder="Select gender" data-dropdown-parent="#createIslanderModal" required>
+                                    data-placeholder="Select gender" data-dropdown-parent="#createVisitorModal" required>
                                     <option value="">Select Gender</option>
                                     <?php if (!empty($genders)): ?>
                                     <?php foreach ($genders as $gender): ?>
@@ -229,7 +216,7 @@
                                 <!--begin::Select-->
                                 <select name="nationality_id" class="form-select form-select-solid"
                                     data-control="select2" data-placeholder="Select nationality"
-                                    data-dropdown-parent="#createIslanderModal" required>
+                                    data-dropdown-parent="#createVisitorModal" required>
                                     <option value="">Select Nationality</option>
                                     <?php if (!empty($nationalities)): ?>
                                     <?php foreach ($nationalities as $nationality): ?>
@@ -247,51 +234,9 @@
                         </div>
                         <!--end::Input group-->
 
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Date of Birth</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="date" name="date_of_birth"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Select date of birth" value="" required />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="date_of_birth"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-12">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Address</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <textarea name="address" class="form-control form-control-solid" rows="3"
-                                    placeholder="Enter address"></textarea>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
                         <!--begin::Section-->
-                        <h4 class="fw-bold text-gray-800">Work Informations</h4>
+                        <h4 class="fw-bold text-gray-800">Work Information</h4>
                         <div class="separator separator-dashed mt-2 mb-7"></div>
-
 
                         <!--begin::Input group-->
                         <div class="row mb-7">
@@ -301,9 +246,8 @@
                                 <label class="required fw-semibold fs-6 mb-2">Division</label>
                                 <!--end::Label-->
                                 <!--begin::Select-->
-                                <select name="division_id" id="division_id" class="form-select form-select-solid"
-                                    data-control="select2" data-placeholder="Select division"
-                                    data-dropdown-parent="#createIslanderModal" required>
+                                <select name="division_id" class="form-select form-select-solid" data-control="select2"
+                                    data-placeholder="Select division" data-dropdown-parent="#createVisitorModal" required>
                                     <option value="">Select Division</option>
                                     <?php if (!empty($divisions)): ?>
                                     <?php foreach ($divisions as $division): ?>
@@ -323,10 +267,10 @@
                                 <label class="required fw-semibold fs-6 mb-2">Department</label>
                                 <!--end::Label-->
                                 <!--begin::Select-->
-                                <select name="department_id" id="department_id" class="form-select form-select-solid"
+                                <select name="department_id" class="form-select form-select-solid"
                                     data-control="select2" data-placeholder="Select department"
-                                    data-dropdown-parent="#createIslanderModal" disabled required>
-                                    <option value="">Select Division First</option>
+                                    data-dropdown-parent="#createVisitorModal" required disabled>
+                                    <option value="">Select Department</option>
                                 </select>
                                 <div class="fv-plugins-message-container invalid-feedback">
                                     <div class="fv-help-block" data-field="department_id"></div>
@@ -345,10 +289,9 @@
                                 <label class="required fw-semibold fs-6 mb-2">Section</label>
                                 <!--end::Label-->
                                 <!--begin::Select-->
-                                <select name="section_id" id="section_id" class="form-select form-select-solid"
-                                    data-control="select2" data-placeholder="Select section"
-                                    data-dropdown-parent="#createIslanderModal" disabled required>
-                                    <option value="">Select Department First</option>
+                                <select name="section_id" class="form-select form-select-solid" data-control="select2"
+                                    data-placeholder="Select section" data-dropdown-parent="#createVisitorModal" required disabled>
+                                    <option value="">Select Section</option>
                                 </select>
                                 <div class="fv-plugins-message-container invalid-feedback">
                                     <div class="fv-help-block" data-field="section_id"></div>
@@ -362,10 +305,10 @@
                                 <label class="required fw-semibold fs-6 mb-2">Position</label>
                                 <!--end::Label-->
                                 <!--begin::Select-->
-                                <select name="position_id" id="position_id" class="form-select form-select-solid"
+                                <select name="position_id" class="form-select form-select-solid"
                                     data-control="select2" data-placeholder="Select position"
-                                    data-dropdown-parent="#createIslanderModal" disabled required>
-                                    <option value="">Select Section First</option>
+                                    data-dropdown-parent="#createVisitorModal" required disabled>
+                                    <option value="">Select Position</option>
                                 </select>
                                 <div class="fv-plugins-message-container invalid-feedback">
                                     <div class="fv-help-block" data-field="position_id"></div>
@@ -376,106 +319,9 @@
                         </div>
                         <!--end::Input group-->
 
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">House</label>
-                                <!--end::Label-->
-                                <!--begin::Select-->
-                                <select name="house_id" class="form-select form-select-solid" data-control="select2"
-                                    data-placeholder="Select house" data-dropdown-parent="#createIslanderModal" required>
-                                    <option value="">Select House</option>
-                                    <?php if (!empty($houses)): ?>
-                                    <?php foreach ($houses as $house): ?>
-                                    <option value="<?= esc($house['id']) ?>"><?= esc($house['name']) ?></option>
-                                    <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="house_id"></div>
-                                </div>
-                                <!--end::Select-->
-                            </div>
-                            <!--end::Col-->
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Join Date</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="date" name="join_date" class="form-control form-control-solid"
-                                    placeholder="Select join date" value="" required />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="join_date"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-12">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Notes</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <textarea name="notes" class="form-control form-control-solid" rows="3"
-                                    placeholder="Enter any additional notes"></textarea>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Section-->
-                        <h4 class="fw-bold text-gray-800">User Account</h4>
-                        <div class="separator separator-dashed mt-2 mb-7"></div>
-
-                        <!--begin::Input group-->
-                        <div class="row mb-7">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Role</label>
-                                <!--end::Label-->
-                                <!--begin::Select-->
-                                <select name="role_id" class="form-select form-select-solid" data-control="select2"
-                                    data-placeholder="Select role" data-dropdown-parent="#createIslanderModal" required>
-                                    <option value="">Select Role</option>
-                                    <?php if (!empty($auth_groups)): ?>
-                                    <?php foreach ($auth_groups as $group): ?>
-                                    <option value="<?= esc($group->id) ?>"><?= esc($group->name) ?></option>
-                                    <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="role_id"></div>
-                                </div>
-                                <!--end::Select-->
-                            </div>
-                            <!--end::Col-->
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Password</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="password" name="password" class="form-control form-control-solid"
-                                    placeholder="Enter password" value="1234" required autocomplete="new-password" />
-                                <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="password"></div>
-                                </div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Input group-->
+                        <!-- Hidden fields for default values -->
+                        <input type="hidden" name="role_id" value="8" />
+                        <input type="hidden" name="password" value="123" />
 
                     </div>
                     <!--end::Scroll-->
@@ -486,10 +332,10 @@
             <!--begin::Modal footer-->
             <div class="modal-footer flex-center">
                 <!--begin::Button-->
-                <button type="reset" id="createIslanderModal_cancel" class="btn btn-light me-3">Cancel</button>
+                <button type="reset" id="createVisitorModal_cancel" class="btn btn-light me-3">Cancel</button>
                 <!--end::Button-->
                 <!--begin::Button-->
-                <button type="submit" id="createIslanderModal_submit" class="btn btn-primary">
+                <button type="submit" id="createVisitorModal_submit" class="btn btn-primary">
                     <span class="indicator-label">Submit</span>
                     <span class="indicator-progress">Please wait...
                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -502,13 +348,13 @@
     </div>
     <!--end::Modal dialog-->
 </div>
-<!--end::Modal - Create Islander-->
+<!--end::Modal - Create Visitor-->
 
 <script>
 "use strict";
 
 // Class definition
-var CreateIslanderModal = function() {
+var CreateVisitorModal = function() {
     var modal;
     var form;
     var submitButton;
@@ -517,14 +363,14 @@ var CreateIslanderModal = function() {
 
     // Initialize modal
     var initModal = function() {
-        modal = new bootstrap.Modal(document.querySelector('#createIslanderModal'));
+        modal = new bootstrap.Modal(document.querySelector('#createVisitorModal'));
     };
 
     // Initialize form
     var initForm = function() {
-        form = document.querySelector('#createIslanderModal_form');
-        submitButton = document.querySelector('#createIslanderModal_submit');
-        cancelButton = document.querySelector('#createIslanderModal_cancel');
+        form = document.querySelector('#createVisitorModal_form');
+        submitButton = document.querySelector('#createVisitorModal_submit');
+        cancelButton = document.querySelector('#createVisitorModal_cancel');
 
         // Check if required elements exist
         if (!form || !submitButton || !cancelButton) {
@@ -540,13 +386,6 @@ var CreateIslanderModal = function() {
         try {
             validator = FormValidation.formValidation(form, {
                 fields: {
-                    'islander_no': {
-                        validators: {
-                            notEmpty: {
-                                message: 'Islander number is required'
-                            }
-                        }
-                    },
                     'id_pp_wp_no': {
                         validators: {
                             notEmpty: {
@@ -599,13 +438,6 @@ var CreateIslanderModal = function() {
                             }
                         }
                     },
-                    'date_of_birth': {
-                        validators: {
-                            notEmpty: {
-                                message: 'Date of birth is required'
-                            }
-                        }
-                    },
                     'division_id': {
                         validators: {
                             notEmpty: {
@@ -631,34 +463,6 @@ var CreateIslanderModal = function() {
                         validators: {
                             notEmpty: {
                                 message: 'Position is required'
-                            }
-                        }
-                    },
-                    'house_id': {
-                        validators: {
-                            notEmpty: {
-                                message: 'House is required'
-                            }
-                        }
-                    },
-                    'join_date': {
-                        validators: {
-                            notEmpty: {
-                                message: 'Join date is required'
-                            }
-                        }
-                    },
-                    'role_id': {
-                        validators: {
-                            notEmpty: {
-                                message: 'Role is required'
-                            }
-                        }
-                    },
-                    'password': {
-                        validators: {
-                            notEmpty: {
-                                message: 'Password is required'
                             }
                         }
                     }
@@ -695,7 +499,6 @@ var CreateIslanderModal = function() {
                 clearAllErrors();
 
                 // If validation is not available, perform basic checks
-                const islanderNo = form.querySelector('input[name="islander_no"]');
                 const idPpWpNo = form.querySelector('input[name="id_pp_wp_no"]');
                 const statusId = form.querySelector('select[name="status_id"]');
                 const fullName = form.querySelector('input[name="full_name"]');
@@ -703,23 +506,14 @@ var CreateIslanderModal = function() {
                 const phone = form.querySelector('input[name="phone"]');
                 const genderId = form.querySelector('select[name="gender_id"]');
                 const nationalityId = form.querySelector('select[name="nationality_id"]');
-                const dateOfBirth = form.querySelector('input[name="date_of_birth"]');
                 const divisionId = form.querySelector('select[name="division_id"]');
                 const departmentId = form.querySelector('select[name="department_id"]');
                 const sectionId = form.querySelector('select[name="section_id"]');
                 const positionId = form.querySelector('select[name="position_id"]');
-                const houseId = form.querySelector('select[name="house_id"]');
-                const joinDate = form.querySelector('input[name="join_date"]');
-                const roleId = form.querySelector('select[name="role_id"]');
-                const password = form.querySelector('input[name="password"]');
 
                 let hasErrors = false;
 
                 // Check all required fields and show errors
-                if (!islanderNo || !islanderNo.value.trim()) {
-                    showFieldError('islander_no', 'Islander number is required');
-                    hasErrors = true;
-                }
                 if (!idPpWpNo || !idPpWpNo.value.trim()) {
                     showFieldError('id_pp_wp_no', 'NID/PP/WP number is required');
                     hasErrors = true;
@@ -751,10 +545,6 @@ var CreateIslanderModal = function() {
                     showFieldError('nationality_id', 'Nationality is required');
                     hasErrors = true;
                 }
-                if (!dateOfBirth || !dateOfBirth.value) {
-                    showFieldError('date_of_birth', 'Date of birth is required');
-                    hasErrors = true;
-                }
                 if (!divisionId || !divisionId.value) {
                     showFieldError('division_id', 'Division is required');
                     hasErrors = true;
@@ -769,22 +559,6 @@ var CreateIslanderModal = function() {
                 }
                 if (!positionId || !positionId.value) {
                     showFieldError('position_id', 'Position is required');
-                    hasErrors = true;
-                }
-                if (!houseId || !houseId.value) {
-                    showFieldError('house_id', 'House is required');
-                    hasErrors = true;
-                }
-                if (!joinDate || !joinDate.value) {
-                    showFieldError('join_date', 'Join date is required');
-                    hasErrors = true;
-                }
-                if (!roleId || !roleId.value) {
-                    showFieldError('role_id', 'Role is required');
-                    hasErrors = true;
-                }
-                if (!password || !password.value.trim()) {
-                    showFieldError('password', 'Password is required');
                     hasErrors = true;
                 }
 
@@ -854,7 +628,7 @@ var CreateIslanderModal = function() {
         });
 
         // Handle modal close
-        document.querySelector('[data-kt-islanders-modal-action="close"]').addEventListener('click', function(
+        document.querySelector('[data-kt-visitors-modal-action="close"]').addEventListener('click', function(
             e) {
             e.preventDefault();
             Swal.fire({
@@ -885,7 +659,7 @@ var CreateIslanderModal = function() {
         const formData = new FormData(form);
 
         $.ajax({
-            url: '<?= base_url('islanders') ?>',
+            url: '<?= base_url('visitors') ?>',
             type: 'POST',
             data: formData,
             processData: false,
@@ -899,7 +673,7 @@ var CreateIslanderModal = function() {
             success: function(response) {
                 if (response.success) {
                     Swal.fire({
-                        text: response.message || "Islander has been successfully created!",
+                        text: response.message || "Visitor has been successfully created!",
                         icon: "success",
                         buttonsStyling: false,
                         confirmButtonText: "Ok, got it!",
@@ -915,7 +689,7 @@ var CreateIslanderModal = function() {
                     });
                 } else {
                     let errorMessage = response.message ||
-                        'An error occurred while creating the islander.';
+                        'An error occurred while creating the visitor.';
 
                     if (response.errors) {
                         errorMessage = Object.values(response.errors).flat().join('<br>');
@@ -933,9 +707,9 @@ var CreateIslanderModal = function() {
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error creating islander:', error);
+                console.error('Error creating visitor:', error);
 
-                let errorMessage = 'An error occurred while creating the islander.';
+                let errorMessage = 'An error occurred while creating the visitor.';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
                 }
@@ -965,211 +739,24 @@ var CreateIslanderModal = function() {
             return;
         }
 
-        $('#createIslanderModal').on('shown.bs.modal', function() {
+        $('#createVisitorModal').on('shown.bs.modal', function() {
             // Initialize Select2 for all select elements in the modal
             $(this).find('select[data-control="select2"]').each(function() {
                 if (!$(this).hasClass('select2-hidden-accessible')) {
                     $(this).select2({
-                        dropdownParent: $('#createIslanderModal')
+                        dropdownParent: $('#createVisitorModal')
                     });
                 }
             });
         });
 
         // Destroy Select2 when modal is hidden
-        $('#createIslanderModal').on('hidden.bs.modal', function() {
+        $('#createVisitorModal').on('hidden.bs.modal', function() {
             $(this).find('select[data-control="select2"]').each(function() {
                 if ($(this).hasClass('select2-hidden-accessible')) {
                     $(this).select2('destroy');
                 }
             });
-        });
-    };
-
-    // Initialize cascading dropdowns
-    var initCascadingDropdowns = function() {
-        // Check if jQuery is available
-        if (typeof $ === 'undefined') {
-            console.log('jQuery not available, skipping cascading dropdown initialization');
-            return;
-        }
-
-        // Division change handler
-        $(document).on('change', '#division_id', function() {
-            const divisionId = $(this).val();
-            const $departmentSelect = $('#department_id');
-            const $sectionSelect = $('#section_id');
-            const $positionSelect = $('#position_id');
-
-            // Reset dependent dropdowns
-            resetDropdown($departmentSelect, 'Select Division First', true);
-            resetDropdown($sectionSelect, 'Select Department First', true);
-            resetDropdown($positionSelect, 'Select Section First', true);
-
-            if (divisionId) {
-                // Enable and load departments
-                $departmentSelect.prop('disabled', false);
-                loadDepartments(divisionId);
-            }
-        });
-
-        // Department change handler
-        $(document).on('change', '#department_id', function() {
-            const departmentId = $(this).val();
-            const $sectionSelect = $('#section_id');
-            const $positionSelect = $('#position_id');
-
-            // Reset dependent dropdowns
-            resetDropdown($sectionSelect, 'Select Department First', true);
-            resetDropdown($positionSelect, 'Select Section First', true);
-
-            if (departmentId) {
-                // Enable and load sections
-                $sectionSelect.prop('disabled', false);
-                loadSections(departmentId);
-            }
-        });
-
-        // Section change handler
-        $(document).on('change', '#section_id', function() {
-            const sectionId = $(this).val();
-            const $positionSelect = $('#position_id');
-
-            // Reset dependent dropdown
-            resetDropdown($positionSelect, 'Select Section First', true);
-
-            if (sectionId) {
-                // Enable and load positions
-                $positionSelect.prop('disabled', false);
-                loadPositions(sectionId);
-            }
-        });
-    };
-
-    // Helper function to reset dropdown
-    var resetDropdown = function($select, placeholder, disable = false) {
-        if ($select.hasClass('select2-hidden-accessible')) {
-            $select.val('').trigger('change');
-            $select.empty().append('<option value="">' + placeholder + '</option>');
-            $select.prop('disabled', disable);
-        } else {
-            $select.empty().append('<option value="">' + placeholder + '</option>');
-            $select.prop('disabled', disable);
-        }
-    };
-
-    // Load departments by division
-    var loadDepartments = function(divisionId) {
-        const $departmentSelect = $('#department_id');
-
-        // Show loading state
-        $departmentSelect.empty().append('<option value="">Loading departments...</option>');
-
-        $.ajax({
-            url: '<?= base_url('islanders/departments-by-division') ?>',
-            type: 'GET',
-            data: {
-                division_id: divisionId
-            },
-            dataType: 'json',
-            success: function(departments) {
-                $departmentSelect.empty().append('<option value="">Select Department</option>');
-
-                if (departments && departments.length > 0) {
-                    $.each(departments, function(index, department) {
-                        $departmentSelect.append('<option value="' + department.id + '">' +
-                            department.name + '</option>');
-                    });
-                } else {
-                    $departmentSelect.append('<option value="">No departments available</option>');
-                }
-
-                // Trigger change for Select2
-                if ($departmentSelect.hasClass('select2-hidden-accessible')) {
-                    $departmentSelect.trigger('change');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading departments:', error);
-                $departmentSelect.empty().append(
-                    '<option value="">Error loading departments</option>');
-            }
-        });
-    };
-
-    // Load sections by department
-    var loadSections = function(departmentId) {
-        const $sectionSelect = $('#section_id');
-
-        // Show loading state
-        $sectionSelect.empty().append('<option value="">Loading sections...</option>');
-
-        $.ajax({
-            url: '<?= base_url('islanders/sections-by-department') ?>',
-            type: 'GET',
-            data: {
-                department_id: departmentId
-            },
-            dataType: 'json',
-            success: function(sections) {
-                $sectionSelect.empty().append('<option value="">Select Section</option>');
-
-                if (sections && sections.length > 0) {
-                    $.each(sections, function(index, section) {
-                        $sectionSelect.append('<option value="' + section.id + '">' +
-                            section.name + '</option>');
-                    });
-                } else {
-                    $sectionSelect.append('<option value="">No sections available</option>');
-                }
-
-                // Trigger change for Select2
-                if ($sectionSelect.hasClass('select2-hidden-accessible')) {
-                    $sectionSelect.trigger('change');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading sections:', error);
-                $sectionSelect.empty().append('<option value="">Error loading sections</option>');
-            }
-        });
-    };
-
-    // Load positions by section
-    var loadPositions = function(sectionId) {
-        const $positionSelect = $('#position_id');
-
-        // Show loading state
-        $positionSelect.empty().append('<option value="">Loading positions...</option>');
-
-        $.ajax({
-            url: '<?= base_url('islanders/positions-by-section') ?>',
-            type: 'GET',
-            data: {
-                section_id: sectionId
-            },
-            dataType: 'json',
-            success: function(positions) {
-                $positionSelect.empty().append('<option value="">Select Position</option>');
-
-                if (positions && positions.length > 0) {
-                    $.each(positions, function(index, position) {
-                        $positionSelect.append('<option value="' + position.id + '">' +
-                            position.name + '</option>');
-                    });
-                } else {
-                    $positionSelect.append('<option value="">No positions available</option>');
-                }
-
-                // Trigger change for Select2
-                if ($positionSelect.hasClass('select2-hidden-accessible')) {
-                    $positionSelect.trigger('change');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading positions:', error);
-                $positionSelect.empty().append('<option value="">Error loading positions</option>');
-            }
         });
     };
 
@@ -1185,14 +772,14 @@ var CreateIslanderModal = function() {
         if (typeof KTImageInput !== 'undefined') {
             try {
                 // Initialize all image inputs in the modal using selector
-                KTImageInput.createInstances('#createIslanderModal [data-kt-image-input="true"]');
+                KTImageInput.createInstances('#createVisitorModal [data-kt-image-input="true"]');
             } catch (e) {
                 console.log('KTImageInput not available:', e);
             }
         }
 
         // File validation for image uploads
-        $('#createIslanderModal input[name="profile_image"]')
+        $('#createVisitorModal input[name="profile_image"]')
             .on('change', function() {
                 const file = this.files[0];
                 const maxSize = 2 * 1024 * 1024; // 2MB in bytes
@@ -1232,14 +819,166 @@ var CreateIslanderModal = function() {
             });
     };
 
+    // Initialize cascading dropdowns
+    var initCascadingDropdowns = function() {
+        // Check if jQuery is available
+        if (typeof $ === 'undefined') {
+            console.log('jQuery not available, skipping cascading dropdown initialization');
+            return;
+        }
+
+        $('#createVisitorModal').on('shown.bs.modal', function() {
+            // Division change handler
+            $(this).find('select[name="division_id"]').on('change', function() {
+                const divisionId = $(this).val();
+                const departmentSelect = $('#createVisitorModal select[name="department_id"]');
+                const sectionSelect = $('#createVisitorModal select[name="section_id"]');
+                const positionSelect = $('#createVisitorModal select[name="position_id"]');
+                
+                // Reset and disable department, section, and position
+                departmentSelect.val('').trigger('change');
+                sectionSelect.val('').trigger('change');
+                positionSelect.val('').trigger('change');
+                
+                departmentSelect.prop('disabled', true);
+                sectionSelect.prop('disabled', true);
+                positionSelect.prop('disabled', true);
+                
+                if (divisionId) {
+                    // Load departments for selected division
+                    $.ajax({
+                        url: '<?= base_url("api/departments-by-division") ?>',
+                        type: 'GET',
+                        data: { division_id: divisionId },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.data) {
+                                // Clear existing options except the default
+                                departmentSelect.find('option:not(:first)').remove();
+                                
+                                // Add new options
+                                $.each(response.data, function(index, department) {
+                                    departmentSelect.append(
+                                        $('<option>', {
+                                            value: department.id,
+                                            text: department.name
+                                        })
+                                    );
+                                });
+                                
+                                // Enable department select
+                                departmentSelect.prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            console.log('Error loading departments');
+                        }
+                    });
+                }
+            });
+            
+            // Department change handler
+            $(this).find('select[name="department_id"]').on('change', function() {
+                const departmentId = $(this).val();
+                const sectionSelect = $('#createVisitorModal select[name="section_id"]');
+                const positionSelect = $('#createVisitorModal select[name="position_id"]');
+                
+                // Reset and disable section and position
+                sectionSelect.val('').trigger('change');
+                positionSelect.val('').trigger('change');
+                
+                sectionSelect.prop('disabled', true);
+                positionSelect.prop('disabled', true);
+                
+                if (departmentId) {
+                    // Load sections for selected department
+                    $.ajax({
+                        url: '<?= base_url("api/sections-by-department") ?>',
+                        type: 'GET',
+                        data: { department_id: departmentId },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.data) {
+                                // Clear existing options except the default
+                                sectionSelect.find('option:not(:first)').remove();
+                                
+                                // Add new options
+                                $.each(response.data, function(index, section) {
+                                    sectionSelect.append(
+                                        $('<option>', {
+                                            value: section.id,
+                                            text: section.name
+                                        })
+                                    );
+                                });
+                                
+                                // Enable section select
+                                sectionSelect.prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            console.log('Error loading sections');
+                        }
+                    });
+                    
+                    // Load positions with status_id = 3
+                    $.ajax({
+                        url: '<?= base_url("api/positions-by-status") ?>',
+                        type: 'GET',
+                        data: { status_id: 3 },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.data) {
+                                // Clear existing options except the default
+                                positionSelect.find('option:not(:first)').remove();
+                                
+                                // Add new options
+                                $.each(response.data, function(index, position) {
+                                    positionSelect.append(
+                                        $('<option>', {
+                                            value: position.id,
+                                            text: position.name
+                                        })
+                                    );
+                                });
+                                
+                                // Enable position select
+                                positionSelect.prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            console.log('Error loading positions');
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Reset form when modal is hidden
+        $('#createVisitorModal').on('hidden.bs.modal', function() {
+            const departmentSelect = $('#createVisitorModal select[name="department_id"]');
+            const sectionSelect = $('#createVisitorModal select[name="section_id"]');
+            const positionSelect = $('#createVisitorModal select[name="position_id"]');
+            
+            // Reset and disable dependent dropdowns
+            departmentSelect.find('option:not(:first)').remove();
+            sectionSelect.find('option:not(:first)').remove();
+            positionSelect.find('option:not(:first)').remove();
+            
+            departmentSelect.prop('disabled', true);
+            sectionSelect.prop('disabled', true);
+            positionSelect.prop('disabled', true);
+        });
+    };
+
     // Public methods
     return {
         init: function() {
             initModal();
             initForm();
             initSelect2();
-            initCascadingDropdowns();
             initImageInputs();
+            initCascadingDropdowns();
         }
     };
 }();
@@ -1247,16 +986,16 @@ var CreateIslanderModal = function() {
 // On document ready
 if (typeof $ !== 'undefined') {
     $(document).ready(function() {
-        CreateIslanderModal.init();
+        CreateVisitorModal.init();
     });
 } else {
     // Fallback if jQuery is not available
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof $ !== 'undefined') {
-            CreateIslanderModal.init();
+            CreateVisitorModal.init();
         } else {
             // Initialize anyway
-            CreateIslanderModal.init();
+            CreateVisitorModal.init();
         }
     });
 }

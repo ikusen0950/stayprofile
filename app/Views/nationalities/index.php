@@ -640,6 +640,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             </table>
                         </div>
                         <!--end::Table-->
+                        
+                        <?php
+                        // Include table footer with pagination
+                        $footerData = [
+                            'baseUrl' => 'nationalities',
+                            'currentPage' => $currentPage,
+                            'totalPages' => $totalPages,
+                            'limit' => $limit,
+                            'totalRecords' => $totalNationalities,
+                            'search' => $search,
+                            'tableId' => 'kt_nationality_table_length',
+                            'jsFunction' => 'changeNationalityTableLimit'
+                        ];
+                        echo view('partials/table_footer', $footerData);
+                        ?>
                     </div>
                     <!--end::Card body-->
                 </div>
@@ -1285,6 +1300,14 @@ function populateEditModal(nationality) {
     if (statusSelect && nationality.status_id) {
         statusSelect.value = nationality.status_id;
     }
+}
+
+// Change table limit (records per page)
+function changeNationalityTableLimit(newLimit) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('limit', newLimit);
+    currentUrl.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = currentUrl.toString();
 }
 </script>
 

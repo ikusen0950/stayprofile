@@ -9,15 +9,15 @@ function formatActionText($actionText) {
         return $actionText;
     }
     
-    // Pattern to match labels followed by colon
-    $pattern = '/^(#:|Module:|Name:|Description:)(.*)$/m';
+    // Pattern to match labels followed by colon - expanded to include all Islander fields
+    $pattern = '/^(#:|Module:|Name:|Description:|Islander No:|Username:|Email:|Phone:|Position:|Section:|Department:|Division:|Status:|Gender:|Nationality:|Date of Birth:|Date of Joining:|Company:|House:|ID\/PP\/WP No:|Address:|Notes:)(.*)$/m';
     
     $formatted = preg_replace_callback($pattern, function($matches) {
         $label = trim($matches[1]);
         $value = trim($matches[2]);
         
-        if ($label === 'Description:' && empty($value)) {
-            // For description, show the label in bold and prepare for next line content
+        if (($label === 'Description:' || $label === 'Notes:' || $label === 'Address:') && empty($value)) {
+            // For description/notes/address, show the label in bold and prepare for next line content
             return '<strong>' . esc($label) . '</strong>';
         } else {
             // For other labels with values on the same line
@@ -613,6 +613,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             </table>
                         </div>
                         <!--end::Table-->
+                        
+                        <?php
+                        // Include table footer with pagination
+                        $footerData = [
+                            'baseUrl' => 'logs',
+                            'currentPage' => $currentPage,
+                            'totalPages' => $totalPages,
+                            'limit' => $limit,
+                            'totalRecords' => $totalLogs,
+                            'search' => $search,
+                            'tableId' => 'kt_log_table_length',
+                            'jsFunction' => 'changeLogTableLimit'
+                        ];
+                        echo view('partials/table_footer', $footerData);
+                        ?>
                     </div>
                     <!--end::Card body-->
                 </div>
@@ -641,12 +656,30 @@ let searchTimeout;
 function formatActionText(actionText) {
     if (!actionText) return actionText;
     
-    // Replace labels with bold versions
+    // Replace labels with bold versions - expanded to include all Islander fields
     return actionText
         .replace(/^(#:)(.*)$/gm, '<strong>$1</strong>$2')
         .replace(/^(Module:)(.*)$/gm, '<strong>$1</strong>$2')
         .replace(/^(Name:)(.*)$/gm, '<strong>$1</strong>$2')
-        .replace(/^(Description:)(.*)$/gm, '<strong>$1</strong>$2');
+        .replace(/^(Description:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Islander No:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Username:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Email:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Phone:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Position:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Section:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Department:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Division:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Status:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Gender:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Nationality:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Date of Birth:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Date of Joining:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Company:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(House:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(ID\/PP\/WP No:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Address:)(.*)$/gm, '<strong>$1</strong>$2')
+        .replace(/^(Notes:)(.*)$/gm, '<strong>$1</strong>$2');
 }
 
 // Check if there are server-rendered cards and adjust currentPage
@@ -1091,6 +1124,14 @@ function handleSessionExpired() {
     }).then(() => {
         window.location.href = '/login';
     });
+}
+
+// Change table limit (records per page)
+function changeLogTableLimit(newLimit) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('limit', newLimit);
+    currentUrl.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = currentUrl.toString();
 }
 </script>
 
