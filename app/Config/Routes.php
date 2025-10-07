@@ -63,6 +63,36 @@ $routes->group('sessions', ['filter' => 'login'], function($routes) {
     $routes->get('(.+)', 'SessionsController::show/$1');
 });
 
+// Roles CRUD routes
+$routes->group('roles', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'RoleController::index');
+    $routes->post('/', 'RoleController::store');
+    $routes->get('create', 'RoleController::create');
+    $routes->post('store', 'RoleController::store');
+    $routes->get('show/(:num)', 'RoleController::show/$1');
+    $routes->get('(:num)', 'RoleController::show/$1');
+    $routes->get('(:num)/edit', 'RoleController::edit/$1');
+    $routes->post('(:num)/update', 'RoleController::update/$1');
+    $routes->post('update/(:num)', 'RoleController::update/$1');
+    $routes->post('(:num)/delete', 'RoleController::delete/$1');
+    $routes->post('delete/(:num)', 'RoleController::delete/$1');
+    $routes->get('api', 'RoleController::api');
+});
+
+// Group Permissions CRUD routes
+$routes->group('group-permissions', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'GroupPermissionController::index');
+    $routes->post('update', 'GroupPermissionController::update');
+    $routes->get('api', 'GroupPermissionController::api');
+});
+
+// User Permissions CRUD routes
+$routes->group('user-permissions', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'UserPermissionController::index');
+    $routes->post('update', 'UserPermissionController::update');
+    $routes->get('api', 'UserPermissionController::api');
+});
+
 // Modules CRUD routes
 $routes->group('modules', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'ModulesController::index');
