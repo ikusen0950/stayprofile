@@ -53,6 +53,23 @@ $routes->group('status', ['filter' => 'login'], function($routes) {
     $routes->get('modules', 'StatusController::getModules');
 });
 
+// Requests CRUD routes
+$routes->group('requests', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'RequestController::index');
+    $routes->get('create', 'RequestController::create');
+    $routes->post('store', 'RequestController::store');
+    $routes->get('show/(:num)', 'RequestController::show/$1');
+    $routes->get('(:num)', 'RequestController::show/$1');
+    $routes->get('(:num)/edit', 'RequestController::edit/$1');
+    $routes->post('(:num)/update', 'RequestController::update/$1');
+    $routes->post('update/(:num)', 'RequestController::update/$1');
+    $routes->post('(:num)/delete', 'RequestController::delete/$1');
+    $routes->post('delete/(:num)', 'RequestController::delete/$1');
+    $routes->get('api', 'RequestController::api');
+    $routes->get('statuses', 'RequestController::getStatuses');
+    $routes->get('users', 'RequestController::getUsers');
+});
+
 // Sessions CRUD routes
 $routes->group('sessions', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'SessionsController::index');

@@ -351,9 +351,10 @@
                     <?php 
                     // Check permissions for system settings
                     $hasStatusAccess = has_permission('status.view');
+                    $hasRequestsAccess = has_permission('requests.view');
                     $hasModulesAccess = has_permission('modules.view');
                     $hasLogsAccess = has_permission('logs.view');
-                    $hasSystemAccess = $hasStatusAccess || $hasModulesAccess || $hasLogsAccess;
+                    $hasSystemAccess = $hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess;
                     
                     // For Islander Settings, we'll assume admin/manager access for now
                     // You can add specific permissions for these later if needed
@@ -367,7 +368,7 @@
                     // Check if user has access to any settings
                     $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
                     
-                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorizations-sequence', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                    $isActive = isMenuActive(['/modules', '/status', '/requests', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorizations-sequence', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
                     ?>
                     <?php if ($hasAnySettingsAccess): ?>
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion ms-n5 <?= $isActive ? 'here show' : '' ?>">
@@ -671,11 +672,12 @@
                             <?php 
                             // Check permissions for system settings items
                             $hasStatusAccess = has_permission('status.view');
+                            $hasRequestsAccess = has_permission('requests.view');
                             $hasModulesAccess = has_permission('modules.view');
                             $hasLogsAccess = has_permission('logs.view');
-                            $systemActive = isMenuActive(['/modules', '/status', '/logs']) && ($hasStatusAccess || $hasModulesAccess || $hasLogsAccess);
+                            $systemActive = isMenuActive(['/modules', '/status', '/requests', '/logs']) && ($hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess);
                             ?>
-                            <?php if ($hasStatusAccess || $hasModulesAccess || $hasLogsAccess): ?>
+                            <?php if ($hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess): ?>
                             <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $systemActive ? 'here show' : '' ?>">
                                 <!--begin:Menu link-->
                                 <span class="menu-link <?= $systemActive ? 'active bg-dark' : '' ?>" <?= $systemActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -704,10 +706,25 @@
                                     <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
+                                    <?php if ($hasRequestsAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActiveRequests = isMenuActive(['/requests']); ?>
+                                        <a class="menu-link <?= $subActiveRequests ? 'active bg-dark' : '' ?>" href="/requests" <?= $subActiveRequests ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Requests</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
                                     <?php if ($hasModulesAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <?php $subActive2 = isMenuActive(['/modules']) && !isMenuActive(['/status']); ?>
+                                        <?php $subActive2 = isMenuActive(['/modules']) && !isMenuActive(['/status']) && !isMenuActive(['/requests']); ?>
                                         <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/modules" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
