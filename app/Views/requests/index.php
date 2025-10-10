@@ -192,7 +192,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                 </div>
                 <div class="col-2">
                     <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createRequestModal"
+                    <a href="/requests/add_request" 
                         class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
                         style="min-height: 48px;">
                         <i class="ki-duotone ki-plus-square fs-3x">
@@ -200,7 +200,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <span class="path2"></span>
                             <span class="path3"></span>
                         </i>
-                    </button>
+                    </a>
                     <?php else: ?>
                     <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
                         style="min-height: 48px;" title="No permission to create request">
@@ -452,10 +452,9 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <div class="d-flex justify-content-end" data-kt-request-table-toolbar="base">
                                 <!--begin::Add request-->
                                 <?php if ($permissions['canCreate']): ?>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createRequestModal">
+                                <a href="/requests/add_request" class="btn btn-primary">
                                     <i class="ki-duotone ki-plus fs-2"></i>Add Request
-                                </button>
+                                </a>
                                 <?php endif; ?>
                                 <!--end::Add request-->
                             </div>

@@ -210,6 +210,71 @@ class RequestController extends BaseController
     }
 
     /**
+     * Display add request type selection page
+     */
+    public function add()
+    {
+        // Check if user has permission to create requests
+        if (!has_permission('requests.create')) {
+            return redirect()->to('/')->with('error', 'You do not have permission to create requests.');
+        }
+
+        $data = [
+            'title' => 'Add New Request'
+        ];
+
+        return view('requests/add', $data);
+    }
+
+    /**
+     * Display the form for creating a specific type of request
+     */
+    public function create()
+    {
+        // Check if user has permission to create requests
+        if (!has_permission('requests.create')) {
+            return redirect()->to('/')->with('error', 'You do not have permission to create requests.');
+        }
+
+        $type = $this->request->getGet('type');
+        
+        // Load necessary data for the forms
+        $data = [
+            'title' => 'Create New Request',
+            'requestType' => $type,
+            'statuses' => $this->requestModel->getActiveStatuses(),
+            'users' => $this->requestModel->getActiveUsers(),
+            'departments' => [], // Initialize as empty arrays for now
+            'divisions' => [],
+            'positions' => []
+        ];
+
+        // Load additional data if we have the models available
+        try {
+            $departmentModel = new \App\Models\DepartmentModel();
+            $divisionModel = new \App\Models\DivisionModel();
+            $positionModel = new \App\Models\PositionModel();
+            
+            $data['departments'] = $departmentModel->findAll();
+            $data['divisions'] = $divisionModel->findAll();
+            $data['positions'] = $positionModel->findAll();
+        } catch (\Exception $e) {
+            // Models might not exist, continue with empty arrays
+            log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
+        }
+
+        // Return different views based on type
+        switch($type) {
+            case 'exit-pass':
+                return view('requests/create_exit_pass', $data);
+            case 'transfer':
+                return view('requests/create_transfer', $data);
+            default:
+                return view('requests/create_modal', $data);
+        }
+    }
+
+    /**
      * Store a newly created request in database
      */
     public function store()

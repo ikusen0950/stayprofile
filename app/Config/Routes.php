@@ -56,6 +56,7 @@ $routes->group('status', ['filter' => 'login'], function($routes) {
 // Requests CRUD routes
 $routes->group('requests', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'RequestController::index');
+    $routes->get('add_request', 'RequestController::add');
     $routes->get('create', 'RequestController::create');
     $routes->post('store', 'RequestController::store');
     $routes->get('show/(:num)', 'RequestController::show/$1');
