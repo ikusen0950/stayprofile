@@ -110,7 +110,7 @@
                     </div>
                     <!--end:Menu item-->
                     <!--begin:Menu item-->
-                    <?php $isActive = isMenuActive(['/add_request', '/requests', '/authorizations']); ?>
+                    <?php $isActive = isMenuActive(['/requests/add_request', '/requests', '/authorizations']); ?>
                     <div data-kt-menu-trigger="click"
                         class="menu-item menu-accordion ms-n5 <?= $isActive ? 'here show' : '' ?>">
                         <!--begin:Menu link-->
@@ -129,10 +129,10 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link-->
-                                <?php $subActive1 = isMenuActive(['/add_request']); ?>
-                                <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>" href="/add_request"
-                                    data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                                    data-bs-placement="right"
+                                <?php $subActive1 = isMenuActive(['/requests/add_request']); ?>
+                                <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>"
+                                    href="/requests/add_request" data-bs-toggle="tooltip" data-bs-trigger="hover"
+                                    data-bs-dismiss="click" data-bs-placement="right"
                                     <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
@@ -145,7 +145,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link-->
-                                <?php $subActive2 = isMenuActive(['/requests']) && !isMenuActive(['/add_request']); ?>
+                                <?php $subActive2 = isMenuActive(['/requests']) && !isMenuActive(['/requests/add_request']); ?>
                                 <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/requests"
                                     data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
                                     data-bs-placement="right"
@@ -368,12 +368,14 @@
                     // Check if user has access to any settings
                     $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
                     
-                    $isActive = isMenuActive(['/modules', '/status', '/requests', '/logs', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorizations-sequence', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
                     ?>
                     <?php if ($hasAnySettingsAccess): ?>
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion ms-n5 <?= $isActive ? 'here show' : '' ?>">
+                    <div data-kt-menu-trigger="click"
+                        class="menu-item menu-accordion ms-n5 <?= $isActive ? 'here show' : '' ?>">
                         <!--begin:Menu link-->
-                        <span class="menu-link <?= $isActive ? 'active bg-dark' : '' ?>" <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                        <span class="menu-link <?= $isActive ? 'active bg-dark' : '' ?>"
+                            <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-setting-2 fs-2">
                                     <span class="path1"></span>
@@ -392,12 +394,14 @@
                             $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
                                                      has_permission('groups.view') || has_permission('permissions.view') || 
                                                      in_groups(['admin', 'manager']);
-                            $userMgmtActive = isMenuActive(['/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorizations-sequence', '/roles', '/group-permissions', '/user-permissions']) && $hasUserManagementAccess;
+                            $userMgmtActive = isMenuActive(['/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasUserManagementAccess;
                             ?>
                             <?php if ($hasUserManagementAccess): ?>
-                            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $userMgmtActive ? 'here show' : '' ?>">
+                            <div data-kt-menu-trigger="click"
+                                class="menu-item menu-accordion <?= $userMgmtActive ? 'here show' : '' ?>">
                                 <!--begin:Menu link-->
-                                <span class="menu-link <?= $userMgmtActive ? 'active bg-dark' : '' ?>" <?= $userMgmtActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                <span class="menu-link <?= $userMgmtActive ? 'active bg-dark' : '' ?>"
+                                    <?= $userMgmtActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
@@ -412,7 +416,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive1 = isMenuActive(['/islanders']); ?>
-                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>" href="/islanders" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>"
+                                            href="/islanders"
+                                            <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -427,7 +433,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive2 = isMenuActive(['/visitors']); ?>
-                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/visitors" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/visitors"
+                                            <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -442,7 +449,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive3 = isMenuActive(['/sessions']); ?>
-                                        <a class="menu-link <?= $subActive3 ? 'active bg-dark' : '' ?>" href="/sessions" <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive3 ? 'active bg-dark' : '' ?>" href="/sessions"
+                                            <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -457,7 +465,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive4 = isMenuActive(['/requesting-sequence']); ?>
-                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>" href="/requesting-sequence" <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>"
+                                            href="/requesting-sequence"
+                                            <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -468,11 +478,13 @@
                                     <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
-                                    <?php if (has_permission('sequence.view') || $hasUserManagementAccess): ?>
+                                    <?php if (has_permission('authorization_rules.view') || $hasUserManagementAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <?php $subActive5 = isMenuActive(['/authorizations-sequence']); ?>
-                                        <a class="menu-link <?= $subActive5 ? 'active bg-dark' : '' ?>" href="/authorizations-sequence" <?= $subActive5 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <?php $subActive5 = isMenuActive(['/authorization-rules']); ?>
+                                        <a class="menu-link <?= $subActive5 ? 'active bg-dark' : '' ?>"
+                                            href="/authorization-rules"
+                                            <?= $subActive5 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -487,7 +499,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive6 = isMenuActive(['/roles']); ?>
-                                        <a class="menu-link <?= $subActive6 ? 'active bg-dark' : '' ?>" href="/roles" <?= $subActive6 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive6 ? 'active bg-dark' : '' ?>" href="/roles"
+                                            <?= $subActive6 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -502,7 +515,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive7 = isMenuActive(['/group-permissions']); ?>
-                                        <a class="menu-link <?= $subActive7 ? 'active bg-dark' : '' ?>" href="/group-permissions" <?= $subActive7 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive7 ? 'active bg-dark' : '' ?>"
+                                            href="/group-permissions"
+                                            <?= $subActive7 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -517,7 +532,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive8 = isMenuActive(['/user-permissions']); ?>
-                                        <a class="menu-link <?= $subActive8 ? 'active bg-dark' : '' ?>" href="/user-permissions" <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive8 ? 'active bg-dark' : '' ?>"
+                                            href="/user-permissions"
+                                            <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -538,9 +555,11 @@
                             $islanderActive = isMenuActive(['/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']) && $hasIslanderAccess;
                             ?>
                             <?php if ($hasIslanderAccess): ?>
-                            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $islanderActive ? 'here show' : '' ?>">
+                            <div data-kt-menu-trigger="click"
+                                class="menu-item menu-accordion <?= $islanderActive ? 'here show' : '' ?>">
                                 <!--begin:Menu link-->
-                                <span class="menu-link <?= $islanderActive ? 'active bg-dark' : '' ?>" <?= $islanderActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                <span class="menu-link <?= $islanderActive ? 'active bg-dark' : '' ?>"
+                                    <?= $islanderActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
@@ -555,7 +574,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive1 = isMenuActive(['/divisions']); ?>
-                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>" href="/divisions" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>"
+                                            href="/divisions"
+                                            <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -570,7 +591,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive2 = isMenuActive(['/departments']); ?>
-                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/departments" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>"
+                                            href="/departments"
+                                            <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -585,7 +608,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive3 = isMenuActive(['/sections']); ?>
-                                        <a class="menu-link <?= $subActive3 ? 'active bg-dark' : '' ?>" href="/sections" <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive3 ? 'active bg-dark' : '' ?>" href="/sections"
+                                            <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -599,7 +623,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive4 = isMenuActive(['/positions']); ?>
-                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>" href="/positions" <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>"
+                                            href="/positions"
+                                            <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -612,7 +638,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive5 = isMenuActive(['/genders']); ?>
-                                        <a class="menu-link <?= $subActive5 ? 'active bg-dark' : '' ?>" href="/genders" <?= $subActive5 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive5 ? 'active bg-dark' : '' ?>" href="/genders"
+                                            <?= $subActive5 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -625,7 +652,9 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive6 = isMenuActive(['/nationalities']); ?>
-                                        <a class="menu-link <?= $subActive6 ? 'active bg-dark' : '' ?>" href="/nationalities" <?= $subActive6 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive6 ? 'active bg-dark' : '' ?>"
+                                            href="/nationalities"
+                                            <?= $subActive6 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -639,7 +668,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive7 = isMenuActive(['/houses']); ?>
-                                        <a class="menu-link <?= $subActive7 ? 'active bg-dark' : '' ?>" href="/houses" <?= $subActive7 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive7 ? 'active bg-dark' : '' ?>" href="/houses"
+                                            <?= $subActive7 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -648,12 +678,14 @@
                                         <!--end:Menu link-->
                                     </div>
                                     <?php endif; ?>
-                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive8 = isMenuActive(['/policy']); ?>
-                                        <a class="menu-link <?= $subActive8 ? 'active bg-dark' : '' ?>" href="/policy" <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive8 ? 'active bg-dark' : '' ?>" href="/policy"
+                                            <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -668,6 +700,48 @@
                             <?php endif; ?>
                             <!--end:Menu item-->
 
+                             <!--begin:Menu item-->
+                            <?php 
+                            $islanderActive = isMenuActive(['/leave']) && $hasIslanderAccess;
+                            ?>
+                            <?php if ($hasIslanderAccess): ?>
+                            <div data-kt-menu-trigger="click"
+                                class="menu-item menu-accordion <?= $islanderActive ? 'here show' : '' ?>">
+                                <!--begin:Menu link-->
+                                <span class="menu-link <?= $islanderActive ? 'active bg-dark' : '' ?>"
+                                    <?= $islanderActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Request Settings</span>
+                                    <span class="menu-arrow"></span>
+                                </span>
+                                <!--end:Menu link-->
+                                <!--begin:Menu sub-->
+                                <div class="menu-sub menu-sub-accordion">
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('leave.view') || $hasIslanderAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive1 = isMenuActive(['/leave']); ?>
+                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>"
+                                            href="/leave"
+                                            <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Leave Reasons</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                </div>
+                                <!--end:Menu sub-->
+                            </div>
+                            <?php endif; ?>
+                            <!--end:Menu item-->
+
                             <!--begin:Menu item-->
                             <?php 
                             // Check permissions for system settings items
@@ -675,12 +749,14 @@
                             $hasRequestsAccess = has_permission('requests.view');
                             $hasModulesAccess = has_permission('modules.view');
                             $hasLogsAccess = has_permission('logs.view');
-                            $systemActive = isMenuActive(['/modules', '/status', '/requests', '/logs']) && ($hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess);
+                            $systemActive = isMenuActive(['/modules', '/status', '/logs']) && ($hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess);
                             ?>
                             <?php if ($hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess): ?>
-                            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $systemActive ? 'here show' : '' ?>">
+                            <div data-kt-menu-trigger="click"
+                                class="menu-item menu-accordion <?= $systemActive ? 'here show' : '' ?>">
                                 <!--begin:Menu link-->
-                                <span class="menu-link <?= $systemActive ? 'active bg-dark' : '' ?>" <?= $systemActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                <span class="menu-link <?= $systemActive ? 'active bg-dark' : '' ?>"
+                                    <?= $systemActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
@@ -695,7 +771,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive1 = isMenuActive(['/status']); ?>
-                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>" href="/status" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive1 ? 'active bg-dark' : '' ?>" href="/status"
+                                            <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -706,26 +783,12 @@
                                     <?php endif; ?>
                                     <!--end:Menu item-->
                                     <!--begin:Menu item-->
-                                    <?php if ($hasRequestsAccess): ?>
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <?php $subActiveRequests = isMenuActive(['/requests']); ?>
-                                        <a class="menu-link <?= $subActiveRequests ? 'active bg-dark' : '' ?>" href="/requests" <?= $subActiveRequests ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot"></span>
-                                            </span>
-                                            <span class="menu-title">Requests</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <?php endif; ?>
-                                    <!--end:Menu item-->
-                                    <!--begin:Menu item-->
                                     <?php if ($hasModulesAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <?php $subActive2 = isMenuActive(['/modules']) && !isMenuActive(['/status']) && !isMenuActive(['/requests']); ?>
-                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/modules" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <?php $subActive2 = isMenuActive(['/modules']) && !isMenuActive(['/status']) ?>
+                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>" href="/modules"
+                                            <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -740,7 +803,8 @@
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <?php $subActive4 = isMenuActive(['/logs']); ?>
-                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>" href="/logs" <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                        <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>" href="/logs"
+                                            <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>

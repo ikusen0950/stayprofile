@@ -443,4 +443,37 @@ class VisitorModel extends Model
                        ->get()
                        ->getResultArray();
     }
+
+    /**
+     * Get active visitors for dropdowns
+     */
+    public function getActiveVisitors()
+    {
+        $builder = $this->db->table('users u');
+        $builder->select('u.id, u.full_name, u.islander_no, u.id_pp_wp_no, 
+                         CONCAT(COALESCE(u.islander_no, ""), " - ", u.full_name) as display_name')
+                ->where('u.type', 2) // Visitor type
+                ->where('u.status_id', 7) // Active status as requested
+                ->where('u.deleted_at IS NULL') // Not soft deleted
+                ->groupBy('u.id, u.full_name, u.islander_no, u.id_pp_wp_no') // Prevent duplicates
+                ->orderBy('u.full_name', 'ASC');
+        
+        $result = $builder->get()->getResultArray();
+        
+        // If no results with status 7, try any status to see what's available
+        if (empty($result)) {
+            $builder = $this->db->table('users u');
+            $builder->select('u.id, u.full_name, u.islander_no, u.id_pp_wp_no, u.status_id,
+                             CONCAT(COALESCE(u.islander_no, ""), " - ", u.full_name) as display_name')
+                    ->where('u.type', 2) // Visitor type
+                    ->where('u.deleted_at IS NULL')
+                    ->groupBy('u.id, u.full_name, u.islander_no, u.id_pp_wp_no')
+                    ->orderBy('u.full_name', 'ASC')
+                    ->limit(5); // Just get first 5 for testing
+            
+            $result = $builder->get()->getResultArray();
+        }
+        
+        return $result;
+    }
 }

@@ -80,17 +80,17 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 }
 
 /* Enhanced mobile card hover effects */
-.mobile-request-card {
+.mobile-position-card {
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.mobile-request-card:hover {
+.mobile-position-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-request-card:active {
+.mobile-position-card:active {
     transform: translateY(0);
 }
 
@@ -158,16 +158,6 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 .select2-container--bootstrap5 .select2-dropdown {
     z-index: 1060;
 }
-
-/* Color preview styles */
-.color-preview {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--bs-border-color);
-    display: inline-block;
-    margin-right: 8px;
-}
 </style>
 
 <!--begin::Mobile UI (visible on mobile only)-->
@@ -176,7 +166,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
     <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
         <div class="container-fluid">
             <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Requests</h1>
+                <h1 class="text-dark fw-bold ms-2">Positions</h1>
             </div>
             <div class="row align-items-stretch">
                 <div class="col-10">
@@ -187,12 +177,12 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <span class="path2"></span>
                         </i>
                         <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search requests..." value="<?= esc($search) ?>" />
+                            placeholder="Search positions..." value="<?= esc($search) ?>" />
                     </div>
                 </div>
                 <div class="col-2">
                     <?php if ($permissions['canCreate']): ?>
-                    <a href="/requests/add_request" 
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#createPositionModal"
                         class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
                         style="min-height: 48px;">
                         <i class="ki-duotone ki-plus-square fs-3x">
@@ -200,10 +190,10 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <span class="path2"></span>
                             <span class="path3"></span>
                         </i>
-                    </a>
+                    </button>
                     <?php else: ?>
                     <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create request">
+                        style="min-height: 48px;" title="No permission to create positions">
                         <i class="ki-duotone ki-lock fs-3x">
                             <span class="path1"></span>
                             <span class="path2"></span>
@@ -247,65 +237,67 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
         <!-- Scrollable Card List -->
         <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($requests)): ?>
-            <?php foreach ($requests as $index => $request): ?>
+            <?php if (!empty($positions)): ?>
+            <?php foreach ($positions as $index => $position): ?>
             <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-request-card" data-request-id="<?= esc($request['id']) ?>">
+                <div class="card mobile-position-card" data-position-id="<?= esc($position['id']) ?>">
                     <div class="card-body p-4">
-                        <!-- Request Header -->
+                        <!-- Position Header -->
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase">#<?= esc($request['id']) ?></small>
+                                <small class="text-muted text-uppercase">#<?= esc($position['id']) ?></small>
                             </div>
-                            <div class="ms-3">
-                                <?php 
-                                // Use custom color if available, otherwise fallback to status-based colors
-                                if (!empty($request['type_color'])) {
-                                    // Convert hex color to RGB for light background
-                                    $hex = ltrim($request['type_color'], '#');
-                                    $r = hexdec(substr($hex, 0, 2));
-                                    $g = hexdec(substr($hex, 2, 2));
-                                    $b = hexdec(substr($hex, 4, 2));
-                                    $lightBg = "rgba($r, $g, $b, 0.1)";
-                                    $textColor = $request['type_color'];
-                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                    $badgeClass = 'badge fw-bold';
-                                } else {
-                                    // Default badge styling based on status
-                                    $badgeClass = 'badge badge-light-primary fw-bold';
-                                    $badgeStyle = 'padding: 4px 8px; font-size: 11px; line-height: 1.2;';
-                                }
-                                ?>
-                                <span class="<?= $badgeClass ?>" style="<?= $badgeStyle ?>">
-                                    <?= strtoupper(esc($request['type'] ?? 'GENERAL')) ?>
+                            <div class="ms-3 d-flex gap-2">
+                                <?php if (!empty($position['status_name'])): ?>
+                                    <?php 
+                                    // Use custom color if available for mobile cards
+                                    if (!empty($position['status_color'])) {
+                                        // Convert hex color to RGB for light background
+                                        $hex = ltrim($position['status_color'], '#');
+                                        $r = hexdec(substr($hex, 0, 2));
+                                        $g = hexdec(substr($hex, 2, 2));
+                                        $b = hexdec(substr($hex, 4, 2));
+                                        $lightBg = "rgba($r, $g, $b, 0.1)";
+                                        $textColor = $position['status_color'];
+                                        $mobileBadgeStyle = "background-color: $lightBg; color: $textColor;";
+                                    } else {
+                                        $mobileBadgeStyle = "";
+                                    }
+                                    ?>
+                                    <?php if (!empty($position['status_color'])): ?>
+                                    <span class="badge fw-bold fs-8" style="<?= $mobileBadgeStyle ?>">
+                                        <?= strtoupper(esc($position['status_name'])) ?>
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="badge badge-light-success fw-bold fs-8">
+                                        <?= strtoupper(esc($position['status_name'])) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                <span class="badge badge-light-primary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                    <?= strtoupper(esc($position['name'])) ?>
                                 </span>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-start mb-2 mt-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
                             <div class="flex-grow-1">
-                                <strong class="me-5 text-truncate d-block"><?= esc($request['user_name'] ?? 'Unknown User') ?></strong>
-                                <small class="text-muted">Status: <?= esc($request['status_name'] ?? 'Unknown') ?></small>
+                                <strong class="me-5 text-uppercase text-truncate"><?= esc($position['name']) ?></strong>
+                                <?php if (!empty($position['section_name'])): ?>
+                                <br>
+                                <small class="text-primary fw-bold"><?= esc($position['section_name']) ?></small>
+                                <?php endif; ?>
                             </div>
                         </div>
 
-                        <!-- Request Description/Type Info -->
-                        <?php if (!empty($request['type_description'])): ?>
-                        <div class="mt-3">
-                            <p class="text-muted mb-0 text-truncate" style="max-height: 40px; overflow: hidden;">
-                                <?= esc($request['type_description']) ?>
-                            </p>
-                        </div>
-                        <?php endif; ?>
-
-                        <!-- Request Footer -->
+                        <!-- Position Footer -->
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <div class="d-flex flex-column">
                                 <small class="text-muted">
-                                    <?= !empty($request['created_by_name']) ? esc($request['created_by_name']) : 'System' ?>
+                                    <?= !empty($position['created_by_name']) ? esc($position['created_by_name']) : 'System' ?>
                                 </small>
                             </div>
-                            <small class="text-muted"><?= date('M d, Y', strtotime($request['created_at'])) ?></small>
+                            <small class="text-muted"><?= date('M d, Y', strtotime($position['created_at'])) ?></small>
                         </div>
 
                         <!-- Expandable Actions (initially hidden) -->
@@ -314,8 +306,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <?php if ($permissions['canView']): ?>
                                 <div class="col-4">
                                     <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-request-btn"
-                                        data-request-id="<?= esc($request['id']) ?>">
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-position-btn"
+                                        data-position-id="<?= esc($position['id']) ?>">
                                         <i class="ki-duotone ki-eye fs-1 me-2">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -328,8 +320,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <?php if ($permissions['canEdit']): ?>
                                 <div class="col-4">
                                     <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-request-btn"
-                                        data-request-id="<?= esc($request['id']) ?>">
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-position-btn"
+                                        data-position-id="<?= esc($position['id']) ?>">
                                         <i class="ki-duotone ki-pencil fs-1 me-2">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -341,8 +333,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <?php if ($permissions['canDelete']): ?>
                                 <div class="col-4">
                                     <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-request-btn"
-                                        data-request-id="<?= esc($request['id']) ?>">
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-position-btn"
+                                        data-position-id="<?= esc($position['id']) ?>">
                                         <i class="ki-duotone ki-trash fs-1 me-2">
                                             <span class="path1"></span>
                                             <span class="path2"></span>
@@ -367,8 +359,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <span class="path1"></span>
                         <span class="path2"></span>
                     </i>
-                    <h6 class="fw-bold text-gray-700 mb-2">No requests found</h6>
-                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first request entry</p>
+                    <h6 class="fw-bold text-gray-700 mb-2">No positions found</h6>
+                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first position entry</p>
                 </div>
             </div>
             <?php endif; ?>
@@ -379,12 +371,12 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="mt-2 text-muted">Loading more requests...</p>
+            <p class="mt-2 text-muted">Loading more positions...</p>
         </div>
 
         <!-- No more data indicator -->
         <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more requests to load</p>
+            <p class="text-muted">No more positions to load</p>
         </div>
     </div>
 </div>
@@ -439,7 +431,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <span class="path2"></span>
                                 </i>
                                 <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search requests..."
+                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search positions..."
                                     value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
@@ -449,14 +441,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
                             <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-request-table-toolbar="base">
-                                <!--begin::Add request-->
+                            <div class="d-flex justify-content-end" data-kt-position-table-toolbar="base">
+                                <!--begin::Add position-->
                                 <?php if ($permissions['canCreate']): ?>
-                                <a href="/requests/add_request" class="btn btn-primary">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Request
-                                </a>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#createPositionModal">
+                                    <i class="ki-duotone ki-plus fs-2"></i>Add Position
+                                </button>
                                 <?php endif; ?>
-                                <!--end::Add request-->
+                                <!--end::Add position-->
                             </div>
                             <!--end::Toolbar-->
                         </div>
@@ -468,7 +461,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                     <div class="card-body py-4">
                         <!--begin::Table-->
                         <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_request_table">
+                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_position_table">
                                 <!--begin::Table head-->
                                 <thead>
                                     <!--begin::Table row-->
@@ -477,15 +470,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             <div
                                                 class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                                 <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_request_table .form-check-input"
+                                                    data-kt-check-target="#kt_position_table .form-check-input"
                                                     value="1" />
                                             </div>
                                         </th>
                                         <th class="min-w-20px">#</th>
-                                        <th class="min-w-120px">User</th>
-                                        <th class="min-w-80px">Type</th>
-                                        <th class="min-w-80px">Status</th>
+                                        <th class="min-w-120px">Position</th>
+                                        <th class="min-w-100px">Section</th>
                                         <th class="min-w-200px">Description</th>
+                                        <th class="min-w-100px">Status</th>
                                         <th class="min-w-120px">Created By</th>
                                         <th class="min-w-120px">Updated By</th>
                                         <th class="text-end min-w-100px">Actions</th>
@@ -496,15 +489,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
                                 <!--begin::Table body-->
                                 <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($requests)): ?>
-                                    <?php foreach ($requests as $request): ?>
+                                    <?php if (!empty($positions)): ?>
+                                    <?php foreach ($positions as $position): ?>
                                     <!--begin::Table row-->
                                     <tr>
                                         <!--begin::Checkbox-->
                                         <td>
                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                                 <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($request['id']) ?>" />
+                                                    value="<?= esc($position['id']) ?>" />
                                             </div>
                                         </td>
                                         <!--end::Checkbox-->
@@ -512,69 +505,81 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::ID-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($request['id']) ?></small>
+                                                <small class="text-muted">#<?= esc($position['id']) ?></small>
                                             </div>
                                         </td>
                                         <!--end::ID-->
                                      
-                                        <!--begin::User-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <span class="fw-bold"><?= esc($request['user_name'] ?? 'Unknown User') ?></span>
-                                            </div>
-                                        </td>
-                                        <!--end::User-->
-
-                                        <!--begin::Type-->
+                                        <!--begin::Section-->
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <?php 
-                                                // Use custom color if available, otherwise fallback to default colors
-                                                if (!empty($request['type_color'])) {
-                                                    // Convert hex color to RGB for light background
-                                                    $hex = ltrim($request['type_color'], '#');
-                                                    $r = hexdec(substr($hex, 0, 2));
-                                                    $g = hexdec(substr($hex, 2, 2));
-                                                    $b = hexdec(substr($hex, 4, 2));
-                                                    $lightBg = "rgba($r, $g, $b, 0.1)";
-                                                    $textColor = $request['type_color'];
-                                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                                    $badgeClass = 'badge fw-bold';
-                                                } else {
-                                                    $badgeClass = 'badge badge-light-primary fw-bold';
-                                                    $badgeStyle = 'padding: 4px 8px; font-size: 11px; line-height: 1.2;';
-                                                }
-                                                ?>
-                                                <span class="<?= $badgeClass ?>" style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($request['type'] ?? 'GENERAL')) ?>
+                                                <span class="badge badge-light-primary fw-bold"
+                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                                    <?= strtoupper(esc($position['name'])) ?>
                                                 </span>
                                             </div>
                                         </td>
-                                        <!--end::Type-->
+                                        <!--end::Section-->
 
-                                        <!--begin::Status-->
+                                        <!--begin::Position-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="fw-bold text-dark"><?= esc($request['status_name'] ?? 'Unknown') ?></small>
+                                                <small class="fw-bold text-dark"><?= esc($position['section_name']) ?></small>
                                             </div>
                                         </td>
-                                        <!--end::Status-->
+                                        <!--end::Position-->
 
                                         <!--begin::Description-->
                                         <td>
                                             <div class="text-gray-600">
-                                                <?= esc($request['type_description'] ?? '') ?>
+                                                <?= esc($position['description']) ?>
                                             </div>
                                         </td>
                                         <!--end::Description-->
 
+                                        <!--begin::Status-->
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <?php if (!empty($position['status_name'])): ?>
+                                                    <?php 
+                                                    // Use custom color if available, otherwise fallback to status-based colors
+                                                    if (!empty($position['status_color'])) {
+                                                        // Convert hex color to RGB for light background
+                                                        $hex = ltrim($position['status_color'], '#');
+                                                        $r = hexdec(substr($hex, 0, 2));
+                                                        $g = hexdec(substr($hex, 2, 2));
+                                                        $b = hexdec(substr($hex, 4, 2));
+                                                        $lightBg = "rgba($r, $g, $b, 0.1)";
+                                                        $textColor = $position['status_color'];
+                                                        $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                    } else {
+                                                        // Fallback to default styling
+                                                        $badgeStyle = "padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                    }
+                                                    ?>
+                                                    <?php if (!empty($position['status_color'])): ?>
+                                                    <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                                        <?= strtoupper(esc($position['status_name'])) ?>
+                                                    </span>
+                                                    <?php else: ?>
+                                                    <span class="badge badge-light-success fw-bold" style="<?= $badgeStyle ?>">
+                                                        <?= strtoupper(esc($position['status_name'])) ?>
+                                                    </span>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                <span class="badge badge-light-secondary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">N/A</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <!--end::Status-->
+
                                         <!--begin::Created By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($request['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($request['created_by_name']) ?></span>
+                                                <?php if (!empty($position['created_by_name'])): ?>
+                                                <span class="text-muted"><?= esc($position['created_by_name']) ?></span>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($request['created_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($position['created_at'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -582,10 +587,10 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::Updated By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($request['updated_by_name']) && !empty($request['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($request['updated_by_name']) ?></span>
+                                                <?php if (!empty($position['updated_by_name']) && !empty($position['updated_at'])): ?>
+                                                <span class="text-muted"><?= esc($position['updated_by_name']) ?></span>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($request['updated_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($position['updated_at'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -605,24 +610,24 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canView']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-request-btn"
-                                                        data-request-id="<?= esc($request['id']) ?>">View</a>
+                                                    <a class="menu-link px-3 view-position-btn"
+                                                        data-position-id="<?= esc($position['id']) ?>">View</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canEdit']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-request-btn"
-                                                        data-request-id="<?= esc($request['id']) ?>">Edit</a>
+                                                    <a class="menu-link px-3 edit-position-btn"
+                                                        data-position-id="<?= esc($position['id']) ?>">Edit</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canDelete']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-request-btn"
-                                                        data-request-id="<?= esc($request['id']) ?>">Delete</a>
+                                                    <a class="menu-link px-3 delete-position-btn"
+                                                        data-position-id="<?= esc($position['id']) ?>">Delete</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -636,14 +641,14 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <?php else: ?>
                                     <!--begin::No results-->
                                     <tr>
-                                        <td colspan="9" class="text-center py-10">
+                                        <td colspan="8" class="text-center py-10">
                                             <div class="d-flex flex-column align-items-center">
                                                 <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
                                                     <span class="path1"></span>
                                                     <span class="path2"></span>
                                                 </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No requests found</div>
-                                                <div class="text-gray-500">Start by creating your first request entry
+                                                <div class="fw-bold text-gray-700 mb-2">No sections found</div>
+                                                <div class="text-gray-500">Start by creating your first department entry
                                                 </div>
                                             </div>
                                         </td>
@@ -659,14 +664,14 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <?php
                         // Include table footer with pagination
                         $footerData = [
-                            'baseUrl' => 'requests',
+                            'baseUrl' => 'positions',
                             'currentPage' => $currentPage,
                             'totalPages' => $totalPages,
                             'limit' => $limit,
-                            'totalRecords' => $totalRequests,
+                            'totalRecords' => $totalPositions,
                             'search' => $search,
-                            'tableId' => 'kt_request_table_length',
-                            'jsFunction' => 'changeRequestTableLimit'
+                            'tableId' => 'kt_position_table_length',
+                            'jsFunction' => 'changePositionTableLimit'
                         ];
                         echo view('partials/table_footer', $footerData);
                         ?>
@@ -684,9 +689,9 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 <!--end::Main-->
 
 <!-- Include Modals -->
-<?= $this->include('requests/create_modal') ?>
-<?= $this->include('requests/edit_modal') ?>
-<?= $this->include('requests/view_modal') ?>
+<?= $this->include('positions/create_modal') ?>
+<?= $this->include('positions/edit_modal') ?>
+<?= $this->include('positions/view_modal') ?>
 
 <script>
 // Global variables
@@ -697,7 +702,7 @@ let searchTimeout;
 
 // Check if there are server-rendered cards and adjust currentPage
 document.addEventListener('DOMContentLoaded', function() {
-    const existingCards = document.querySelectorAll('#mobile-cards-container .mobile-request-card');
+    const existingCards = document.querySelectorAll('#mobile-cards-container .mobile-position-card');
     if (existingCards.length > 0) {
         // Server already rendered the first page, so start from page 2
         currentPage = Math.ceil(existingCards.length / 10) + 1;
@@ -773,7 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (container && window.innerWidth < 992) {
                 // Mobile view - use AJAX
                 container.innerHTML = '';
-                loadRequests(true, query);
+                loadpositions(true, query);
             } else {
                 // Desktop view - reload page with search
                 const url = new URL(window.location);
@@ -799,13 +804,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load initial requests for mobile
+    // Load initial sections for mobile
     const mobileContainer = document.getElementById('mobile-cards-container');
     if (mobileContainer) {
         // Only load initial data if container is empty (no server-rendered content)
-        const existingCards = mobileContainer.querySelectorAll('.mobile-request-card');
+        const existingCards = mobileContainer.querySelectorAll('.mobile-position-card');
         if (existingCards.length === 0) {
-            loadRequests(false);
+            loadpositions(false);
         }
 
         // Infinite scroll for mobile
@@ -818,43 +823,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     const documentHeight = document.documentElement.offsetHeight;
 
                     if (scrollPosition >= documentHeight - 1000) {
-                        loadRequests(false, mobileSearch?.value || '');
+                        loadpositions(false, mobileSearch?.value || '');
                     }
                 }
             }, 100);
         });
     }
 
-    // Handle view request
+    // Handle view position
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.view-request-btn')) {
+        if (e.target.closest('.view-position-btn')) {
             e.preventDefault();
-            const requestId = e.target.closest('.view-request-btn').getAttribute('data-request-id');
-            viewRequest(requestId);
+            const positionId = e.target.closest('.view-position-btn').getAttribute('data-position-id');
+            viewPosition(positionId);
         }
     });
 
-    // Handle edit request
+    // Handle edit position
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-request-btn')) {
+        if (e.target.closest('.edit-position-btn')) {
             e.preventDefault();
-            const requestId = e.target.closest('.edit-request-btn').getAttribute('data-request-id');
-            editRequest(requestId);
+            const positionId = e.target.closest('.edit-position-btn').getAttribute('data-position-id');
+            editPosition(positionId);
         }
     });
 
-    // Handle delete request
+    // Handle delete position
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-request-btn')) {
+        if (e.target.closest('.delete-position-btn')) {
             e.preventDefault();
-            const requestId = e.target.closest('.delete-request-btn').getAttribute('data-request-id');
-            deleteRequest(requestId);
+            const positionId = e.target.closest('.delete-position-btn').getAttribute('data-position-id');
+            deletePosition(positionId);
         }
     });
 
 });
 
-function loadRequests(reset = false, search = '') {
+function loadpositions(reset = false, search = '') {
     if (isLoading) return;
 
     if (reset) {
@@ -880,7 +885,7 @@ function loadRequests(reset = false, search = '') {
         showSkeletonLoading();
     }
 
-    const url = `/requests/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
+    const url = `/positions/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
 
     secureFetch(url)
         .then(response => {
@@ -902,7 +907,7 @@ function loadRequests(reset = false, search = '') {
                 removeSkeletonLoading();
 
                 if (data.data && data.data.length > 0) {
-                    renderRequests(data.data);
+                    rendersections(data.data);
                     currentPage++;
                     hasMoreData = data.hasMore;
 
@@ -913,7 +918,7 @@ function loadRequests(reset = false, search = '') {
                 } else {
                     hasMoreData = false;
                     if (currentPage === 1) {
-                        showNoRequestsMessage();
+                        showNosectionsMessage();
                     }
                 }
 
@@ -937,59 +942,44 @@ function loadRequests(reset = false, search = '') {
         });
 }
 
-function renderRequests(requests) {
+function rendersections(sections) {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
-    requests.forEach((request, index) => {
-        const requestCard = createRequestCard(request, (currentPage - 1) * 10 + index);
-        container.appendChild(requestCard);
+    sections.forEach((department, index) => {
+        const sectionCard = createSectionCard(section, (currentPage - 1) * 10 + index);
+        container.appendChild(departmentCard);
     });
 
     // Reinitialize mobile cards after adding new ones
     initMobileCards();
 }
 
-function createRequestCard(request, index) {
+function createSectionCard(section, index) {
     const col = document.createElement('div');
     col.className = 'col-12 mb-3';
     col.setAttribute('data-aos', 'fade-up');
     col.setAttribute('data-aos-delay', (index * 100).toString());
     col.setAttribute('data-aos-duration', '600');
 
-    const description = request.type_description ?
-        `<div class="mt-3"><p class="text-muted mb-0 text-truncate" style="max-height: 40px; overflow: hidden;">${request.type_description}</p></div>` : '';
+    const description = position.description ?
+        `<p class="text-muted mb-0 mt-3">${position.description}</p>` : '';
 
-    const createdByName = request.created_by_name || 'System';
+    const createdByName = position.created_by_name || 'System';
+    const sectionName = position.section_name || 'No Section';
 
-    const createdAt = new Date(request.created_at).toLocaleDateString('en-US', {
+    const createdAt = new Date(position.created_at).toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
         year: 'numeric'
     });
-
-    // Determine badge style based on type color or fallback to default classes
-    let badgeClass = 'badge badge-light-primary fw-bold';
-    let badgeStyle = 'padding: 4px 8px; font-size: 11px; line-height: 1.2;';
-    let badgeText = (request.type || 'GENERAL').toUpperCase();
-
-    if (request.type_color) {
-        // Use custom color from request type
-        const hex = request.type_color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
-        const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
-        badgeStyle = `background-color: ${lightBg}; color: ${request.type_color}; padding: 4px 8px; font-size: 11px; line-height: 1.2;`;
-        badgeClass = 'badge fw-bold';
-    }
 
     // Create action buttons based on permissions
     let actionButtons = '';
     <?php if ($permissions['canView']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-request-btn" data-request-id="${request.id}">
+            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-position-btn" data-position-id="${position.id}">
                 <i class="ki-duotone ki-eye fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1003,7 +993,7 @@ function createRequestCard(request, index) {
     <?php if ($permissions['canEdit']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-request-btn" data-request-id="${request.id}">
+            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-position-btn" data-position-id="${position.id}">
                 <i class="ki-duotone ki-pencil fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1016,7 +1006,7 @@ function createRequestCard(request, index) {
     <?php if ($permissions['canDelete']): ?>
     actionButtons += `
         <div class="col-4">
-            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-request-btn" data-request-id="${request.id}">
+            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-position-btn" data-position-id="${position.id}">
                 <i class="ki-duotone ki-trash fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1041,28 +1031,33 @@ function createRequestCard(request, index) {
     ` : '';
 
     col.innerHTML = `
-        <div class="card mobile-request-card" data-request-id="${request.id}">
+        <div class="card mobile-position-card" data-position-id="${position.id}">
             <div class="card-body p-4">
-                <!-- Request Header -->
+                <!-- Position Header -->
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div class="flex-grow-1">
-                        <small class="text-muted text-uppercase">#${request.id}</small>
+                        <small class="text-muted text-uppercase">#${position.id}</small>
                     </div>
-                    <div class="ms-3">
-                        <span class="${badgeClass}" style="${badgeStyle}">${badgeText}</span>
+                    <div class="ms-3 d-flex gap-2">
+                        ${position.status_name ? `
+                            ${position.status_color ? 
+                                `<span class="badge fw-bold fs-8" style="background-color: ${position.status_color}1a; color: ${position.status_color};">${position.status_name.toUpperCase()}</span>` :
+                                `<span class="badge badge-light-success fw-bold fs-8">${position.status_name.toUpperCase()}</span>`
+                            }
+                        ` : ''}
+                        <span class="badge badge-light-primary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${position.name.toUpperCase()}</span>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-start mb-2 mt-4">
+                <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
                     <div class="flex-grow-1">
-                        <strong class="me-5 text-truncate d-block">${request.user_name || 'Unknown User'}</strong>
-                        <small class="text-muted">Status: ${request.status_name || 'Unknown'}</small>
+                        <strong class="me-5 text-uppercase text-truncate">${position.name}</strong>
+                        <br>
+                        <small class="text-primary fw-bold">${sectionName}</small>
                     </div>
                 </div>
 
-                ${description}
-
-                <!-- Request Footer -->
+                <!-- Section Footer -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="d-flex flex-column">
                         <small class="text-muted">${createdByName}</small>
@@ -1113,7 +1108,7 @@ function removeSkeletonLoading() {
     skeletonCards.forEach(card => card.remove());
 }
 
-function showNoRequestsMessage() {
+function showNosectionsMessage() {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
@@ -1125,16 +1120,16 @@ function showNoRequestsMessage() {
                 <span class="path1"></span>
                 <span class="path2"></span>
             </i>
-            <h6 class="fw-bold text-gray-700 mb-2">No requests found</h6>
-            <p class="fs-7 text-gray-500 mb-4">Start by creating your first request entry</p>
+            <h6 class="fw-bold text-gray-700 mb-2">No sections found</h6>
+            <p class="fs-7 text-gray-500 mb-4">Start by creating your first department entry</p>
         </div>
     `;
     container.appendChild(noDataDiv);
 }
 
-// Request CRUD functions
-function viewRequest(requestId) {
-    secureFetch(`/requests/show/${requestId}`)
+// Department CRUD functions
+function viewPosition(positionId) {
+    secureFetch(`/positions/show/${positionId}`)
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 handleSessionExpired();
@@ -1147,7 +1142,7 @@ function viewRequest(requestId) {
                 // Populate view modal
                 populateViewModal(data.data);
                 // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('viewRequestModal'));
+                const modal = new bootstrap.Modal(document.getElementById('viewPositionModal'));
                 modal.show();
             } else {
                 Swal.fire('Error', data.message, 'error');
@@ -1155,12 +1150,12 @@ function viewRequest(requestId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load request details', 'error');
+            Swal.fire('Error', 'Failed to load department details', 'error');
         });
 }
 
-function editRequest(requestId) {
-    secureFetch(`/requests/show/${requestId}`)
+function editPosition(positionId) {
+    secureFetch(`/positions/show/${positionId}`)
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 handleSessionExpired();
@@ -1173,7 +1168,7 @@ function editRequest(requestId) {
                 // Populate edit modal
                 populateEditModal(data.data);
                 // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('editRequestModal'));
+                const modal = new bootstrap.Modal(document.getElementById('editPositionModal'));
                 modal.show();
             } else {
                 Swal.fire('Error', data.message, 'error');
@@ -1181,11 +1176,11 @@ function editRequest(requestId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load request details', 'error');
+            Swal.fire('Error', 'Failed to load section details', 'error');
         });
 }
 
-function deleteRequest(requestId) {
+function deletePosition(positionId) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -1196,7 +1191,7 @@ function deleteRequest(requestId) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            secureFetch(`/requests/delete/${requestId}`, {
+            secureFetch(`/positions/delete/${positionId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1220,7 +1215,7 @@ function deleteRequest(requestId) {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    Swal.fire('Error', 'Failed to delete request', 'error');
+                    Swal.fire('Error', 'Failed to delete section', 'error');
                 });
         }
     });
@@ -1229,11 +1224,11 @@ function deleteRequest(requestId) {
 // Mobile card click functionality (matching modules UI)
 function initMobileCards() {
     // Remove existing listeners to prevent duplicates
-    document.querySelectorAll('.mobile-request-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-position-card').forEach(function(card) {
         card.replaceWith(card.cloneNode(true));
     });
 
-    document.querySelectorAll('.mobile-request-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-position-card').forEach(function(card) {
         card.addEventListener('click', function(e) {
             if (e.target.closest('.mobile-actions') || e.target.closest('button') || e.target.closest(
                     'a')) {
@@ -1260,18 +1255,90 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Modal population functions
-function populateViewModal(request) {
-    // This will be implemented when we create the view modal
-    console.log('View modal population:', request);
+function populateViewModal(position) {
+    // Basic position info
+    document.getElementById('view_position_name').textContent = position.name;
+    document.getElementById('view_section_name').textContent = position.section_name || 'N/A';
+    
+    // Description
+    const description = document.getElementById('view_description');
+    const descriptionSection = document.getElementById('view_description_section');
+    
+    if (position.description && position.description.trim() !== '') {
+        description.textContent = position.description;
+        descriptionSection.style.display = 'block';
+    } else {
+        description.textContent = 'No description provided';
+        descriptionSection.style.display = 'block';
+    }
+    
+    // Audit info
+    document.getElementById('view_created_by').textContent = position.created_by_name || 'System';
+    document.getElementById('view_created_at').textContent = position.created_at ? 
+        new Date(position.created_at).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : '-';
+    
+    // Updated info (show/hide based on availability)
+    const updatedBySection = document.getElementById('view_updated_by_section');
+    const updatedAtSection = document.getElementById('view_updated_at_section');
+    
+    if (position.updated_by_name) {
+        document.getElementById('view_updated_by').textContent = position.updated_by_name;
+        updatedBySection.style.display = 'block';
+    } else {
+        updatedBySection.style.display = 'none';
+    }
+    
+    if (position.updated_at) {
+        document.getElementById('view_updated_at').textContent = new Date(position.updated_at).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        updatedAtSection.style.display = 'block';
+    } else {
+        updatedAtSection.style.display = 'none';
+    }
+    
+    // Set position ID for edit button if it exists
+    const editBtn = document.getElementById('view_edit_btn');
+    if (editBtn) {
+        editBtn.setAttribute('data-position-id', position.id);
+    }
 }
 
-function populateEditModal(request) {
-    // This will be implemented when we create the edit modal
-    console.log('Edit modal population:', request);
+function populateEditModal(position) {
+    document.getElementById('edit_position_id').value = position.id;
+    document.querySelector('#editPositionForm input[name="name"]').value = position.name;
+    document.querySelector('#editPositionForm select[name="section_id"]').value = position.section_id;
+    document.querySelector('#editPositionForm textarea[name="description"]').value = position.description || '';
+
+    // Set status dropdown
+    const statusSelect = document.querySelector('#editPositionForm select[name="status_id"]');
+    if (statusSelect && position.status_id) {
+        statusSelect.value = position.status_id;
+        // Trigger Select2 update if it's initialized
+        if (typeof $(statusSelect).select2 === 'function') {
+            $(statusSelect).trigger('change');
+        }
+    }
+
+    // Trigger Select2 update if it's initialized
+    const sectionSelect = document.querySelector('#editPositionForm select[name="section_id"]');
+    if (sectionSelect && typeof $(sectionSelect).select2 === 'function') {
+        $(sectionSelect).trigger('change');
+    }
 }
 
 // Change table limit (records per page)
-function changeRequestTableLimit(newLimit) {
+function changePositionTableLimit(newLimit) {
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('limit', newLimit);
     currentUrl.searchParams.set('page', '1'); // Reset to first page

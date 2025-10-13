@@ -1,403 +1,414 @@
 <?= $this->include('layout/header.php') ?>
 
 <style>
-/* Custom styles for the add request page */
-.request-type-card {
+/* Fixed mobile search bar */
+.mobile-search-bar {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 100 !important;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
+}
+
+/* Hide mobile search bar when sidebar drawer is active */
+[data-kt-drawer-name="app-sidebar"][data-kt-drawer="on"]~* .mobile-search-bar,
+body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
+    z-index: 100 !important;
+}
+
+.mobile-search-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bs-app-header-base-bg-color, rgba(255, 255, 255, 0.95));
+    z-index: -1;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .mobile-search-bar {
+    background: var(--bs-app-header-base-bg-color-dark, var(--bs-gray-800));
+}
+
+[data-bs-theme="dark"] .mobile-search-bar::before {
+    background: var(--bs-app-header-base-bg-color-dark, rgba(30, 30, 30, 0.95));
+}
+
+/* Skeleton loading styles */
+.skeleton-text {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+    height: 16px;
+}
+
+.skeleton-small {
+    width: 60px;
+    height: 12px;
+}
+
+.skeleton-medium {
+    width: 120px;
+    height: 16px;
+}
+
+.skeleton-badge {
+    width: 60px;
+    height: 20px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 12px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-card {
+    opacity: 0.7;
+}
+
+/* Enhanced mobile card hover effects */
+.mobile-request-card {
     transition: all 0.3s ease;
     cursor: pointer;
-    border: 2px solid transparent;
-    position: relative;
-    overflow: hidden;
 }
 
-.request-type-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border-color: var(--bs-primary);
+.mobile-request-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.request-type-card.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #f8f9fa;
+.mobile-request-card:active {
+    transform: translateY(0);
 }
 
-.request-type-card.disabled:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: transparent;
+/* Smooth loading indicator */
+#loading-indicator {
+    transition: opacity 0.3s ease;
 }
 
-.coming-soon-banner {
-    position: absolute;
-    top: 15px;
-    right: -35px;
-    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-    color: white;
-    padding: 5px 40px;
-    font-size: 12px;
-    font-weight: bold;
-    transform: rotate(45deg);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+/* Enhanced AOS animations for mobile */
+@media (max-width: 991.98px) {
+    [data-aos="fade-up"] {
+        transform: translate3d(0, 30px, 0);
+        opacity: 0;
+    }
+
+    [data-aos="fade-up"].aos-animate {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
 }
 
-.request-icon {
-    width: 60px;
-    height: 60px;
+/* Full screen modals on mobile */
+@media (max-width: 767.98px) {
+    .modal-dialog {
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    .modal-content {
+        height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .modal-body {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 1rem !important;
+    }
+
+    .modal-header {
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .modal-footer {
+        padding: 1rem !important;
+        border-top: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Ensure modal backdrop doesn't interfere */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0) !important;
+    }
+}
+
+/* Better Select2 dropdown positioning in modals */
+.select2-container--bootstrap5 .select2-dropdown {
+    z-index: 1060;
+}
+
+/* Color preview styles */
+.color-preview {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
+    border: 2px solid var(--bs-border-color);
+    display: inline-block;
+    margin-right: 8px;
+}
+   
+    .coming-soon-ribbon {
+    position: absolute;
+    top: 5px;
+    right: -20px;
+    background: #78829D;
+    color: white;
+    padding: 8px 30px; /* Adjusted padding */
+    font-size: 9px; /* Smaller text */
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(40deg);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
-    transition: all 0.3s ease;
+    width: 100px; /* Control width */
+    height: 30px; /* Control height */
 }
 
-.request-type-card:hover .request-icon {
-    transform: scale(1.1);
-}
-
-.btn-back {
-    background: linear-gradient(45deg, #6c757d, #5a6268);
-    border: none;
-    color: white;
-    transition: all 0.3s ease;
-}
-
-.btn-back:hover {
-    background: linear-gradient(45deg, #5a6268, #495057);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    color: white;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .request-type-card {
-        margin-bottom: 20px;
-    }
-    
-    .coming-soon-banner {
-        font-size: 10px;
-        padding: 4px 30px;
-        top: 12px;
-        right: -30px;
-    }
-}
-
-/* Enhanced animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in-up {
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
 </style>
 
-<!--begin::Content-->
-<div class="d-flex flex-column flex-column-fluid">
-    <!--begin::Content-->
-    <div id="kt_app_content" class="app-content flex-column-fluid">
-        <!--begin::Content container-->
-        <div id="kt_app_content_container" class="app-container container-fluid">
-            
-            <!-- Flash Messages -->
-            <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success d-flex align-items-center p-5 mb-10">
-                <i class="ki-duotone ki-shield-tick fs-2hx text-success me-4">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>
-                <div class="d-flex flex-column">
-                    <h4 class="mb-1 text-success">Success</h4>
-                    <span><?= session()->getFlashdata('success') ?></span>
-                </div>
-            </div>
-            <?php endif; ?>
 
-            <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-danger d-flex align-items-center p-5 mb-10">
-                <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-4">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>
-                <div class="d-flex flex-column">
-                    <h4 class="mb-1 text-danger">Error</h4>
-                    <span><?= session()->getFlashdata('error') ?></span>
-                </div>
-            </div>
-            <?php endif; ?>
 
-            <!--begin::Card-->
-            <div class="card shadow-sm">
-                <!--begin::Card header-->
-                <div class="card-header border-0 pt-6">
-                    <!--begin::Card title-->
-                    <div class="card-title">
-                        <h2 class="fw-bold text-gray-800">
-                            <i class="ki-duotone ki-plus-square fs-1 text-primary me-3">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                                <span class="path3"></span>
-                            </i>
-                            Add New Request
-                        </h2>
-                        <p class="text-muted fs-6 mt-2">Choose the type of request you want to create</p>
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-fluid">
+
+                <?php if (session()->getFlashdata('success')): ?>
+                <div class="alert alert-success d-flex align-items-center p-5 mb-10">
+                    <i class="ki-duotone ki-shield-tick fs-2hx text-success me-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <div class="d-flex flex-column">
+                        <h4 class="mb-1 text-success">Success</h4>
+                        <span><?= session()->getFlashdata('success') ?></span>
                     </div>
-                    <!--end::Card title-->
-                    
-                    <!--begin::Card toolbar-->
-                    <div class="card-toolbar">
-                        <a href="/requests" class="btn btn-back">
-                            <i class="ki-duotone ki-arrow-left fs-2 me-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            Back to Requests
+                </div>
+                <?php endif; ?>
+
+                <?php if (session()->getFlashdata('error')): ?>
+                <div class="alert alert-danger d-flex align-items-center p-5 mb-10">
+                    <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <div class="d-flex flex-column">
+                        <h4 class="mb-1 text-danger">Error</h4>
+                        <span><?= session()->getFlashdata('error') ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                
+                <!--begin::Row-->
+                <div class="row gy-5 g-xl-10 mt-2 mt-xl-0">
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" id="add_exit_pass_button" class="card hover-elevate-up shadow-sm parent-hover" data-bs-toggle="modal" data-bs-target="#exitPassModal">
+                            <div class="card-body d-flex align-items-center">
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center">
+                                    <i class="ki-duotone ki-badge text-gray-600 fs-3x parent-hover-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    Exit Pass
+                                </span>
+                            </div>
                         </a>
                     </div>
-                    <!--end::Card toolbar-->
-                </div>
-                <!--end::Card header-->
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" id="add_transfer_button" class="card hover-elevate-up shadow-sm parent-hover" data-bs-toggle="modal" data-bs-target="#transferModal">
+                            <div class="card-body d-flex align-items-center">
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-note-2 fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    Transfer
+                                </span>
+                            </div>
+                        </a>
+                    </div>
 
-                <!--begin::Card body-->
-                <div class="card-body py-4">
-                    <!--begin::Row-->
-                    <div class="row g-6 g-xl-8">
-                        
-                        <!--begin::Exit Pass Card-->
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 fade-in-up delay-1">
-                            <div class="card request-type-card h-100" data-type="exit-pass" onclick="selectRequestType('exit-pass')">
-                                <div class="card-body text-center p-8">
-                                    <div class="request-icon bg-light-success">
-                                        <i class="ki-duotone ki-exit-right fs-2x text-success">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                    </div>
-                                    <h4 class="fw-bold text-gray-800 mb-3">Exit Pass</h4>
-                                    <p class="text-muted fs-6 mb-4">Request permission to leave the premises temporarily</p>
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <span class="badge badge-light-success fs-7">Available</span>
-                                    </div>
-                                </div>
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" class="card hover-elevate-up shadow-sm position-relative overflow-hidden disabled" tabindex="-1" aria-disabled="true">
+                            <div class="card-body d-flex align-items-center">
+                                 <!-- Ribbon -->
+                                <div class="coming-soon-ribbon">Coming Soon</div>
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-wrench fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    Repair
+                                </span>
                             </div>
-                        </div>
-                        <!--end::Exit Pass Card-->
-                        
-                        <!--begin::Transfer Card-->
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 fade-in-up delay-2">
-                            <div class="card request-type-card h-100" data-type="transfer" onclick="selectRequestType('transfer')">
-                                <div class="card-body text-center p-8">
-                                    <div class="request-icon bg-light-primary">
-                                        <i class="ki-duotone ki-airplane-square fs-2x text-primary">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                        </i>
-                                    </div>
-                                    <h4 class="fw-bold text-gray-800 mb-3">Transfer</h4>
-                                    <p class="text-muted fs-6 mb-4">Request transportation and transfer arrangements</p>
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <span class="badge badge-light-primary fs-7">Available</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end::Transfer Card-->
-                        
-                        <!--begin::Repair Card-->
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 fade-in-up delay-3">
-                            <div class="card request-type-card h-100 disabled" data-type="repair">
-                                <div class="coming-soon-banner">Coming Soon</div>
-                                <div class="card-body text-center p-8">
-                                    <div class="request-icon bg-light-warning">
-                                        <i class="ki-duotone ki-wrench fs-2x text-warning">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                    </div>
-                                    <h4 class="fw-bold text-gray-500 mb-3">Repair</h4>
-                                    <p class="text-muted fs-6 mb-4">Request maintenance and repair services</p>
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <span class="badge badge-light-warning fs-7">Coming Soon</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end::Repair Card-->
-                        
-                        <!--begin::IT Requests Card-->
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 fade-in-up delay-4">
-                            <div class="card request-type-card h-100 disabled" data-type="it-requests">
-                                <div class="coming-soon-banner">Coming Soon</div>
-                                <div class="card-body text-center p-8">
-                                    <div class="request-icon bg-light-info">
-                                        <i class="ki-duotone ki-laptop fs-2x text-info">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                    </div>
-                                    <h4 class="fw-bold text-gray-500 mb-3">IT Requests</h4>
-                                    <p class="text-muted fs-6 mb-4">Request IT support and technical assistance</p>
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <span class="badge badge-light-info fs-7">Coming Soon</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end::IT Requests Card-->
-                        
+                        </a>
                     </div>
-                    <!--end::Row-->
-                    
-                    <!--begin::Help Section-->
-                    <div class="row mt-10">
-                        <div class="col-12">
-                            <div class="card bg-light-primary">
-                                <div class="card-body p-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ki-duotone ki-information-2 fs-2x text-primary me-4">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                        </i>
-                                        <div>
-                                            <h5 class="fw-bold text-primary mb-1">Need Help?</h5>
-                                            <p class="text-primary-emphasis mb-0">
-                                                Click on any available request type to start creating your request. 
-                                                Items marked as "Coming Soon" will be available in future updates.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" class="card hover-elevate-up shadow-sm position-relative overflow-hidden disabled" tabindex="-1" aria-disabled="true">
+                            <div class="card-body d-flex align-items-center">
+                                 <!-- Ribbon -->
+                                <div class="coming-soon-ribbon">Coming Soon</div>
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-wifi-square fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    IT Request
+                                </span>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <!--end::Help Section-->
+
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" class="card hover-elevate-up shadow-sm position-relative overflow-hidden disabled" tabindex="-1" aria-disabled="true">
+                            <div class="card-body d-flex align-items-center">
+                                 <!-- Ribbon -->
+                                <div class="coming-soon-ribbon">Coming Soon</div>
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-profile-user fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    FNF Form
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" class="card hover-elevate-up shadow-sm position-relative overflow-hidden disabled" tabindex="-1" aria-disabled="true">
+                            <div class="card-body d-flex align-items-center">
+                                 <!-- Ribbon -->
+                                <div class="coming-soon-ribbon">Coming Soon</div>
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-purchase fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    Micros Form
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" class="card hover-elevate-up shadow-sm position-relative overflow-hidden disabled" tabindex="-1" aria-disabled="true">
+                            <div class="card-body d-flex align-items-center">
+                                 <!-- Ribbon -->
+                                <div class="coming-soon-ribbon">Coming Soon</div>
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-badge fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    Uniform Request
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6 col-sm-6 col-xl-2 mb-xl-10">
+                        <a href="#" class="card hover-elevate-up shadow-sm position-relative overflow-hidden disabled" tabindex="-1" aria-disabled="true">
+                            <div class="card-body d-flex align-items-center">
+                                 <!-- Ribbon -->
+                                <div class="coming-soon-ribbon">Coming Soon</div>
+                                <!-- Icon -->
+                                <span class="svg-icon d-flex align-items-center ">
+                                    <i class="ki-duotone ki-chart-pie-3 fs-3x text-gray-600 parent-hover-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                </span>
+                                <!-- Text -->
+                                <span class="ms-3 text-gray-700 parent-hover-primary fs-4  fw-bold">
+                                    Cake Form
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
                 </div>
-                <!--end::Card body-->
+                <!--end::Row-->
+                
             </div>
-            <!--end::Card-->
+            <!--end::Content container-->
         </div>
-        <!--end::Content container-->
+        <!--end::Content-->
     </div>
-    <!--end::Content-->
+    <!--end::Content wrapper-->
 </div>
-<!--end::Content-->
+<!--end::Main-->
+
+
+<!-- Modals for requests -->
+<?= $this->include('requests/create_exit_pass_modal') ?>
+<?= $this->include('requests/create_transfer_modal') ?>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize animations
-    const cards = document.querySelectorAll('.fade-in-up');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
-
-function selectRequestType(type) {
-    // Check if the card is disabled
-    const card = document.querySelector(`[data-type="${type}"]`);
-    if (card.classList.contains('disabled')) {
-        Swal.fire({
-            icon: 'info',
-            title: 'Coming Soon',
-            text: 'This request type will be available in future updates.',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#009ef7'
-        });
-        return;
-    }
-    
-    // Handle different request types
-    switch(type) {
-        case 'exit-pass':
-            handleExitPassRequest();
-            break;
-        case 'transfer':
-            handleTransferRequest();
-            break;
-        default:
-            console.log('Unknown request type:', type);
-            break;
-    }
-}
-
-function handleExitPassRequest() {
-    Swal.fire({
-        icon: 'question',
-        title: 'Exit Pass Request',
-        text: 'You are about to create an Exit Pass request. Continue?',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Continue',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#009ef7',
-        cancelButtonColor: '#f1416c'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Redirect to exit pass form or open modal
-            window.location.href = '/requests/create?type=exit-pass';
+// Global functions accessible from modals
+function secureFetch(url, options = {}) {
+    const defaultOptions = {
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            ...options.headers
         }
+    };
+    return fetch(url, {
+        ...defaultOptions,
+        ...options
     });
 }
-
-function handleTransferRequest() {
+function handleSessionExpired() {
+    localStorage.removeItem('user');
+    sessionStorage.clear();
     Swal.fire({
-        icon: 'question',
-        title: 'Transfer Request',
-        text: 'You are about to create a Transfer request. Continue?',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Continue',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#009ef7',
-        cancelButtonColor: '#f1416c'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Redirect to transfer form or open modal
-            window.location.href = '/requests/create?type=transfer';
-        }
+        icon: 'warning',
+        title: 'Session Expired',
+        text: 'Your session has expired. Please log in again.',
+        confirmButtonText: 'Login',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    }).then(() => {
+        window.location.href = '/login';
     });
 }
-
-// Add keyboard navigation
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        window.location.href = '/requests';
-    }
-});
-
-// Add hover effects for better UX
-document.querySelectorAll('.request-type-card:not(.disabled)').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.borderColor = 'var(--bs-primary)';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.borderColor = 'transparent';
-    });
-});
 </script>
 
 <?= $this->include('layout/footer.php') ?>

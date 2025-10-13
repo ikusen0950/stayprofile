@@ -1,3 +1,4 @@
+
 <?php
 
 use CodeIgniter\Router\RouteCollection;
@@ -12,6 +13,9 @@ $routes->get('dashboard', 'Dashboard::index', ['filter' => 'login']);
 
 // Test session route
 $routes->get('test-session', 'Dashboard::testSession');
+
+// Test permissions route
+$routes->get('test-permissions/authorization-rules', 'TestPermissions::authorizationRules');
 
 // Agreement acceptance route
 $routes->post('accept-agreement', 'Dashboard::acceptAgreement', ['filter' => 'login']);
@@ -51,6 +55,24 @@ $routes->group('status', ['filter' => 'login'], function($routes) {
     $routes->get('module/(:num)', 'StatusController::getByModule/$1');
     $routes->get('api', 'StatusController::api');
     $routes->get('modules', 'StatusController::getModules');
+});
+
+// Authorization Rules CRUD routes
+$routes->group('authorization-rules', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'AuthorizationRulesController::index');
+    $routes->get('create', 'AuthorizationRulesController::create');
+    $routes->post('store', 'AuthorizationRulesController::store');
+    $routes->post('store-multiple', 'AuthorizationRulesController::storeMultiple');
+    $routes->get('show/(:num)', 'AuthorizationRulesController::show/$1');
+    $routes->get('(:num)', 'AuthorizationRulesController::show/$1');
+    $routes->get('(:num)/edit', 'AuthorizationRulesController::edit/$1');
+    $routes->post('(:num)/update', 'AuthorizationRulesController::update/$1');
+    $routes->post('update/(:num)', 'AuthorizationRulesController::update/$1');
+    $routes->post('(:num)/delete', 'AuthorizationRulesController::delete/$1');
+    $routes->post('delete/(:num)', 'AuthorizationRulesController::delete/$1');
+    $routes->get('api', 'AuthorizationRulesController::api');
+    $routes->get('departments-by-division/(:num)', 'AuthorizationRulesController::getDepartmentsByDivision/$1');
+    $routes->get('sections-by-department/(:num)', 'AuthorizationRulesController::getSectionsByDepartment/$1');
 });
 
 // Requests CRUD routes
@@ -326,4 +348,16 @@ $routes->group('auth', function($routes) {
     $routes->post('reset/(:any)', 'AuthController::attemptReset/$1');
     $routes->get('activate-account', 'AuthController::activateAccount');
     $routes->get('resend-activate-account', 'AuthController::resendActivateAccount');
+});
+
+// Leave CRUD routes
+$routes->group('leave', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'LeaveController::index');
+        $routes->get('show/(:num)', 'LeaveController::show/$1');
+    $routes->get('create', 'LeaveController::create');
+    $routes->post('store', 'LeaveController::store');
+    $routes->get('edit/(:num)', 'LeaveController::edit/$1');
+    $routes->post('update/(:num)', 'LeaveController::update/$1');
+    $routes->get('delete/(:num)', 'LeaveController::delete/$1');
+    $routes->get('view/(:num)', 'LeaveController::view/$1');
 });

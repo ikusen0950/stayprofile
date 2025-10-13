@@ -219,9 +219,52 @@ class RequestController extends BaseController
             return redirect()->to('/')->with('error', 'You do not have permission to create requests.');
         }
 
+        // Fetch next auto-increment request ID for Request # field
+        $db = \Config\Database::connect();
+        $query = $db->query("SHOW TABLE STATUS LIKE 'requests'");
+        $row = $query->getRowArray();
+        $nextRequestId = isset($row['Auto_increment']) ? $row['Auto_increment'] : null;
+
         $data = [
-            'title' => 'Add New Request'
+            'title' => 'Add New Request',
+            'nextRequestId' => $nextRequestId,
+            'statuses' => $this->requestModel->getActiveStatuses(),
+            'users' => $this->requestModel->getActiveUsers(),
+            'departments' => [],
+            'divisions' => [],
+            'positions' => [],
+            'leave_reasons' => [],
+            'islanders' => [],
+            'visitors' => []
         ];
+
+        // Load additional data if we have the models available
+        try {
+            $departmentModel = new \App\Models\DepartmentModel();
+            $divisionModel = new \App\Models\DivisionModel();
+            $positionModel = new \App\Models\PositionModel();
+            $leaveModel = new \App\Models\LeaveModel();
+            $islanderModel = new \App\Models\IslanderModel();
+            $visitorModel = new \App\Models\VisitorModel();
+            
+            $data['departments'] = $departmentModel->findAll();
+            $data['divisions'] = $divisionModel->findAll();
+            $data['positions'] = $positionModel->findAll();
+            
+            // Load active leaves for leave reason dropdown
+            $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatus();
+            
+            // Load islanders and visitors for exit pass
+            $data['islanders'] = $islanderModel->getActiveIslanders();
+            $data['visitors'] = $visitorModel->getActiveVisitors();
+            
+        } catch (\Exception $e) {
+            // Models might not exist, continue with empty arrays
+            log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
+            $data['leave_reasons'] = [];
+            $data['islanders'] = [];
+            $data['visitors'] = [];
+        }
 
         return view('requests/add', $data);
     }
@@ -249,24 +292,45 @@ class RequestController extends BaseController
             'positions' => []
         ];
 
+        // Fetch next auto-increment request ID for Request # field
+        $db = \Config\Database::connect();
+        $query = $db->query("SHOW TABLE STATUS LIKE 'requests'");
+        $row = $query->getRowArray();
+        $nextRequestId = isset($row['Auto_increment']) ? $row['Auto_increment'] : null;
+        $data['nextRequestId'] = $nextRequestId;
+
         // Load additional data if we have the models available
         try {
             $departmentModel = new \App\Models\DepartmentModel();
             $divisionModel = new \App\Models\DivisionModel();
             $positionModel = new \App\Models\PositionModel();
+            $leaveModel = new \App\Models\LeaveModel();
+            $islanderModel = new \App\Models\IslanderModel();
+            $visitorModel = new \App\Models\VisitorModel();
             
             $data['departments'] = $departmentModel->findAll();
             $data['divisions'] = $divisionModel->findAll();
             $data['positions'] = $positionModel->findAll();
+            
+            // Load active leaves for leave reason dropdown
+            $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatus();
+            
+            // Load islanders and visitors for exit pass
+            $data['islanders'] = $islanderModel->getActiveIslanders();
+            $data['visitors'] = $visitorModel->getActiveVisitors();
+            
         } catch (\Exception $e) {
             // Models might not exist, continue with empty arrays
             log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
+            $data['leave_reasons'] = [];
+            $data['islanders'] = [];
+            $data['visitors'] = [];
         }
 
         // Return different views based on type
         switch($type) {
             case 'exit-pass':
-                return view('requests/create_exit_pass', $data);
+                return view('requests/create_exit_pass_modal', $data);
             case 'transfer':
                 return view('requests/create_transfer', $data);
             default:

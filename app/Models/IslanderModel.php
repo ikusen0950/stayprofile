@@ -445,4 +445,37 @@ class IslanderModel extends Model
         
         return true;
     }
+
+    /**
+     * Get active islanders for dropdowns
+     */
+    public function getActiveIslanders()
+    {
+        $builder = $this->db->table('users u');
+        $builder->select('u.id, u.full_name as name, u.islander_no')
+                ->where('u.type', 1) // Islander type
+                ->where('u.status_id', 7) // Active status as requested
+                ->where('u.deleted_at IS NULL') // Not soft deleted
+                ->where('u.islander_no IS NOT NULL') // Islanders have islander numbers
+                ->where('u.islander_no !=', '') // Islander number is not empty
+                ->orderBy('u.islander_no', 'ASC');
+        
+        $result = $builder->get()->getResultArray();
+        
+        // If no results with status 7, try any status to see what's available
+        if (empty($result)) {
+            $builder = $this->db->table('users u');
+            $builder->select('u.id, u.full_name as name, u.islander_no, u.status_id')
+                    ->where('u.type', 1) // Islander type
+                    ->where('u.deleted_at IS NULL')
+                    ->where('u.islander_no IS NOT NULL')
+                    ->where('u.islander_no !=', '')
+                    ->orderBy('u.islander_no', 'ASC')
+                    ->limit(5); // Just get first 5 for testing
+            
+            $result = $builder->get()->getResultArray();
+        }
+        
+        return $result;
+    }
 }
