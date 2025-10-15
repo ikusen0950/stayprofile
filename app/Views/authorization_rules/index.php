@@ -1,4 +1,4 @@
-<?= $this->include('layout/header.php') ?>
+﻿<?= $this->include('layout/header.php') ?>
 
 <div class="d-flex flex-column flex-column-fluid">
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
@@ -294,9 +294,7 @@ function viewAuthorizationRule(id) {
             Swal.fire('Error!', data.message, 'error');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire('Error!', 'An error occurred', 'error');
+    .catch(error => {Swal.fire('Error!', 'An error occurred', 'error');
     });
 }
 
@@ -323,9 +321,7 @@ function editAuthorizationRule(id) {
             Swal.fire('Error!', data.message, 'error');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire('Error!', 'An error occurred', 'error');
+    .catch(error => {Swal.fire('Error!', 'An error occurred', 'error');
     });
 }
 
@@ -357,9 +353,7 @@ function deleteAuthorizationRule(id) {
                     Swal.fire('Error!', data.message, 'error');
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire('Error!', 'An error occurred', 'error');
+            .catch(error => {Swal.fire('Error!', 'An error occurred', 'error');
             });
         }
     });

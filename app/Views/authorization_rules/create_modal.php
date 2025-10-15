@@ -1,4 +1,53 @@
 <!--begin::Create Authorization Rule Modal-->
+<style>
+/* Fullscreen modals on mobile */
+@media (max-width: 767.98px) {
+    #createAuthorizationRuleModal .modal-dialog {
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    #createAuthorizationRuleModal .modal-content {
+        height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #createAuthorizationRuleModal .modal-body {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 1rem !important;
+    }
+
+    #createAuthorizationRuleModal .modal-header {
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    #createAuthorizationRuleModal .modal-footer {
+        padding: 1rem !important;
+        border-top: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Ensure modal backdrop doesn't interfere */
+    #createAuthorizationRuleModal .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+}
+
+/* Better Select2 dropdown positioning in modals */
+.select2-container--bootstrap5 .select2-dropdown {
+    z-index: 1060;
+}
+</style>
+
 <div class="modal fade" id="createAuthorizationRuleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
     <!--begin::Modal dialog-->
     <div class="modal-dialog modal-dialog-centered mw-750px">
@@ -55,6 +104,7 @@
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>
+                            <div class="form-text">Each user can have only one authorization rule. If a user already has a rule, please edit the existing one.</div>
                             <!--end::Select-->
                         </div>
                         <!--end::Input group-->
@@ -209,20 +259,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Reload page
                     window.location.reload();
                 } else {
-                    // Show validation errors
+                    // Clear previous validation states
+                    clearValidationErrors();
+                    
+                    // Show validation errors below each field
                     if (data.errors) {
-                        let errorMessage = '';
-                        for (const field in data.errors) {
-                            errorMessage += data.errors[field] + '\n';
-                        }
-                        Swal.fire('Validation Error', errorMessage, 'error');
+                        showValidationErrors(data.errors);
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 Swal.fire('Error', 'Failed to create authorization rule', 'error');
             })
             .finally(() => {
@@ -242,11 +290,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('rulesContainer').innerHTML = '';
             ruleCounter = 0;
             
-            // Clear any validation states
-            const inputs = createForm.querySelectorAll('.form-control, .form-select');
-            inputs.forEach(input => {
-                input.classList.remove('is-invalid', 'is-valid');
-            });
+            // Clear all validation errors
+            clearValidationErrors();
             
             // Reset Select2 elements
             if (typeof $ !== 'undefined') {
@@ -274,37 +319,43 @@ function addNewRule() {
             <div class="row">
                 <!-- Rule Type -->
                 <div class="col-md-4 mb-4">
-                    <label class="required fw-semibold fs-6 mb-2">Rule Type</label>
-                    <select name="rules[${ruleCounter}][rule_type]" class="form-select form-select-solid rule-type-select" data-control="select2" data-placeholder="Select rule type..." data-dropdown-parent="#createAuthorizationRuleModal" onchange="handleRuleTypeChange('${ruleId}')">
-                        <option value="">Select Rule Type</option>
-                        <option value="all">All (Admin)</option>
-                        <option value="division">Division</option>
-                        <option value="department">Department</option>
-                        <option value="section">Section</option>
-                    </select>
+                    <div class="fv-row">
+                        <label class="required fw-semibold fs-6 mb-2">Rule Type</label>
+                        <select name="rules[${ruleCounter}][rule_type]" class="form-select form-select-solid rule-type-select" data-control="select2" data-placeholder="Select rule type..." data-dropdown-parent="#createAuthorizationRuleModal" onchange="handleRuleTypeChange('${ruleId}')">
+                            <option value="">Select Rule Type</option>
+                            <option value="all">All (Admin)</option>
+                            <option value="division">Division</option>
+                            <option value="department">Department</option>
+                            <option value="section">Section</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <!-- Target Type -->
                 <div class="col-md-4 mb-4">
-                    <label class="required fw-semibold fs-6 mb-2">Target Type</label>
-                    <select name="rules[${ruleCounter}][target_type]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select target type..." data-dropdown-parent="#createAuthorizationRuleModal">
-                        <option value="">Select Target Type</option>
-                        <option value="both">Both</option>
-                        <option value="islanders">Islanders Only</option>
-                        <option value="visitors">Visitors Only</option>
-                    </select>
+                    <div class="fv-row">
+                        <label class="required fw-semibold fs-6 mb-2">Target Type</label>
+                        <select name="rules[${ruleCounter}][target_type]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select target type..." data-dropdown-parent="#createAuthorizationRuleModal">
+                            <option value="">Select Target Type</option>
+                            <option value="both">Both</option>
+                            <option value="islanders">Islanders Only</option>
+                            <option value="visitors">Visitors Only</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <!-- Approval Level -->
                 <div class="col-md-4 mb-4">
-                    <label class="required fw-semibold fs-6 mb-2">Approval Level</label>
-                    <select name="rules[${ruleCounter}][approval_level]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select approval level..." data-dropdown-parent="#createAuthorizationRuleModal">
-                        <option value="">Select Approval Level</option>
-                        <option value="no_approval" selected>No Approval Required</option>
-                        <option value="level_1">Level 1 Approval</option>
-                        <option value="level_2">Level 2 Approval</option>
-                        <option value="level_3">Level 3 Approval</option>
-                    </select>
+                    <div class="fv-row">
+                        <label class="required fw-semibold fs-6 mb-2">Approval Level</label>
+                        <select name="rules[${ruleCounter}][approval_level]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select approval level..." data-dropdown-parent="#createAuthorizationRuleModal">
+                            <option value="">Select Approval Level</option>
+                            <option value="no_approval" selected>No Approval Required</option>
+                            <option value="level_1">Level 1 Approval</option>
+                            <option value="level_2">Level 2 Approval</option>
+                            <option value="level_3">Level 3 Approval</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
@@ -409,6 +460,110 @@ function handleRuleTypeChange(ruleId) {
         case 'all':
             // No additional selections needed
             break;
+    }
+}
+
+// Clear validation errors
+function clearValidationErrors() {
+    // Remove all validation classes and error messages
+    const form = document.getElementById('createAuthorizationRuleForm');
+    
+    // Clear field validation states
+    const inputs = form.querySelectorAll('.form-control, .form-select');
+    inputs.forEach(input => {
+        input.classList.remove('is-invalid', 'is-valid');
+        
+        // Remove existing error messages
+        const existingError = input.parentElement.querySelector('.invalid-feedback');
+        if (existingError) {
+            existingError.remove();
+        }
+    });
+    
+    // Clear rule-specific errors
+    const ruleElements = document.querySelectorAll('.rule-item');
+    ruleElements.forEach(ruleElement => {
+        // Remove border error styling from rule container
+        ruleElement.classList.remove('border-danger');
+        
+        const ruleInputs = ruleElement.querySelectorAll('.form-select');
+        ruleInputs.forEach(input => {
+            input.classList.remove('is-invalid');
+            // Look for error message in fv-row or parent element
+            const fvRow = input.closest('.fv-row') || input.parentElement;
+            const existingError = fvRow.querySelector('.invalid-feedback');
+            if (existingError) {
+                existingError.remove();
+            }
+        });
+    });
+}
+
+// Show validation errors below each field
+function showValidationErrors(errors) {
+    // Handle main form field errors
+    for (const fieldName in errors) {
+        if (fieldName.startsWith('Rule ')) {
+            // Handle rule-specific errors
+            showRuleValidationErrors(fieldName, errors[fieldName]);
+        } else {
+            // Handle main form errors (user_id, description, is_active)
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                showFieldError(field, errors[fieldName]);
+            }
+        }
+    }
+}
+
+// Show error for a specific field
+function showFieldError(field, errorMessage) {
+    field.classList.add('is-invalid');
+    
+    // Create error message element
+    const errorDiv = document.createElement('div');
+    errorDiv.classList.add('invalid-feedback');
+    errorDiv.style.display = 'block';
+    errorDiv.textContent = Array.isArray(errorMessage) ? errorMessage[0] : errorMessage;
+    
+    // Insert error message in the appropriate container (fv-row or parent)
+    const container = field.closest('.fv-row') || field.parentElement;
+    container.appendChild(errorDiv);
+}
+
+// Show rule-specific validation errors
+function showRuleValidationErrors(ruleName, ruleErrors) {
+    // Extract rule number from "Rule 1", "Rule 2", etc.
+    const ruleNumber = ruleName.match(/Rule (\d+)/)[1];
+    const ruleElement = document.getElementById(`rule_${ruleNumber}`);
+    
+    if (ruleElement) {
+        // Add error styling to rule container
+        ruleElement.classList.add('border-danger');
+        
+        // Show errors for each field in the rule
+        for (const fieldName in ruleErrors) {
+            let fieldSelector = '';
+            
+            switch (fieldName) {
+                case 'rule_type':
+                    fieldSelector = `select[name*="[rule_type]"]`;
+                    break;
+                case 'target_type':
+                    fieldSelector = `select[name*="[target_type]"]`;
+                    break;
+                case 'approval_level':
+                    fieldSelector = `select[name*="[approval_level]"]`;
+                    break;
+            }
+            
+            if (fieldSelector) {
+                const field = ruleElement.querySelector(fieldSelector);
+                if (field) {
+                    showFieldError(field, ruleErrors[fieldName]);
+                }
+            }
+        }
     }
 }
 

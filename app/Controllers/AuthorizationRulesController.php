@@ -146,7 +146,7 @@ class AuthorizationRulesController extends BaseController
 
             $logData = [
                 'status_id' => $logStatusId,
-                'module_id' => 17, // Authorization Rules module ID (you may need to adjust this)
+                'module_id' => 18, // Authorization Rules module ID (you may need to adjust this)
                 'action' => $actionDescription,
             ];
 
@@ -377,13 +377,47 @@ class AuthorizationRulesController extends BaseController
         }
         
         try {
+            // Collect all IDs from all rules for backward compatibility
+            $allDivisionIds = [];
+            $allDepartmentIds = [];
+            $allSectionIds = [];
+            
+            log_message('info', 'Processing rules for ID collection: ' . json_encode($rules));
+            
+            foreach ($rules as $rule) {
+                log_message('info', 'Processing rule: ' . json_encode($rule));
+                
+                if (!empty($rule['division_ids'])) {
+                    log_message('info', 'Found division_ids: ' . json_encode($rule['division_ids']));
+                    $allDivisionIds = array_merge($allDivisionIds, $rule['division_ids']);
+                }
+                if (!empty($rule['department_ids'])) {
+                    log_message('info', 'Found department_ids: ' . json_encode($rule['department_ids']));
+                    $allDepartmentIds = array_merge($allDepartmentIds, $rule['department_ids']);
+                }
+                if (!empty($rule['section_ids'])) {
+                    log_message('info', 'Found section_ids: ' . json_encode($rule['section_ids']));
+                    $allSectionIds = array_merge($allSectionIds, $rule['section_ids']);
+                }
+            }
+            
+            // Remove duplicates and prepare for JSON encoding
+            $allDivisionIds = array_unique($allDivisionIds);
+            $allDepartmentIds = array_unique($allDepartmentIds);
+            $allSectionIds = array_unique($allSectionIds);
+            
+            log_message('info', 'Collected IDs - Divisions: ' . json_encode($allDivisionIds) . ', Departments: ' . json_encode($allDepartmentIds) . ', Sections: ' . json_encode($allSectionIds));
+            
             // Create a single authorization rule record with multiple rule configurations
             $data = [
                 'user_id' => $userId,
                 'rule_type' => 'multiple', // Indicate this is a multi-rule record
                 'target_type' => 'multiple', // Indicate this supports multiple targets
                 'approval_level' => 'multiple', // Indicate this has multiple approval levels
-                'rules_config' => json_encode($rules), // Store all rules as JSON
+                'division_ids' => !empty($allDivisionIds) ? $allDivisionIds : null, // Pass as array, model will JSON encode
+                'department_ids' => !empty($allDepartmentIds) ? $allDepartmentIds : null, // Pass as array, model will JSON encode  
+                'section_ids' => !empty($allSectionIds) ? $allSectionIds : null, // Pass as array, model will JSON encode
+                'rules_config' => json_encode($rules), // Store all rules as JSON (not processed by model)
                 'is_active' => $isActive,
                 'description' => $description
             ];
@@ -391,11 +425,19 @@ class AuthorizationRulesController extends BaseController
             // Basic validation for the main record
             $validation = \Config\Services::validation();
             $validationRules = [
-                'user_id' => 'required|numeric|is_not_unique[users.id]',
+                'user_id' => 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]',
                 'rules_config' => 'required',
                 'is_active' => 'required|in_list[0,1]'
             ];
             $validation->setRules($validationRules);
+            
+            // Set custom error messages
+            $validation->setRule('user_id', 'User', 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]', [
+                'required' => 'User is required.',
+                'numeric' => 'User must be a valid number.',
+                'is_not_unique' => 'Selected user does not exist.',
+                'is_unique' => 'This user already has an authorization rule. Please edit the existing rule instead of creating a new one.'
+            ]);
             
             if (!$validation->run($data)) {
                 if ($this->request->isAJAX()) {
@@ -410,6 +452,7 @@ class AuthorizationRulesController extends BaseController
             
             // Debug: Log the data being inserted
             log_message('info', 'Attempting to insert authorization rule data: ' . json_encode($data));
+            log_message('info', 'Data types: ' . json_encode(array_map('gettype', $data)));
             
             // Insert the single record with multiple rules configuration
             if ($ruleId = $this->authorizationRuleModel->insert($data)) {
@@ -562,21 +605,66 @@ class AuthorizationRulesController extends BaseController
                            ->with('error', 'Authorization rule not found.');
         }
 
-        // Sanitize and validate the input
-        $rawData = [
-            'user_id' => $this->request->getPost('user_id'),
-            'rule_type' => $this->request->getPost('rule_type'),
-            'target_type' => $this->request->getPost('target_type'),
-            'approval_level' => $this->request->getPost('approval_level'),
-            'division_ids' => $this->request->getPost('division_ids'),
-            'department_ids' => $this->request->getPost('department_ids'),
-            'section_ids' => $this->request->getPost('section_ids'),
-            'is_active' => $this->request->getPost('is_active'),
-            'description' => $this->request->getPost('description')
-        ];
-        $inputData = $this->sanitizeAuthorizationRuleInput($rawData);
+        // Get common data (multiple rules format)
+        $userId = $this->request->getPost('user_id');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active');
+        $rulesJson = $this->request->getPost('rules');
         
-        $validationResult = $this->authorizationRuleModel->validateForUpdate($inputData, $id);
+        if (!$userId) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'User is required.'
+                ]);
+            }
+            return redirect()->back()->withInput()->with('error', 'User is required.');
+        }
+        
+        if (!$rulesJson) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Rules data is required.'
+                ]);
+            }
+            return redirect()->back()->withInput()->with('error', 'Rules data is required.');
+        }
+        
+        // Parse rules JSON
+        $rules = json_decode($rulesJson, true);
+        if (!$rules || !is_array($rules) || empty($rules)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Invalid rules data.'
+                ]);
+            }
+            return redirect()->back()->withInput()->with('error', 'Invalid rules data.');
+        }
+        
+        log_message('info', 'Updating authorization rule ID: ' . $id . ' with ' . count($rules) . ' rules');
+        
+        // Process multiple rules - combine them into single rule data
+        $combinedData = $this->combineMultipleRules($rules, $userId, $description, $isActive);
+        
+        // Check if combineMultipleRules returned validation errors
+        if (isset($combinedData['rule_type']) && $combinedData['rule_type'] === 'Rule type is required') {
+            // This means it returned validation errors, not valid data
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'errors' => $combinedData,
+                    'message' => 'Validation failed.'
+                ]);
+            }
+            return redirect()->back()
+                           ->withInput()
+                           ->with('errors', $combinedData);
+        }
+        
+        // Validate the combined data
+        $validationResult = $this->authorizationRuleModel->validateForUpdate($combinedData, $id);
         
         if ($validationResult !== true) {
             if ($this->request->isAJAX()) {
@@ -590,9 +678,9 @@ class AuthorizationRulesController extends BaseController
                            ->withInput()
                            ->with('errors', $validationResult);
         }
-
+        
         // Prepare data for update
-        $data = $inputData;
+        $data = $combinedData;
 
         // Update the authorization rule
         try {
@@ -790,5 +878,74 @@ class AuthorizationRulesController extends BaseController
             'success' => true,
             'data' => $sections
         ]);
+    }
+    
+    /**
+     * Combine multiple rules into a single authorization rule record
+     */
+    private function combineMultipleRules($rules, $userId, $description, $isActive)
+    {
+        // Validate that all rules have required fields
+        $errors = [];
+        foreach ($rules as $index => $rule) {
+            if (empty($rule['rule_type'])) {
+                $errors["rule_type"] = 'Rule type is required';
+            }
+            if (empty($rule['target_type'])) {
+                $errors["target_type"] = 'Target type is required';
+            }
+            if (empty($rule['approval_level'])) {
+                $errors["approval_level"] = 'Approval level is required';
+            }
+        }
+        
+        if (!empty($errors)) {
+            return $errors; // Return validation errors
+        }
+        
+        // Collect all IDs from all rules for backward compatibility
+        $allDivisionIds = [];
+        $allDepartmentIds = [];
+        $allSectionIds = [];
+        
+        log_message('info', 'Processing rules for ID collection: ' . json_encode($rules));
+        
+        foreach ($rules as $rule) {
+            log_message('info', 'Processing rule: ' . json_encode($rule));
+            
+            if (!empty($rule['division_ids'])) {
+                log_message('info', 'Found division_ids: ' . json_encode($rule['division_ids']));
+                $allDivisionIds = array_merge($allDivisionIds, $rule['division_ids']);
+            }
+            if (!empty($rule['department_ids'])) {
+                log_message('info', 'Found department_ids: ' . json_encode($rule['department_ids']));
+                $allDepartmentIds = array_merge($allDepartmentIds, $rule['department_ids']);
+            }
+            if (!empty($rule['section_ids'])) {
+                log_message('info', 'Found section_ids: ' . json_encode($rule['section_ids']));
+                $allSectionIds = array_merge($allSectionIds, $rule['section_ids']);
+            }
+        }
+        
+        // Remove duplicates and prepare for JSON encoding
+        $allDivisionIds = array_unique($allDivisionIds);
+        $allDepartmentIds = array_unique($allDepartmentIds);
+        $allSectionIds = array_unique($allSectionIds);
+        
+        log_message('info', 'Collected IDs - Divisions: ' . json_encode($allDivisionIds) . ', Departments: ' . json_encode($allDepartmentIds) . ', Sections: ' . json_encode($allSectionIds));
+        
+        // Create a single authorization rule record with multiple rule configurations
+        return [
+            'user_id' => $userId,
+            'rule_type' => 'multiple', // Indicate this is a multi-rule record
+            'target_type' => 'multiple', // Indicate this supports multiple targets
+            'approval_level' => 'multiple', // Indicate this has multiple approval levels
+            'division_ids' => !empty($allDivisionIds) ? $allDivisionIds : null, // Pass as array, model will JSON encode
+            'department_ids' => !empty($allDepartmentIds) ? $allDepartmentIds : null, // Pass as array, model will JSON encode  
+            'section_ids' => !empty($allSectionIds) ? $allSectionIds : null, // Pass as array, model will JSON encode
+            'rules_config' => json_encode($rules), // Store all rules as JSON (not processed by model)
+            'is_active' => $isActive,
+            'description' => $description
+        ];
     }
 }

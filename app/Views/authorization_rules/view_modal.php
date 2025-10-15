@@ -1,4 +1,53 @@
 <!--begin::View Authorization Rule Modal-->
+<style>
+/* Fullscreen modals on mobile */
+@media (max-width: 767.98px) {
+    #viewAuthorizationRuleModal .modal-dialog {
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    #viewAuthorizationRuleModal .modal-content {
+        height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #viewAuthorizationRuleModal .modal-body {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 1rem !important;
+    }
+
+    #viewAuthorizationRuleModal .modal-header {
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    #viewAuthorizationRuleModal .modal-footer {
+        padding: 1rem !important;
+        border-top: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Ensure modal backdrop doesn't interfere */
+    #viewAuthorizationRuleModal .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+}
+
+/* Better Select2 dropdown positioning in modals */
+.select2-container--bootstrap5 .select2-dropdown {
+    z-index: 1060;
+}
+</style>
+
 <div class="modal fade" id="viewAuthorizationRuleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
     <!--begin::Modal dialog-->
     <div class="modal-dialog modal-dialog-centered mw-650px">
@@ -83,16 +132,6 @@
                             <!--end::Label-->
                             <!--begin::Value-->
                             <div class="fs-6 text-gray-800" id="view_approval_level">-</div>
-                            <!--end::Value-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col-lg-6">
-                            <!--begin::Label-->
-                            <label class="fw-bold fs-6 mb-2">Status:</label>
-                            <!--end::Label-->
-                            <!--begin::Value-->
-                            <div class="fs-6" id="view_status">-</div>
                             <!--end::Value-->
                         </div>
                         <!--end::Col-->
@@ -204,7 +243,7 @@
 
 <script>
 // Function to populate view modal (called from index.php)
-function populateViewAuthorizationRuleModal(rule) {
+window.populateViewAuthorizationRuleModal = function(rule, callback) {
     // Populate basic information
     document.getElementById('view_user_name').textContent = rule.user_display_name || rule.user_name || 'Unknown';
     document.getElementById('view_rule_type').textContent = rule.rule_type || '-';
@@ -266,5 +305,10 @@ function populateViewAuthorizationRuleModal(rule) {
     } else {
         sectionsRow.style.display = 'none';
     }
-}
+    
+    // Call callback if provided
+    if (typeof callback === 'function') {
+        callback();
+    }
+};
 </script>

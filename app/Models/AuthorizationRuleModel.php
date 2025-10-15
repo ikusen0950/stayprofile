@@ -39,11 +39,12 @@ class AuthorizationRuleModel extends Model
     protected $validationRules = [
         'user_id' => [
             'label'  => 'User',
-            'rules'  => 'required|numeric|is_not_unique[users.id]',
+            'rules'  => 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]',
             'errors' => [
                 'required'      => 'User is required.',
                 'numeric'       => 'User must be a valid number.',
-                'is_not_unique' => 'Selected user does not exist.'
+                'is_not_unique' => 'Selected user does not exist.',
+                'is_unique'     => 'This user already has an authorization rule. Please edit the existing rule instead.'
             ]
         ],
         'rule_type' => [
@@ -431,10 +432,8 @@ class AuthorizationRuleModel extends Model
     public function getUpdateValidationRules($id)
     {
         $rules = $this->validationRules;
-        // Remove the problematic unique validation for user_id during updates
-        // We'll handle this in the validateForUpdate method instead
-        $rules['user_id']['rules'] = "required|numeric|is_not_unique[users.id]";
-        unset($rules['user_id']['errors']['is_unique']);
+        // Update user_id validation to exclude current record from unique check
+        $rules['user_id']['rules'] = "required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id,id,{$id}]";
         return $rules;
     }
 
