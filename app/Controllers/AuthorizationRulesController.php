@@ -9,11 +9,13 @@ class AuthorizationRulesController extends BaseController
 {
     protected $authorizationRuleModel;
     protected $logModel;
+    protected $db;
 
     public function __construct()
     {
         $this->authorizationRuleModel = new AuthorizationRuleModel();
         $this->logModel = new \App\Models\LogModel();
+        $this->db = \Config\Database::connect();
     }
 
     /**
@@ -184,6 +186,47 @@ class AuthorizationRulesController extends BaseController
         $authorizationRules = $this->authorizationRuleModel->getAuthorizationRulesWithPagination($search, $limit, $offset);
         $totalAuthorizationRules = $this->authorizationRuleModel->getAuthorizationRulesCount($search);
         $totalPages = ceil($totalAuthorizationRules / $limit);
+
+        // Parse JSON fields and get names for each authorization rule
+        foreach ($authorizationRules as &$rule) {
+            $rule = $this->authorizationRuleModel->parseJsonFields($rule);
+            
+            // Get division names
+            if (!empty($rule['division_ids'])) {
+                $divisionNames = $this->db->table('divisions')
+                                        ->select('name')
+                                        ->whereIn('id', $rule['division_ids'])
+                                        ->get()
+                                        ->getResultArray();
+                $rule['division_names'] = array_column($divisionNames, 'name');
+            } else {
+                $rule['division_names'] = [];
+            }
+
+            // Get department names
+            if (!empty($rule['department_ids'])) {
+                $departmentNames = $this->db->table('departments')
+                                          ->select('name')
+                                          ->whereIn('id', $rule['department_ids'])
+                                          ->get()
+                                          ->getResultArray();
+                $rule['department_names'] = array_column($departmentNames, 'name');
+            } else {
+                $rule['department_names'] = [];
+            }
+
+            // Get section names
+            if (!empty($rule['section_ids'])) {
+                $sectionNames = $this->db->table('sections')
+                                       ->select('name')
+                                       ->whereIn('id', $rule['section_ids'])
+                                       ->get()
+                                       ->getResultArray();
+                $rule['section_names'] = array_column($sectionNames, 'name');
+            } else {
+                $rule['section_names'] = [];
+            }
+        }
 
         // Get data for dropdowns
         $users = $this->authorizationRuleModel->getActiveUsers();

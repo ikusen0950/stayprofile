@@ -1,11 +1,11 @@
-﻿<?= $this->include('layout/header.php') ?>
+<?= $this->include('layout/header.php') ?>
 
 <div class="d-flex flex-column flex-column-fluid">
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
                 <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-                    <?= esc($title ?? 'Authorization Rules') ?>
+                    <?= esc($title ?? 'Requesting Rules') ?>
                 </h1>
             </div>
         </div>
@@ -24,48 +24,42 @@
                                 <span class="path1"></span>
                                 <span class="path2"></span>
                             </i>
-                            <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-12" placeholder="Search authorization rules" value="<?= esc($search ?? '') ?>" />
+                            <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-12" placeholder="Search requesting rules" value="<?= esc($search ?? '') ?>" />
                         </div>
                     </div>
                     <div class="card-toolbar">
                         <?php if (isset($permissions['canCreate']) && $permissions['canCreate']): ?>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAuthorizationRuleModal">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRequestingRuleModal">
                             <i class="ki-duotone ki-plus fs-2"></i>
-                            Add Authorization Rule
+                            Add Requesting Rule
                         </button>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="card-body pt-0">
-                    <!-- Authorization Rules Table -->
+                    <!-- Requesting Rules Table -->
                     <div class="table-responsive">
-                        <table class="table table-row-dashed fs-6 gy-5" id="authorization_rules_table">
+                        <table class="table table-row-dashed fs-6 gy-5" id="requesting_rules_table">
                             <thead>
                                 <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                                    <th class="min-w-100px">Status</th>
                                     <th class="min-w-125px">User</th>
-                                    <!-- <th class="min-w-100px">Rule Type</th>
-                                    <th class="min-w-100px">Target Type</th> -->
+                                    <th class="min-w-100px">Rule Type</th>
+                                    <th class="min-w-100px">Target Type</th>
                                     <th class="min-w-100px">Division</th>
                                     <th class="min-w-100px">Department</th>
                                     <th class="min-w-100px">Section</th>
-                                    <th class="min-w-100px">Level</th>
-                                    <!-- <th class="min-w-200px">Description</th> -->
+                                    <th class="min-w-100px">Approval Level</th>
+                                    <th class="min-w-100px">Status</th>
+                                    <th class="min-w-100px">Can Request</th>
+                                    <th class="min-w-200px">Description</th>
                                     <th class="min-w-70px">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
-                                <?php if (!empty($authorizationRules)): ?>
-                                    <?php foreach ($authorizationRules as $rule): ?>
+                                <?php if (!empty($requestingRules)): ?>
+                                    <?php foreach ($requestingRules as $rule): ?>
                                     <tr>
-                                        <td>
-                                            <?php if ($rule['is_active']): ?>
-                                                <span class="badge badge-light-success">Active</span>
-                                            <?php else: ?>
-                                                <span class="badge badge-light-danger">Inactive</span>
-                                            <?php endif; ?>
-                                        </td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="d-flex flex-column">
@@ -73,7 +67,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <!-- <td>
+                                        <td>
                                             <?php if ($rule['rule_type'] === 'multiple'): ?>
                                                 <span class="badge badge-light-success">Multiple Rules</span>
                                                 <small class="d-block text-muted mt-1">
@@ -101,7 +95,7 @@
                                             <?php else: ?>
                                                 <span class="badge badge-light-info"><?= esc(ucfirst($rule['target_type'])) ?></span>
                                             <?php endif; ?>
-                                        </td> -->
+                                        </td>
                                         <td>
                                             <?php if (!empty($rule['division_names'])): ?>
                                                 <?php foreach ($rule['division_names'] as $divisionName): ?>
@@ -170,15 +164,28 @@
                                                 <span class="badge <?= $class ?>"><?= $text ?></span>
                                             <?php endif; ?>
                                         </td>
-                                        
-                                        <!-- <td>
+                                        <td>
+                                            <?php if ($rule['is_active']): ?>
+                                                <span class="badge badge-light-success">Active</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-light-danger">Inactive</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($rule['can_request']): ?>
+                                                <span class="badge badge-light-success">Yes</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-light-danger">No</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
                                             <span class="text-gray-600"><?= esc($rule['description']) ?></span>
-                                        </td> -->
+                                        </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end flex-shrink-0">
                                                 <?php if (isset($permissions['canView']) && $permissions['canView']): ?>
                                                 <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" 
-                                                        onclick="viewAuthorizationRule(<?= $rule['id'] ?>)" 
+                                                        onclick="viewRequestingRule(<?= $rule['id'] ?>)" 
                                                         title="View">
                                                     <i class="ki-duotone ki-eye fs-2">
                                                         <span class="path1"></span>
@@ -190,7 +197,7 @@
                                                 
                                                 <?php if (isset($permissions['canEdit']) && $permissions['canEdit']): ?>
                                                 <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" 
-                                                        onclick="editAuthorizationRule(<?= $rule['id'] ?>)" 
+                                                        onclick="editRequestingRule(<?= $rule['id'] ?>)" 
                                                         title="Edit">
                                                     <i class="ki-duotone ki-pencil fs-2">
                                                         <span class="path1"></span>
@@ -201,7 +208,7 @@
                                                 
                                                 <?php if (isset($permissions['canDelete']) && $permissions['canDelete']): ?>
                                                 <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" 
-                                                        onclick="deleteAuthorizationRule(<?= $rule['id'] ?>)" 
+                                                        onclick="deleteRequestingRule(<?= $rule['id'] ?>)" 
                                                         title="Delete">
                                                     <i class="ki-duotone ki-trash fs-2">
                                                         <span class="path1"></span>
@@ -218,8 +225,8 @@
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="10" class="text-center text-muted py-5">
-                                            No authorization rules found
+                                        <td colspan="11" class="text-center text-muted py-5">
+                                            No requesting rules found
                                         </td>
                                     </tr>
                                 <?php endif; ?>
@@ -231,7 +238,7 @@
                     <?php if (isset($totalPages) && $totalPages > 1): ?>
                     <div class="d-flex flex-stack flex-wrap pt-10">
                         <div class="fs-6 fw-semibold text-gray-700">
-                            Showing <?= count($authorizationRules ?? []) ?> of <?= $totalAuthorizationRules ?? 0 ?> authorization rules
+                            Showing <?= count($requestingRules ?? []) ?> of <?= $totalRequestingRules ?? 0 ?> requesting rules
                         </div>
                         <ul class="pagination">
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
@@ -249,9 +256,9 @@
 </div>
 
 <!-- Include Modals -->
-<?= $this->include('authorization_rules/create_modal') ?>
-<?= $this->include('authorization_rules/edit_modal') ?>
-<?= $this->include('authorization_rules/view_modal') ?>
+<?= $this->include('requesting_rules/create_modal') ?>
+<?= $this->include('requesting_rules/edit_modal') ?>
+<?= $this->include('requesting_rules/view_modal') ?>
 
 <!-- Global functions needed by modals -->
 <script>
@@ -302,9 +309,9 @@ document.querySelector('[data-kt-filter="search"]').addEventListener('keyup', fu
     }
 });
 
-// View authorization rule
-function viewAuthorizationRule(id) {
-    fetch(`/authorization-rules/show/${id}`, {
+// View requesting rule
+function viewRequestingRule(id) {
+    fetch(`/requesting-rules/show/${id}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
@@ -313,12 +320,12 @@ function viewAuthorizationRule(id) {
     .then(data => {
         if (data.success) {
             const rule = data.data;
-            populateViewAuthorizationRuleModal(rule);
+            populateViewRequestingRuleModal(rule);
             if (typeof $ !== 'undefined') {
-                $('#viewAuthorizationRuleModal').modal('show');
+                $('#viewRequestingRuleModal').modal('show');
             } else {
                 // Fallback to vanilla JavaScript
-                const modal = new bootstrap.Modal(document.getElementById('viewAuthorizationRuleModal'));
+                const modal = new bootstrap.Modal(document.getElementById('viewRequestingRuleModal'));
                 modal.show();
             }
         } else {
@@ -329,9 +336,9 @@ function viewAuthorizationRule(id) {
     });
 }
 
-// Edit authorization rule
-function editAuthorizationRule(id) {
-    fetch(`/authorization-rules/show/${id}`, {
+// Edit requesting rule
+function editRequestingRule(id) {
+    fetch(`/requesting-rules/show/${id}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
@@ -340,12 +347,12 @@ function editAuthorizationRule(id) {
     .then(data => {
         if (data.success) {
             const rule = data.data;
-            populateEditAuthorizationRuleModal(rule);
+            populateEditRequestingRuleModal(rule);
             if (typeof $ !== 'undefined') {
-                $('#editAuthorizationRuleModal').modal('show');
+                $('#editRequestingRuleModal').modal('show');
             } else {
                 // Fallback to vanilla JavaScript
-                const modal = new bootstrap.Modal(document.getElementById('editAuthorizationRuleModal'));
+                const modal = new bootstrap.Modal(document.getElementById('editRequestingRuleModal'));
                 modal.show();
             }
         } else {
@@ -356,8 +363,8 @@ function editAuthorizationRule(id) {
     });
 }
 
-// Delete authorization rule
-function deleteAuthorizationRule(id) {
+// Delete requesting rule
+function deleteRequestingRule(id) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -368,7 +375,7 @@ function deleteAuthorizationRule(id) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/authorization-rules/delete/${id}`, {
+            fetch(`/requesting-rules/delete/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'

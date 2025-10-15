@@ -75,6 +75,24 @@ $routes->group('authorization-rules', ['filter' => 'login'], function($routes) {
     $routes->get('sections-by-department/(:num)', 'AuthorizationRulesController::getSectionsByDepartment/$1');
 });
 
+// Requesting Rules CRUD routes  
+$routes->group('requesting-rules', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'RequestingRulesController::index');
+    $routes->get('create', 'RequestingRulesController::create');
+    $routes->post('store', 'RequestingRulesController::store');
+    $routes->post('store-multiple', 'RequestingRulesController::storeMultiple');
+    $routes->get('show/(:num)', 'RequestingRulesController::show/$1');
+    $routes->get('(:num)', 'RequestingRulesController::show/$1');
+    $routes->get('(:num)/edit', 'RequestingRulesController::edit/$1');
+    $routes->post('(:num)/update', 'RequestingRulesController::update/$1');
+    $routes->post('update/(:num)', 'RequestingRulesController::update/$1');
+    $routes->post('(:num)/delete', 'RequestingRulesController::delete/$1');
+    $routes->post('delete/(:num)', 'RequestingRulesController::delete/$1');
+    $routes->get('api', 'RequestingRulesController::api');
+    $routes->get('departments-by-division/(:num)', 'RequestingRulesController::getDepartmentsByDivision/$1');
+    $routes->get('sections-by-department/(:num)', 'RequestingRulesController::getSectionsByDepartment/$1');
+});
+
 // Requests CRUD routes
 $routes->group('requests', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'RequestController::index');

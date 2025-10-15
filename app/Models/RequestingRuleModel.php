@@ -4,7 +4,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class AuthorizationRuleModel extends Model
+class RequestingRuleModel extends Model
 {
     protected $table      = 'authorization_rules';
     protected $primaryKey = 'id';
@@ -40,12 +40,11 @@ class AuthorizationRuleModel extends Model
     protected $validationRules = [
         'user_id' => [
             'label'  => 'User',
-            'rules'  => 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]',
+            'rules'  => 'required|numeric|is_not_unique[users.id]',
             'errors' => [
                 'required'      => 'User is required.',
                 'numeric'       => 'User must be a valid number.',
-                'is_not_unique' => 'Selected user does not exist.',
-                'is_unique'     => 'This user already has an authorization rule. Please edit the existing rule instead.'
+                'is_not_unique' => 'Selected user does not exist.'
             ]
         ],
         'rule_type' => [
@@ -145,19 +144,16 @@ class AuthorizationRuleModel extends Model
                 $data['data']['created_by'] = user()->id;
             }
             elseif (session()->has('logged_in') && session()->has('user_id')) {
-                $data['data']['created_by'] = session('user_id');
+                $data['data']['created_by'] = session()->get('user_id');
             }
-            elseif (session()->has('user') && is_array(session('user')) && isset(session('user')['id'])) {
-                $data['data']['created_by'] = session('user')['id'];
+            else {
+                $data['data']['created_by'] = 1; // Default to system user
             }
-        } catch (\Exception $e) {
-            log_message('error', 'Failed to set created_by: ' . $e->getMessage());
+        } catch (Exception $e) {
+            log_message('error', 'Error setting created_by: ' . $e->getMessage());
+            $data['data']['created_by'] = 1; // Default to system user
         }
-        
-        if (isset($data['data']['updated_at'])) {
-            unset($data['data']['updated_at']);
-        }
-        
+
         return $data;
     }
 
@@ -175,20 +171,21 @@ class AuthorizationRuleModel extends Model
                 $data['data']['updated_by'] = user()->id;
             }
             elseif (session()->has('logged_in') && session()->has('user_id')) {
-                $data['data']['updated_by'] = session('user_id');
+                $data['data']['updated_by'] = session()->get('user_id');
             }
-            elseif (session()->has('user') && is_array(session('user')) && isset(session('user')['id'])) {
-                $data['data']['updated_by'] = session('user')['id'];
+            else {
+                $data['data']['updated_by'] = 1; // Default to system user
             }
-        } catch (\Exception $e) {
-            log_message('error', 'Failed to set updated_by: ' . $e->getMessage());
+        } catch (Exception $e) {
+            log_message('error', 'Error setting updated_by: ' . $e->getMessage());
+            $data['data']['updated_by'] = 1; // Default to system user
         }
-        
+
         return $data;
     }
 
     /**
-     * Process JSON fields before save
+     * Process JSON fields before saving
      */
     protected function processJsonFields(array $data)
     {
@@ -196,45 +193,35 @@ class AuthorizationRuleModel extends Model
         
         foreach ($jsonFields as $field) {
             if (isset($data['data'][$field])) {
-                // If it's an array, encode it
-                if (is_array($data['data'][$field])) {
-                    $data['data'][$field] = json_encode($data['data'][$field]);
+                // If it's already a JSON string, keep it as is
+                if (is_string($data['data'][$field]) && is_array(json_decode($data['data'][$field], true))) {
+                    continue;
                 }
-                // If it's empty, set to null
-                elseif (empty($data['data'][$field])) {
+                
+                // If it's an array, encode it to JSON
+                if (is_array($data['data'][$field])) {
+                    // Filter out empty values and ensure integers
+                    $cleanArray = array_filter($data['data'][$field], function($value) {
+                        return !empty($value) && is_numeric($value);
+                    });
+                    $cleanArray = array_map('intval', $cleanArray);
+                    $data['data'][$field] = !empty($cleanArray) ? json_encode(array_values($cleanArray)) : null;
+                }
+                
+                // If it's null or empty, set to null
+                if (empty($data['data'][$field])) {
                     $data['data'][$field] = null;
                 }
             }
         }
-        
+
         return $data;
     }
 
     /**
-     * Get authorization rule with related data
+     * Get requesting rules with pagination - filters for can_request = 1
      */
-    public function getAuthorizationRule($id)
-    {
-        $builder = $this->db->table('authorization_rules ar');
-        
-        return $builder->select('ar.*, 
-                               u.full_name as user_name,
-                               u.islander_no as user_islander_no,
-                               CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
-                               CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
-                      ->join('users u', 'u.id = ar.user_id', 'left')
-                      ->join('users cu', 'cu.id = ar.created_by', 'left')
-                      ->join('users uu', 'uu.id = ar.updated_by', 'left')
-                      ->where('ar.id', $id)
-                      ->where('ar.deleted_at IS NULL')
-                      ->get()
-                      ->getRowArray();
-    }
-
-    /**
-     * Get authorization rules with pagination and search
-     */
-    public function getAuthorizationRulesWithPagination($search = '', $limit = 10, $offset = 0)
+    public function getRequestingRulesWithPagination($search = '', $limit = 10, $offset = 0)
     {
         $builder = $this->db->table('authorization_rules ar');
         
@@ -247,7 +234,8 @@ class AuthorizationRuleModel extends Model
                 ->join('users u', 'u.id = ar.user_id', 'left')
                 ->join('users cu', 'cu.id = ar.created_by', 'left')
                 ->join('users uu', 'uu.id = ar.updated_by', 'left')
-                ->where('ar.deleted_at IS NULL');
+                ->where('ar.deleted_at IS NULL')
+                ->where('ar.can_request', 1); // Filter for requesting rules only
         
         if (!empty($search)) {
             $builder->groupStart()
@@ -266,14 +254,15 @@ class AuthorizationRuleModel extends Model
     }
 
     /**
-     * Count authorization rules with search filter
+     * Count requesting rules with search filter - filters for can_request = 1
      */
-    public function getAuthorizationRulesCount($search = '')
+    public function getRequestingRulesCount($search = '')
     {
         $builder = $this->db->table('authorization_rules ar');
         
         $builder->join('users u', 'u.id = ar.user_id', 'left')
-                ->where('ar.deleted_at IS NULL');
+                ->where('ar.deleted_at IS NULL')
+                ->where('ar.can_request', 1); // Filter for requesting rules only
         
         if (!empty($search)) {
             $builder->groupStart()
@@ -289,14 +278,28 @@ class AuthorizationRuleModel extends Model
     }
 
     /**
-     * Get authorization rules for a specific user
+     * Get a requesting rule by ID
      */
-    public function getUserAuthorizationRules($userId)
+    public function getRequestingRule($id)
     {
-        return $this->where('user_id', $userId)
-                   ->where('is_active', 1)
-                   ->where('deleted_at IS NULL')
-                   ->findAll();
+        $builder = $this->db->table('authorization_rules ar');
+        
+        $rule = $builder->select('ar.*, 
+                                 u.full_name as user_name,
+                                 u.islander_no as user_islander_no,
+                                 CONCAT(u.islander_no, " - ", u.full_name) as user_display_name,
+                                 CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
+                                 CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
+                        ->join('users u', 'u.id = ar.user_id', 'left')
+                        ->join('users cu', 'cu.id = ar.created_by', 'left')
+                        ->join('users uu', 'uu.id = ar.updated_by', 'left')
+                        ->where('ar.id', $id)
+                        ->where('ar.deleted_at IS NULL')
+                        ->where('ar.can_request', 1) // Filter for requesting rules only
+                        ->get()
+                        ->getRowArray();
+
+        return $rule;
     }
 
     /**
@@ -305,9 +308,8 @@ class AuthorizationRuleModel extends Model
     public function getActiveUsers()
     {
         return $this->db->table('users')
-                       ->select('id, CONCAT(islander_no, " - ", full_name) as display_name')
-                       ->where('status_id', 7) // Active status
-                       ->where('deleted_at IS NULL')
+                       ->select('id, full_name as name, islander_no, CONCAT(islander_no, " - ", full_name) as display_name')
+                       ->where('active', 1)
                        ->orderBy('full_name', 'ASC')
                        ->get()
                        ->getResultArray();
@@ -374,11 +376,11 @@ class AuthorizationRuleModel extends Model
     }
 
     /**
-     * Get authorization rule details with names
+     * Get requesting rule details with names
      */
-    public function getAuthorizationRuleDetails($id)
+    public function getRequestingRuleDetails($id)
     {
-        $rule = $this->getAuthorizationRule($id);
+        $rule = $this->getRequestingRule($id);
         
         if (!$rule) {
             return null;
@@ -440,8 +442,8 @@ class AuthorizationRuleModel extends Model
     public function getUpdateValidationRules($id)
     {
         $rules = $this->validationRules;
-        // Update user_id validation to exclude current record from unique check
-        $rules['user_id']['rules'] = "required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id,id,{$id}]";
+        // Allow same user for requesting rules updates (removed unique constraint)
+        $rules['user_id']['rules'] = "required|numeric|is_not_unique[users.id]";
         return $rules;
     }
 
@@ -456,10 +458,6 @@ class AuthorizationRuleModel extends Model
         if (!$validation->run($data)) {
             return $validation->getErrors();
         }
-        
-        // Note: Removed user uniqueness check as the system allows multiple authorization rules per user
-        // Each rule can have different rule_type, target_type, divisions, departments, sections, etc.
-        // This allows for granular permission control per user
         
         return true;
     }

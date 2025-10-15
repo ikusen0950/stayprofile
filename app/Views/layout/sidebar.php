@@ -368,7 +368,7 @@
                     // Check if user has access to any settings
                     $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
                     
-                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
                     ?>
                     <?php if ($hasAnySettingsAccess): ?>
                     <div data-kt-menu-trigger="click"
@@ -394,7 +394,7 @@
                             $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
                                                      has_permission('groups.view') || has_permission('permissions.view') || 
                                                      in_groups(['admin', 'manager']);
-                            $userMgmtActive = isMenuActive(['/islanders', '/visitors', '/sessions', '/requesting-sequence', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasUserManagementAccess;
+                            $userMgmtActive = isMenuActive(['/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasUserManagementAccess;
                             ?>
                             <?php if ($hasUserManagementAccess): ?>
                             <div data-kt-menu-trigger="click"
@@ -464,9 +464,9 @@
                                     <?php if (has_permission('sequence.view') || $hasUserManagementAccess): ?>
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <?php $subActive4 = isMenuActive(['/requesting-sequence']); ?>
+                                        <?php $subActive4 = isMenuActive(['/requesting-rules']); ?>
                                         <a class="menu-link <?= $subActive4 ? 'active bg-dark' : '' ?>"
-                                            href="/requesting-sequence"
+                                            href="/requesting-rules"
                                             <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
