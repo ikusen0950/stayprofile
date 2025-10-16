@@ -9,11 +9,6 @@
     <meta name="keywords" content="Islanders, App" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="csrf-token" content="<?= csrf_hash() ?>" />
-    
-    <!-- Mobile app specific meta tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="mobile-web-app-capable" content="yes" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Islanders App" />
@@ -35,119 +30,107 @@
     <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
     <link href="/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/css/mobile-fix.css" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
+
+    <!--begin::Mobile Safe Area Styles for Capacitor-->
+    <style>
+        /* Safe area handling for mobile devices in Capacitor */
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --safe-area-inset-left: env(safe-area-inset-left);
+            --safe-area-inset-right: env(safe-area-inset-right);
+        }
+
+        /* Apply safe area padding to the main app container */
+        .app-root {
+            padding-top: var(--safe-area-inset-top);
+            padding-bottom: var(--safe-area-inset-bottom);
+            padding-left: var(--safe-area-inset-left);
+            padding-right: var(--safe-area-inset-right);
+        }
+
+        /* Ensure the header doesn't overlap with status bar */
+        .app-header {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            .app-header .app-container {
+                margin-top: 0.5rem !important;
+            }
+        }
+
+        /* Capacitor specific adjustments */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .app-root {
+                padding-top: calc(env(safe-area-inset-top) + 0px);
+            }
+        }
+
+        /* Status bar background for mobile */
+        .status-bar-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--safe-area-inset-top);
+            background-color: #ffffff; /* Match your app's primary color */
+            z-index: 10000;
+            display: none;
+        }
+
+        /* Show status bar background only in Capacitor */
+        body.capacitor-app .status-bar-background {
+            display: block;
+        }
+
+        /* Additional styles when running in Capacitor */
+        body.capacitor-app {
+            /* Ensure full viewport usage */
+            height: 100vh;
+            height: calc(100vh - env(safe-area-inset-bottom));
+        }
+
+        body.capacitor-app .app-root {
+            min-height: 100vh;
+            min-height: calc(100vh - env(safe-area-inset-bottom));
+        }
+
+        /* Dark theme support for status bar */
+        [data-bs-theme="dark"] .status-bar-background {
+            background-color: #1e1e2e; /* Dark theme color */
+        }
+
+        /* Fix for iPhone notch and Android status bars */
+        @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+            /* iPhone X/XS */
+            .app-root {
+                padding-top: 44px;
+            }
+        }
+
+        @media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+            /* iPhone XR */
+            .app-root {
+                padding-top: 44px;
+            }
+        }
+
+        @media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+            /* iPhone XS Max */
+            .app-root {
+                padding-top: 44px;
+            }
+        }
+    </style>
+    <!--end::Mobile Safe Area Styles-->
 
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
-    <!-- Mobile Status Bar Handling -->
-    <style>
-        /* Simple and direct mobile status bar fix */
-        @media screen and (max-width: 768px) {
-            /* Force header positioning */
-            #kt_app_header {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                z-index: 1000 !important;
-                margin-top: 44px !important; /* Push header down from status bar */
-                height: 60px !important; /* Fixed height */
-                display: flex !important;
-                align-items: center !important;
-                /* Remove forced background - let original theme color show */
-            }
-            
-            /* Header container */
-            #kt_app_header_container {
-                height: 100% !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                padding: 0 15px !important;
-                margin: 0 !important;
-            }
-            
-            /* Sidebar positioning */
-            #kt_app_sidebar {
-                z-index: 1050 !important;
-                top: 104px !important; /* Below header */
-            }
-            
-            /* Page content adjustment */
-            #kt_app_page {
-                margin-top: 104px !important; /* Header margin + height */
-                padding-top: 0 !important;
-            }
-            
-            /* Platform specific adjustments */
-            .capacitor-mobile #kt_app_header {
-                margin-top: 44px !important;
-            }
-            
-            .capacitor-mobile.ios #kt_app_header {
-                margin-top: 54px !important; /* iOS status bar */
-            }
-            
-            .capacitor-mobile.ios #kt_app_page {
-                margin-top: 114px !important;
-            }
-            
-            .capacitor-mobile.android #kt_app_header {
-                margin-top: 34px !important; /* Android status bar */
-            }
-            
-            .capacitor-mobile.android #kt_app_page {
-                margin-top: 94px !important;
-            }
-            
-            /* iOS safe area support */
-            @supports (margin-top: env(safe-area-inset-top)) {
-                #kt_app_header {
-                    margin-top: calc(env(safe-area-inset-top) + 10px) !important;
-                }
-                
-                #kt_app_page {
-                    margin-top: calc(env(safe-area-inset-top) + 70px) !important;
-                }
-            }
-            
-            /* Remove conflicting styles */
-            body {
-                padding-top: 0 !important;
-            }
-            
-            .app-wrapper {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-            }
-            
-            /* Fix button and logo alignment */
-            #kt_app_header_container .btn {
-                margin: 0 !important;
-                display: flex !important;
-                align-items: center !important;
-            }
-            
-            #kt_app_header_container img {
-                vertical-align: middle !important;
-            }
-        }
-        
-        /* Small screens */
-        @media screen and (max-height: 667px) {
-            #kt_app_header {
-                margin-top: 24px !important;
-                height: 50px !important;
-            }
-            
-            #kt_app_page {
-                margin-top: 74px !important;
-            }
-        }
-    </style>
 
     <script>
     // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking)
@@ -155,53 +138,43 @@
         window.top.location.replace(window.self.location.href);
     }
 
-    // Enhanced Capacitor mobile app detection and setup
+    // Capacitor/Mobile app detection and safe area handling
     document.addEventListener('DOMContentLoaded', function() {
         // Check if running in Capacitor
-        if (window.Capacitor) {
-            document.body.classList.add('capacitor-mobile');
+        const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform();
+        
+        if (isCapacitor) {
+            document.body.classList.add('capacitor-app');
             
-            // Detect platform
-            if (window.Capacitor.platform === 'ios') {
-                document.body.classList.add('ios');
-            } else if (window.Capacitor.platform === 'android') {
-                document.body.classList.add('android');
+            // Additional safe area handling for Capacitor
+            const appRoot = document.getElementById('kt_app_root');
+            if (appRoot) {
+                appRoot.style.paddingTop = 'env(safe-area-inset-top)';
             }
-            
-            // Import StatusBar plugin if available
-            if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+
+            // Configure status bar if plugin is available
+            // Note: Make sure to install @capacitor/status-bar plugin
+            // and configure it in your Capacitor app's main.ts or index.ts
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
                 const { StatusBar } = window.Capacitor.Plugins;
                 
-                // Set status bar style to light content (white text on dark background)
-                StatusBar.setStyle({
-                    style: 'LIGHT'
-                });
-                
-                // Set status bar background color to match your header
-                StatusBar.setBackgroundColor({
-                    color: '#1e293b' // Dark slate color to match header
-                });
-                
-                // Make sure status bar is visible
+                // Set status bar style
+                StatusBar.setStyle({ style: 'Light' }); // or 'Dark' based on your theme
+                StatusBar.setBackgroundColor({ color: '#ffffff' }); // Match your app's color
                 StatusBar.show();
-                
-                // Set overlay to false so content doesn't go behind status bar
-                StatusBar.setOverlaysWebView({
-                    overlay: false
-                });
             }
         }
-        
-        // Alternative detection for mobile apps (PWA)
-        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-            document.body.classList.add('mobile-app');
-        }
-        
-        // Additional mobile detection
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isMobile) {
-            document.body.classList.add('mobile-device');
-        }
+
+        // Handle orientation changes
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                // Force a small layout recalculation after orientation change
+                const appRoot = document.getElementById('kt_app_root');
+                if (appRoot && isCapacitor) {
+                    appRoot.style.paddingTop = 'env(safe-area-inset-top)';
+                }
+            }, 100);
+        });
     });
     </script>
 </head>
@@ -239,6 +212,10 @@
     <!--end::Theme mode setup on page load-->
 
 
+    <!--begin::Status bar background for mobile-->
+    <div class="status-bar-background"></div>
+    <!--end::Status bar background-->
+
     <!--begin::App-->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
         <!--begin::Page-->
@@ -253,7 +230,7 @@
                 data-kt-sticky-offset="{default: '200px', lg: '300px'}" data-kt-sticky-animation="false">
 
                 <!--begin::Header container-->
-                <div class="app-container container-fluid d-flex align-items-stretch flex-stack"
+                <div class="app-container  container-fluid d-flex align-items-stretch flex-stack mt-7 "
                     id="kt_app_header_container">
                     <!--begin::Sidebar toggle-->
                     <?php 
