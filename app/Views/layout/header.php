@@ -7,8 +7,13 @@
     <meta charset="utf-8" />
     <meta name="description" content="Islanders App" />
     <meta name="keywords" content="Islanders, App" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="csrf-token" content="<?= csrf_hash() ?>" />
+    
+    <!-- Mobile app specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Islanders App" />
@@ -36,11 +41,87 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
+    <!-- Mobile Status Bar Handling -->
+    <style>
+        /* iOS Status Bar handling */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .app-header {
+                padding-top: env(safe-area-inset-top) !important;
+            }
+            
+            body {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
+
+        /* Android Status Bar handling - fallback */
+        @media screen and (max-width: 768px) {
+            .capacitor-mobile .app-header {
+                padding-top: 24px !important; /* Standard status bar height */
+            }
+            
+            .capacitor-mobile body {
+                padding-top: 24px;
+            }
+        }
+
+        /* Ensure header container respects the padding */
+        .app-header .app-container {
+            margin-top: 0 !important;
+        }
+
+        /* Adjust for different mobile devices */
+        @media screen and (max-width: 768px) {
+            /* iPhone X and newer with notch */
+            @supports (padding-top: env(safe-area-inset-top)) {
+                .app-header {
+                    padding-top: calc(env(safe-area-inset-top) + 10px) !important;
+                }
+            }
+            
+            /* Standard mobile devices */
+            .app-header {
+                min-height: 60px;
+            }
+        }
+    </style>
+
     <script>
     // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking)
     if (window.top != window.self) {
         window.top.location.replace(window.self.location.href);
     }
+
+    // Detect Capacitor mobile app environment
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if running in Capacitor
+        if (window.Capacitor) {
+            document.body.classList.add('capacitor-mobile');
+            
+            // Import StatusBar plugin if available
+            if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+                const { StatusBar } = window.Capacitor.Plugins;
+                
+                // Set status bar style
+                StatusBar.setStyle({
+                    style: 'LIGHT' // or 'DARK' depending on your header color
+                });
+                
+                // Set status bar background color to match your header
+                StatusBar.setBackgroundColor({
+                    color: '#1e293b' // Update this to match your header background color
+                });
+                
+                // Show status bar
+                StatusBar.show();
+            }
+        }
+        
+        // Alternative detection for mobile apps
+        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.classList.add('mobile-app');
+        }
+    });
     </script>
 </head>
 <!--end::Head-->
@@ -91,7 +172,7 @@
                 data-kt-sticky-offset="{default: '200px', lg: '300px'}" data-kt-sticky-animation="false">
 
                 <!--begin::Header container-->
-                <div class="app-container  container-fluid d-flex align-items-stretch flex-stack mt-7 "
+                <div class="app-container container-fluid d-flex align-items-stretch flex-stack"
                     id="kt_app_header_container">
                     <!--begin::Sidebar toggle-->
                     <?php 
