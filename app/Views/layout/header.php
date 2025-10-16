@@ -55,22 +55,26 @@
                 top: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
+                display: flex !important;
+                align-items: flex-end !important; /* Align content to bottom */
             }
             
             /* Header container specific adjustments */
             #kt_app_header_container {
-                padding-top: 8px !important; /* Reduced from 15px */
-                padding-bottom: 8px !important; /* Reduced from 15px */
+                padding-top: 0px !important; /* Remove top padding */
+                padding-bottom: 12px !important; /* Add bottom padding */
                 min-height: 50px !important; /* Reduced from 60px */
                 display: flex !important;
                 align-items: center !important;
                 justify-content: space-between !important;
+                width: 100% !important;
+                margin-bottom: 0 !important;
             }
             
             /* Fix logo and button alignment */
             #kt_app_header_container .d-flex {
                 align-items: center !important;
-                height: 100% !important;
+                height: auto !important;
             }
             
             /* Ensure sidebar appears above header */
@@ -106,9 +110,9 @@
             }
             
             .capacitor-mobile #kt_app_header_container {
-                padding-top: 10px !important; /* Reduced from 20px */
-                padding-bottom: 8px !important; /* Reduced from 15px */
-                min-height: 52px !important; /* Reduced from 65px */
+                padding-top: 0px !important;
+                padding-bottom: 15px !important;
+                min-height: 52px !important;
             }
             
             .capacitor-mobile #kt_app_page {
@@ -122,9 +126,9 @@
             }
             
             .capacitor-mobile.ios #kt_app_header_container {
-                padding-top: 12px !important; /* Reduced from 25px */
-                padding-bottom: 10px !important; /* Reduced from 20px */
-                min-height: 55px !important; /* Reduced from 70px */
+                padding-top: 0px !important;
+                padding-bottom: 18px !important;
+                min-height: 55px !important;
             }
             
             .capacitor-mobile.ios #kt_app_page {
@@ -138,9 +142,9 @@
             }
             
             .capacitor-mobile.android #kt_app_header_container {
-                padding-top: 10px !important; /* Reduced from 18px */
-                padding-bottom: 8px !important; /* Reduced from 15px */
-                min-height: 50px !important; /* Reduced from 62px */
+                padding-top: 0px !important;
+                padding-bottom: 12px !important;
+                min-height: 50px !important;
             }
             
             .capacitor-mobile.android #kt_app_page {
@@ -175,8 +179,8 @@
             }
             
             #kt_app_header_container {
-                padding-top: 6px !important;
-                padding-bottom: 6px !important;
+                padding-top: 0px !important;
+                padding-bottom: 8px !important;
                 min-height: 45px !important;
             }
             
