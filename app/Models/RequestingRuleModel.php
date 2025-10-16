@@ -429,6 +429,73 @@ class RequestingRuleModel extends Model
     }
 
     /**
+     * Validate before insert with custom business logic
+     */
+    protected function beforeInsert(array $data)
+    {
+        // Set created_by and created_at
+        $data = $this->setCreatedBy($data);
+        
+        // Process JSON fields
+        $data = $this->processJsonFields($data);
+        
+        // Custom validation for requesting rules (can_request = 1)
+        $userId = $data['data']['user_id'] ?? null;
+        $canRequest = $data['data']['can_request'] ?? 1;
+        
+        if ($userId && $canRequest == 1) {
+            if ($this->userHasRequestingRule($userId)) {
+                throw new \Exception('This user already has a requesting rule. Please edit the existing rule instead.');
+            }
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Validate before update with custom business logic
+     */
+    protected function beforeUpdate(array $data)
+    {
+        // Set updated_by and updated_at
+        $data = $this->setUpdatedBy($data);
+        
+        // Process JSON fields
+        $data = $this->processJsonFields($data);
+        
+        // Custom validation for requesting rules (can_request = 1)
+        $userId = $data['data']['user_id'] ?? null;
+        $canRequest = $data['data']['can_request'] ?? 1;
+        $id = $data['id'][0] ?? null;
+        
+        if ($userId && $canRequest == 1 && $id) {
+            // Check if another requesting rule exists for this user (excluding current record)
+            $existingCount = $this->where('user_id', $userId)
+                                 ->where('can_request', 1)
+                                 ->where('id !=', $id)
+                                 ->where('deleted_at IS NULL')
+                                 ->countAllResults();
+            
+            if ($existingCount > 0) {
+                throw new \Exception('This user already has a requesting rule. Please edit the existing rule instead.');
+            }
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Check if user already has a requesting rule
+     */
+    public function userHasRequestingRule($userId)
+    {
+        return $this->where('user_id', $userId)
+                   ->where('can_request', 1)
+                   ->where('deleted_at IS NULL')
+                   ->countAllResults() > 0;
+    }
+
+    /**
      * Get validation rules for create operations
      */
     public function getValidationRules(array $options = []): array

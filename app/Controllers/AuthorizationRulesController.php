@@ -32,9 +32,15 @@ class AuthorizationRulesController extends BaseController
             'department_ids' => $this->processArrayField($data['department_ids'] ?? null),
             'section_ids' => $this->processArrayField($data['section_ids'] ?? null),
             'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1,
+            'can_request' => isset($data['can_request']) ? (int)$data['can_request'] : 0,
             'description' => isset($data['description']) ? 
                 trim(strip_tags($data['description'], '<p><br><strong><em><ul><ol><li>')) : '',
         ];
+
+        // Handle rules_config field (for multiple rules)
+        if (isset($data['rules_config'])) {
+            $sanitized['rules_config'] = $data['rules_config'];
+        }
 
         // Add audit fields if present
         if (isset($data['created_by'])) {
@@ -72,8 +78,8 @@ class AuthorizationRulesController extends BaseController
                 return null;
             }
             
-            // Convert to integers and return as array (model will JSON encode it)
-            return array_map('intval', array_values($filtered));
+            // Convert to strings for consistency with existing data format
+            return array_map('strval', array_values($filtered));
         }
         
         if (is_string($field)) {
@@ -89,12 +95,12 @@ class AuthorizationRulesController extends BaseController
                 $array = array_filter($array, function($value) {
                     return !empty($value) && is_numeric($value);
                 });
-                return empty($array) ? null : array_map('intval', $array);
+                return empty($array) ? null : array_map('strval', $array);
             }
             
             // Single value
             if (is_numeric($field)) {
-                return [(int)$field];
+                return [strval($field)];
             }
         }
         
@@ -304,6 +310,7 @@ class AuthorizationRulesController extends BaseController
             'department_ids' => $this->request->getPost('department_ids'),
             'section_ids' => $this->request->getPost('section_ids'),
             'is_active' => $this->request->getPost('is_active'),
+            'can_request' => 0, // Authorization rules cannot be used for requesting
             'description' => $this->request->getPost('description')
         ];
         $data = $this->sanitizeAuthorizationRuleInput($rawData);
@@ -432,15 +439,27 @@ class AuthorizationRulesController extends BaseController
                 
                 if (!empty($rule['division_ids'])) {
                     log_message('info', 'Found division_ids: ' . json_encode($rule['division_ids']));
-                    $allDivisionIds = array_merge($allDivisionIds, $rule['division_ids']);
+                    // Ensure division_ids are processed as strings for consistency
+                    $divisionIds = is_array($rule['division_ids']) ? 
+                        array_map('strval', $rule['division_ids']) : 
+                        [strval($rule['division_ids'])];
+                    $allDivisionIds = array_merge($allDivisionIds, $divisionIds);
                 }
                 if (!empty($rule['department_ids'])) {
                     log_message('info', 'Found department_ids: ' . json_encode($rule['department_ids']));
-                    $allDepartmentIds = array_merge($allDepartmentIds, $rule['department_ids']);
+                    // Ensure department_ids are processed as strings for consistency
+                    $departmentIds = is_array($rule['department_ids']) ? 
+                        array_map('strval', $rule['department_ids']) : 
+                        [strval($rule['department_ids'])];
+                    $allDepartmentIds = array_merge($allDepartmentIds, $departmentIds);
                 }
                 if (!empty($rule['section_ids'])) {
                     log_message('info', 'Found section_ids: ' . json_encode($rule['section_ids']));
-                    $allSectionIds = array_merge($allSectionIds, $rule['section_ids']);
+                    // Ensure section_ids are processed as strings for consistency
+                    $sectionIds = is_array($rule['section_ids']) ? 
+                        array_map('strval', $rule['section_ids']) : 
+                        [strval($rule['section_ids'])];
+                    $allSectionIds = array_merge($allSectionIds, $sectionIds);
                 }
             }
             
@@ -452,34 +471,37 @@ class AuthorizationRulesController extends BaseController
             log_message('info', 'Collected IDs - Divisions: ' . json_encode($allDivisionIds) . ', Departments: ' . json_encode($allDepartmentIds) . ', Sections: ' . json_encode($allSectionIds));
             
             // Create a single authorization rule record with multiple rule configurations
-            $data = [
+            $rawData = [
                 'user_id' => $userId,
                 'rule_type' => 'multiple', // Indicate this is a multi-rule record
                 'target_type' => 'multiple', // Indicate this supports multiple targets
                 'approval_level' => 'multiple', // Indicate this has multiple approval levels
-                'division_ids' => !empty($allDivisionIds) ? $allDivisionIds : null, // Pass as array, model will JSON encode
-                'department_ids' => !empty($allDepartmentIds) ? $allDepartmentIds : null, // Pass as array, model will JSON encode  
-                'section_ids' => !empty($allSectionIds) ? $allSectionIds : null, // Pass as array, model will JSON encode
+                'division_ids' => !empty($allDivisionIds) ? $allDivisionIds : null, // Pass as array, will be processed by sanitizer
+                'department_ids' => !empty($allDepartmentIds) ? $allDepartmentIds : null, // Pass as array, will be processed by sanitizer
+                'section_ids' => !empty($allSectionIds) ? $allSectionIds : null, // Pass as array, will be processed by sanitizer
                 'rules_config' => json_encode($rules), // Store all rules as JSON (not processed by model)
                 'is_active' => $isActive,
+                'can_request' => 0, // Authorization rules cannot be used for requesting
                 'description' => $description
             ];
+            
+            // Sanitize the data to ensure proper array processing
+            $data = $this->sanitizeAuthorizationRuleInput($rawData);
             
             // Basic validation for the main record
             $validation = \Config\Services::validation();
             $validationRules = [
-                'user_id' => 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]',
+                'user_id' => 'required|numeric|is_not_unique[users.id]',
                 'rules_config' => 'required',
                 'is_active' => 'required|in_list[0,1]'
             ];
             $validation->setRules($validationRules);
             
             // Set custom error messages
-            $validation->setRule('user_id', 'User', 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]', [
+            $validation->setRule('user_id', 'User', 'required|numeric|is_not_unique[users.id]', [
                 'required' => 'User is required.',
                 'numeric' => 'User must be a valid number.',
-                'is_not_unique' => 'Selected user does not exist.',
-                'is_unique' => 'This user already has an authorization rule. Please edit the existing rule instead of creating a new one.'
+                'is_not_unique' => 'Selected user does not exist.'
             ]);
             
             if (!$validation->run($data)) {
@@ -493,9 +515,32 @@ class AuthorizationRulesController extends BaseController
                 return redirect()->back()->withInput()->with('errors', $validation->getErrors());
             }
             
-            // Debug: Log the data being inserted
-            log_message('info', 'Attempting to insert authorization rule data: ' . json_encode($data));
-            log_message('info', 'Data types: ' . json_encode(array_map('gettype', $data)));
+            // Check for duplicate authorization rule (user_id + can_request = 0)
+            $existingRule = $this->authorizationRuleModel
+                                ->where('user_id', $data['user_id'])
+                                ->where('can_request', 0)
+                                ->where('deleted_at IS NULL')
+                                ->first();
+                                
+            if ($existingRule) {
+                if ($this->request->isAJAX()) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'This user already has an authorization rule. Please edit the existing rule instead of creating a new one.'
+                    ]);
+                }
+                return redirect()->back()->withInput()->with('error', 'This user already has an authorization rule. Please edit the existing rule instead of creating a new one.');
+            }
+            
+            // Manually ensure JSON encoding of array fields before insert
+            $jsonFields = ['division_ids', 'department_ids', 'section_ids'];
+            foreach ($jsonFields as $field) {
+                if (isset($data[$field]) && is_array($data[$field])) {
+                    // Convert integers to strings to maintain consistency with existing data
+                    $stringArray = array_map('strval', $data[$field]);
+                    $data[$field] = json_encode($stringArray);
+                }
+            }
             
             // Insert the single record with multiple rules configuration
             if ($ruleId = $this->authorizationRuleModel->insert($data)) {
@@ -804,8 +849,8 @@ class AuthorizationRulesController extends BaseController
             ]);
         }
 
-        // Delete the authorization rule (soft delete)
-        if ($this->authorizationRuleModel->delete($id)) {
+        // Delete the authorization rule (hard delete - permanently remove from database)
+        if ($this->authorizationRuleModel->delete($id, true)) {
             // Log the delete operation
             $this->logAuthorizationRuleOperation('delete', $authorizationRule, $id);
             
@@ -958,15 +1003,27 @@ class AuthorizationRulesController extends BaseController
             
             if (!empty($rule['division_ids'])) {
                 log_message('info', 'Found division_ids: ' . json_encode($rule['division_ids']));
-                $allDivisionIds = array_merge($allDivisionIds, $rule['division_ids']);
+                // Ensure division_ids are processed as strings for consistency
+                $divisionIds = is_array($rule['division_ids']) ? 
+                    array_map('strval', $rule['division_ids']) : 
+                    [strval($rule['division_ids'])];
+                $allDivisionIds = array_merge($allDivisionIds, $divisionIds);
             }
             if (!empty($rule['department_ids'])) {
                 log_message('info', 'Found department_ids: ' . json_encode($rule['department_ids']));
-                $allDepartmentIds = array_merge($allDepartmentIds, $rule['department_ids']);
+                // Ensure department_ids are processed as strings for consistency
+                $departmentIds = is_array($rule['department_ids']) ? 
+                    array_map('strval', $rule['department_ids']) : 
+                    [strval($rule['department_ids'])];
+                $allDepartmentIds = array_merge($allDepartmentIds, $departmentIds);
             }
             if (!empty($rule['section_ids'])) {
                 log_message('info', 'Found section_ids: ' . json_encode($rule['section_ids']));
-                $allSectionIds = array_merge($allSectionIds, $rule['section_ids']);
+                // Ensure section_ids are processed as strings for consistency
+                $sectionIds = is_array($rule['section_ids']) ? 
+                    array_map('strval', $rule['section_ids']) : 
+                    [strval($rule['section_ids'])];
+                $allSectionIds = array_merge($allSectionIds, $sectionIds);
             }
         }
         
@@ -978,17 +1035,21 @@ class AuthorizationRulesController extends BaseController
         log_message('info', 'Collected IDs - Divisions: ' . json_encode($allDivisionIds) . ', Departments: ' . json_encode($allDepartmentIds) . ', Sections: ' . json_encode($allSectionIds));
         
         // Create a single authorization rule record with multiple rule configurations
-        return [
+        $rawData = [
             'user_id' => $userId,
             'rule_type' => 'multiple', // Indicate this is a multi-rule record
             'target_type' => 'multiple', // Indicate this supports multiple targets
             'approval_level' => 'multiple', // Indicate this has multiple approval levels
-            'division_ids' => !empty($allDivisionIds) ? $allDivisionIds : null, // Pass as array, model will JSON encode
-            'department_ids' => !empty($allDepartmentIds) ? $allDepartmentIds : null, // Pass as array, model will JSON encode  
-            'section_ids' => !empty($allSectionIds) ? $allSectionIds : null, // Pass as array, model will JSON encode
+            'division_ids' => !empty($allDivisionIds) ? $allDivisionIds : null, // Pass as array, will be processed by sanitizer
+            'department_ids' => !empty($allDepartmentIds) ? $allDepartmentIds : null, // Pass as array, will be processed by sanitizer
+            'section_ids' => !empty($allSectionIds) ? $allSectionIds : null, // Pass as array, will be processed by sanitizer
             'rules_config' => json_encode($rules), // Store all rules as JSON (not processed by model)
             'is_active' => $isActive,
+            'can_request' => 0, // Authorization rules cannot be used for requesting
             'description' => $description
         ];
+        
+        // Sanitize the data to ensure proper array processing
+        return $this->sanitizeAuthorizationRuleInput($rawData);
     }
 }

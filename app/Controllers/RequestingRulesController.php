@@ -59,21 +59,46 @@ class RequestingRulesController extends BaseController
      */
     private function processArrayField($field)
     {
-        if (is_null($field) || $field === '') {
+        if (is_null($field) || (is_array($field) && empty($field))) {
             return null;
         }
-
+        
+        if (is_array($field)) {
+            // Filter out empty values and convert to strings for consistency
+            $filtered = array_filter($field, function($value) {
+                return !empty($value) && is_numeric($value);
+            });
+            
+            if (empty($filtered)) {
+                return null;
+            }
+            
+            // Convert to strings for consistency with existing data format
+            return array_map('strval', array_values($filtered));
+        }
+        
         if (is_string($field)) {
+            // Try to decode if it's already JSON
             $decoded = json_decode($field, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                return array_map('intval', array_filter($decoded, 'is_numeric'));
+                return $decoded;
+            }
+            
+            // If it's a comma-separated string, convert to array
+            if (strpos($field, ',') !== false) {
+                $array = array_map('trim', explode(',', $field));
+                $array = array_filter($array, function($value) {
+                    return !empty($value) && is_numeric($value);
+                });
+                return empty($array) ? null : array_map('strval', $array);
+            }
+            
+            // Single value
+            if (is_numeric($field)) {
+                return [strval($field)];
             }
         }
-
-        if (is_array($field)) {
-            return array_map('intval', array_filter($field, 'is_numeric'));
-        }
-
+        
         return null;
     }
 
@@ -185,6 +210,10 @@ class RequestingRulesController extends BaseController
             return redirect()->back()->with('error', 'You do not have permission to create requesting rules.');
         }
 
+        // Debug: Log the incoming request
+        log_message('info', 'Requesting rule store called. POST data: ' . json_encode($this->request->getPost()));
+        log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
+
         $rawData = [
             'user_id' => $this->request->getPost('user_id'),
             'rule_type' => $this->request->getPost('rule_type'),
@@ -199,8 +228,23 @@ class RequestingRulesController extends BaseController
         ];
         $data = $this->sanitizeRequestingRuleInput($rawData);
 
+        log_message('info', 'Sanitized data: ' . json_encode($data));
+
+        // Manually ensure JSON encoding of array fields before insert for consistency
+        $jsonFields = ['division_ids', 'department_ids', 'section_ids'];
+        foreach ($jsonFields as $field) {
+            if (isset($data[$field]) && is_array($data[$field])) {
+                // Convert to strings to maintain consistency with existing data
+                $stringArray = array_map('strval', $data[$field]);
+                $data[$field] = json_encode($stringArray);
+                log_message('info', 'Encoded ' . $field . ' as: ' . $data[$field]);
+            }
+        }
+
         // Insert the requesting rule
         if ($ruleId = $this->requestingRuleModel->insert($data)) {
+            log_message('info', 'Successfully inserted requesting rule with ID: ' . $ruleId);
+            
             // Get the full requesting rule data for logging
             $ruleData = $this->requestingRuleModel->getRequestingRule($ruleId);
             
@@ -217,6 +261,9 @@ class RequestingRulesController extends BaseController
             return redirect()->to('/requesting-rules')->with('success', 'Requesting rule created successfully.');
         } else {
             $errors = $this->requestingRuleModel->errors();
+            log_message('error', 'Failed to insert requesting rule. Model errors: ' . json_encode($errors));
+            log_message('error', 'Failed to insert requesting rule. Data: ' . json_encode($data));
+            
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -290,9 +337,25 @@ class RequestingRulesController extends BaseController
         // Combine multiple rules into a single record
         $combinedData = $this->combineMultipleRequestingRules($rules, $userId, $description, $isActive);
         
+        log_message('info', 'Combined data result: ' . json_encode($combinedData));
+        
         if (is_array($combinedData) && isset($combinedData['user_id'])) {
+            log_message('info', 'Combined data validation passed, proceeding with insert');
+            
+            // Manually ensure JSON encoding of array fields before insert for consistency
+            $jsonFields = ['division_ids', 'department_ids', 'section_ids'];
+            foreach ($jsonFields as $field) {
+                if (isset($combinedData[$field]) && is_array($combinedData[$field])) {
+                    // Convert to strings to maintain consistency with existing data
+                    $stringArray = array_map('strval', $combinedData[$field]);
+                    $combinedData[$field] = json_encode($stringArray);
+                    log_message('info', 'Encoded ' . $field . ' for multiple rules as: ' . $combinedData[$field]);
+                }
+            }
+            
             // Insert the combined requesting rule
             if ($ruleId = $this->requestingRuleModel->insert($combinedData)) {
+                log_message('info', 'Successfully inserted multiple requesting rules with ID: ' . $ruleId);
                 // Get the full requesting rule data for logging
                 $ruleData = $this->requestingRuleModel->getRequestingRule($ruleId);
                 
@@ -310,6 +373,7 @@ class RequestingRulesController extends BaseController
             } else {
                 $errors = $this->requestingRuleModel->errors();
                 log_message('error', 'Failed to insert multiple requesting rules. Errors: ' . json_encode($errors));
+                log_message('error', 'Failed to insert multiple requesting rules. Data: ' . json_encode($combinedData));
                 if ($this->request->isAJAX()) {
                     return $this->response->setJSON([
                         'success' => false,
@@ -321,6 +385,7 @@ class RequestingRulesController extends BaseController
             }
         } else {
             // Handle validation errors from combineMultipleRequestingRules
+            log_message('warning', 'Validation failed for multiple requesting rules: ' . json_encode($combinedData));
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -404,6 +469,10 @@ class RequestingRulesController extends BaseController
             return redirect()->back()->with('error', 'You do not have permission to edit requesting rules.');
         }
 
+        // Debug: Log the incoming request
+        log_message('info', 'Requesting rule update called for ID: ' . $id . '. POST data: ' . json_encode($this->request->getPost()));
+        log_message('info', 'Is AJAX: ' . ($this->request->isAJAX() ? 'yes' : 'no'));
+
         if ($id === null) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
@@ -417,6 +486,7 @@ class RequestingRulesController extends BaseController
         $requestingRule = $this->requestingRuleModel->find($id);
 
         if (!$requestingRule) {
+            log_message('warning', 'Requesting rule not found for ID: ' . $id);
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -425,6 +495,8 @@ class RequestingRulesController extends BaseController
             }
             return redirect()->to('/requesting-rules')->with('error', 'Requesting rule not found.');
         }
+
+        log_message('info', 'Found existing requesting rule: ' . json_encode($requestingRule));
 
         $rawData = [
             'user_id' => $this->request->getPost('user_id'),
@@ -440,8 +512,23 @@ class RequestingRulesController extends BaseController
         ];
         $data = $this->sanitizeRequestingRuleInput($rawData);
 
+        log_message('info', 'Sanitized data for update: ' . json_encode($data));
+
+        // Manually ensure JSON encoding of array fields before update for consistency
+        $jsonFields = ['division_ids', 'department_ids', 'section_ids'];
+        foreach ($jsonFields as $field) {
+            if (isset($data[$field]) && is_array($data[$field])) {
+                // Convert to strings to maintain consistency with existing data
+                $stringArray = array_map('strval', $data[$field]);
+                $data[$field] = json_encode($stringArray);
+                log_message('info', 'Encoded ' . $field . ' for update as: ' . $data[$field]);
+            }
+        }
+
         // Update the requesting rule
         if ($this->requestingRuleModel->update($id, $data)) {
+            log_message('info', 'Successfully updated requesting rule with ID: ' . $id);
+            
             // Get the updated requesting rule data for logging
             $updatedRule = $this->requestingRuleModel->getRequestingRule($id);
             
@@ -458,6 +545,9 @@ class RequestingRulesController extends BaseController
             return redirect()->to('/requesting-rules')->with('success', 'Requesting rule updated successfully.');
         } else {
             $errors = $this->requestingRuleModel->errors();
+            log_message('error', 'Failed to update requesting rule. Model errors: ' . json_encode($errors));
+            log_message('error', 'Failed to update requesting rule. Data: ' . json_encode($data));
+            
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -485,6 +575,9 @@ class RequestingRulesController extends BaseController
             return redirect()->back()->with('error', 'You do not have permission to delete requesting rules.');
         }
 
+        // Debug: Log the delete request
+        log_message('info', 'Requesting rule delete called for ID: ' . $id);
+
         if ($id === null) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
@@ -498,6 +591,7 @@ class RequestingRulesController extends BaseController
         $requestingRule = $this->requestingRuleModel->find($id);
 
         if (!$requestingRule) {
+            log_message('warning', 'Requesting rule not found for deletion, ID: ' . $id);
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -509,8 +603,12 @@ class RequestingRulesController extends BaseController
 
         // Get the full requesting rule data for logging before deletion
         $ruleData = $this->requestingRuleModel->getRequestingRule($id);
+        log_message('info', 'Found requesting rule for deletion: ' . json_encode($ruleData));
 
-        if ($this->requestingRuleModel->delete($id)) {
+        // Hard delete - permanently remove from database
+        if ($this->requestingRuleModel->delete($id, true)) {
+            log_message('info', 'Successfully deleted requesting rule with ID: ' . $id);
+            
             // Log the delete operation
             $this->logRequestingRuleOperation('delete', $ruleData, $id);
             
@@ -522,6 +620,8 @@ class RequestingRulesController extends BaseController
             }
             return redirect()->to('/requesting-rules')->with('success', 'Requesting rule deleted successfully.');
         } else {
+            log_message('error', 'Failed to delete requesting rule with ID: ' . $id);
+            
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -676,15 +776,27 @@ class RequestingRulesController extends BaseController
             
             if (!empty($rule['division_ids'])) {
                 log_message('info', 'Found division_ids: ' . json_encode($rule['division_ids']));
-                $allDivisionIds = array_merge($allDivisionIds, $rule['division_ids']);
+                // Ensure division_ids are processed as strings for consistency
+                $divisionIds = is_array($rule['division_ids']) ? 
+                    array_map('strval', $rule['division_ids']) : 
+                    [strval($rule['division_ids'])];
+                $allDivisionIds = array_merge($allDivisionIds, $divisionIds);
             }
             if (!empty($rule['department_ids'])) {
                 log_message('info', 'Found department_ids: ' . json_encode($rule['department_ids']));
-                $allDepartmentIds = array_merge($allDepartmentIds, $rule['department_ids']);
+                // Ensure department_ids are processed as strings for consistency
+                $departmentIds = is_array($rule['department_ids']) ? 
+                    array_map('strval', $rule['department_ids']) : 
+                    [strval($rule['department_ids'])];
+                $allDepartmentIds = array_merge($allDepartmentIds, $departmentIds);
             }
             if (!empty($rule['section_ids'])) {
                 log_message('info', 'Found section_ids: ' . json_encode($rule['section_ids']));
-                $allSectionIds = array_merge($allSectionIds, $rule['section_ids']);
+                // Ensure section_ids are processed as strings for consistency
+                $sectionIds = is_array($rule['section_ids']) ? 
+                    array_map('strval', $rule['section_ids']) : 
+                    [strval($rule['section_ids'])];
+                $allSectionIds = array_merge($allSectionIds, $sectionIds);
             }
         }
         
@@ -712,27 +824,70 @@ class RequestingRulesController extends BaseController
     }
 
     /**
-     * Log requesting rule operations
+     * Log requesting rule operations to the logs table
      */
-    private function logRequestingRuleOperation($operation, $ruleData, $ruleId)
+    private function logRequestingRuleOperation(string $action, array $ruleData, int $ruleId = null): void
     {
-        helper('auth');
-        
-        $logData = [
-            'user_id' => function_exists('user') && user() ? user()->id : 1,
-            'action' => strtoupper($operation) . '_REQUESTING_RULE',
-            'description' => ucfirst($operation) . ' requesting rule for user: ' . ($ruleData['user_name'] ?? 'Unknown'),
-            'ip_address' => $this->request->getIPAddress(),
-            'user_agent' => $this->request->getHeaderLine('User-Agent'),
-            'request_method' => $this->request->getMethod(),
-            'request_uri' => $this->request->getUri()->getPath(),
-            'table_name' => 'authorization_rules',
-            'record_id' => $ruleId,
-            'old_values' => null,
-            'new_values' => json_encode($ruleData),
-            'created_at' => date('Y-m-d H:i:s')
-        ];
+        try {
+            log_message('info', 'logRequestingRuleOperation called with action: ' . $action . ', ruleId: ' . $ruleId);
+            
+            $ruleNumber = $ruleId ?? ($ruleData['id'] ?? 0);
+            
+            // Map actions to status IDs for logs
+            $logStatusId = 1; // Default to active
+            switch (strtolower($action)) {
+                case 'created':
+                case 'create':
+                case 'create_multiple':
+                    $logStatusId = 3; // Success status for create
+                    $actionPrefix = 'Requesting Rule Created';
+                    break;
+                case 'updated':
+                case 'update':
+                    $logStatusId = 4; // Success status for update
+                    $actionPrefix = 'Requesting Rule Updated';
+                    break;
+                case 'deleted':
+                case 'delete':
+                    $logStatusId = 5; // Warning status for delete
+                    $actionPrefix = 'Requesting Rule Deleted';
+                    break;
+                default:
+                    $logStatusId = 1; // Default for other actions
+                    $actionPrefix = 'Requesting Rule ' . ucfirst($action);
+                    break;
+            }
+            
+            log_message('info', 'Mapped status ID: ' . $logStatusId . ' for action: ' . $action);
+            
+            // Create structured action description
+            $actionDescription = $actionPrefix . "\n";
+            $actionDescription .= "#: " . $ruleNumber . "\n";
+            $actionDescription .= "User: " . ($ruleData['user_display_name'] ?? $ruleData['user_name'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Rule Type: " . ($ruleData['rule_type'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Target Type: " . ($ruleData['target_type'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Description:\n";
+            $actionDescription .= ($ruleData['description'] ?? 'No description provided');
 
-        $this->logModel->insert($logData);
+            $logData = [
+                'status_id' => $logStatusId,
+                'module_id' => 19, // Requesting Rules module ID (adjust as needed)
+                'action' => $actionDescription,
+            ];
+
+            log_message('info', 'Attempting to insert log data: ' . json_encode($logData));
+            
+            $result = $this->logModel->insert($logData);
+            
+            if ($result) {
+                log_message('info', 'Successfully inserted log with ID: ' . $result);
+            } else {
+                $errors = $this->logModel->errors();
+                log_message('error', 'Failed to insert log. Errors: ' . json_encode($errors));
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to log requesting rule operation: ' . $e->getMessage());
+            log_message('error', 'Exception trace: ' . $e->getTraceAsString());
+        }
     }
 }

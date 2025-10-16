@@ -229,6 +229,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 visitorSelect.value = '';
             }
             
+            // Auto-select islander if only one option available
+            var islanderOptions = Array.from(islanderSelect.querySelectorAll('option')).filter(option => option.value && option.value !== "");
+            if (islanderOptions.length === 1) {
+                var autoSelectValue = islanderOptions[0].value;
+                if (window.jQuery && $(islanderSelect).data('select2')) {
+                    $(islanderSelect).val(autoSelectValue).trigger('change');
+                } else {
+                    islanderSelect.value = autoSelectValue;
+                }
+                console.log('Auto-selected islander:', autoSelectValue);
+            }
+            
         } else if (selectedType === '2') {
             // Show Visitor dropdown, hide Islander dropdown
             islanderSection.style.display = 'none';

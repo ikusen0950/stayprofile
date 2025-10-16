@@ -9,11 +9,15 @@ class RequestController extends BaseController
 {
     protected $requestModel;
     protected $logModel;
+    protected $db;
+    protected $auth;
 
     public function __construct()
     {
         $this->requestModel = new RequestModel();
         $this->logModel = new \App\Models\LogModel();
+        $this->db = \Config\Database::connect();
+        $this->auth = service('authentication');
     }
 
     /**
@@ -255,7 +259,7 @@ class RequestController extends BaseController
             $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatus();
             
             // Load islanders and visitors for exit pass
-            $data['islanders'] = $islanderModel->getActiveIslanders();
+            $data['islanders'] = $this->getAuthorizedIslanders();
             $data['visitors'] = $visitorModel->getActiveVisitors();
             
         } catch (\Exception $e) {
@@ -316,7 +320,7 @@ class RequestController extends BaseController
             $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatus();
             
             // Load islanders and visitors for exit pass
-            $data['islanders'] = $islanderModel->getActiveIslanders();
+            $data['islanders'] = $this->getAuthorizedIslanders();
             $data['visitors'] = $visitorModel->getActiveVisitors();
             
         } catch (\Exception $e) {
@@ -690,5 +694,138 @@ class RequestController extends BaseController
             'success' => true,
             'data' => $users
         ]);
+    }
+
+    /**
+     * Get authorized islanders based on logged-in user's authorization rules
+     */
+    private function getAuthorizedIslanders()
+    {
+        // Check if user is logged in
+        if (!$this->auth->check()) {
+            return [];
+        }
+
+        $currentUser = $this->auth->user();
+        $currentUserId = $currentUser->id;
+        
+        if (!$currentUserId) {
+            return [];
+        }
+
+        // Get authorization rules for the current user
+        $authorizationRuleModel = new \App\Models\AuthorizationRuleModel();
+        $userAuthRules = $authorizationRuleModel->where('user_id', $currentUserId)
+                                               ->where('is_active', 1)
+                                               ->where('deleted_at IS NULL')
+                                               ->findAll();
+
+        $islanderModel = new \App\Models\IslanderModel();
+        
+        // If user has no authorization rules, check if they are an islander themselves
+        if (empty($userAuthRules)) {
+            // Only show current user if they are an actual islander (type = 1)
+            $currentUser = $this->db->table('users')
+                                   ->select('id, full_name as name, islander_no')
+                                   ->where('id', $currentUserId)
+                                   ->where('type', 1) // Only islanders
+                                   ->where('status_id', 7) // Active status
+                                   ->where('islander_no IS NOT NULL')
+                                   ->where('islander_no !=', '')
+                                   ->where('deleted_at IS NULL')
+                                   ->get()
+                                   ->getRowArray();
+            
+            // Return current user if they are a valid islander, otherwise empty array
+            return $currentUser ? [$currentUser] : [];
+        }
+
+        // User has authorization rules - get authorized islanders
+        $departmentIds = [];
+        $sectionIds = [];
+        $divisionIds = [];
+
+        foreach ($userAuthRules as $rule) {
+            // Parse JSON fields
+            $parsedRule = $authorizationRuleModel->parseJsonFields($rule);
+            
+            if (!empty($parsedRule['department_ids'])) {
+                $departmentIds = array_merge($departmentIds, $parsedRule['department_ids']);
+            }
+            if (!empty($parsedRule['section_ids'])) {
+                $sectionIds = array_merge($sectionIds, $parsedRule['section_ids']);
+            }
+            if (!empty($parsedRule['division_ids'])) {
+                $divisionIds = array_merge($divisionIds, $parsedRule['division_ids']);
+            }
+        }
+
+        // Remove duplicates
+        $departmentIds = array_unique($departmentIds);
+        $sectionIds = array_unique($sectionIds);
+        $divisionIds = array_unique($divisionIds);
+
+        $builder = $this->db->table('users u');
+        $builder->select('u.id, u.full_name as name, u.islander_no')
+                ->where('u.type', 1) // Islander type
+                ->where('u.status_id', 7) // Active status
+                ->where('u.deleted_at IS NULL')
+                ->where('u.islander_no IS NOT NULL')
+                ->where('u.islander_no !=', '');
+
+        // Apply filters based on authorization rules
+        $hasFilters = false;
+        
+        if (!empty($departmentIds) || !empty($sectionIds) || !empty($divisionIds)) {
+            $builder->groupStart(); // Start OR group
+            
+            if (!empty($departmentIds)) {
+                $builder->whereIn('u.department_id', $departmentIds);
+                $hasFilters = true;
+            }
+            
+            if (!empty($sectionIds)) {
+                if ($hasFilters) {
+                    $builder->orWhereIn('u.section_id', $sectionIds);
+                } else {
+                    $builder->whereIn('u.section_id', $sectionIds);
+                    $hasFilters = true;
+                }
+            }
+            
+            if (!empty($divisionIds)) {
+                if ($hasFilters) {
+                    $builder->orWhereIn('u.division_id', $divisionIds);
+                } else {
+                    $builder->whereIn('u.division_id', $divisionIds);
+                }
+            }
+            
+            $builder->groupEnd(); // End OR group
+        }
+
+        $builder->orderBy('u.islander_no', 'ASC');
+        
+        $result = $builder->get()->getResultArray();
+        
+        // If no authorized islanders found through authorization rules, check if current user is an islander
+        if (empty($result)) {
+            // Only show current user if they are an actual islander (type = 1)
+            $currentUser = $this->db->table('users')
+                                   ->select('id, full_name as name, islander_no')
+                                   ->where('id', $currentUserId)
+                                   ->where('type', 1) // Only islanders
+                                   ->where('status_id', 7) // Active status
+                                   ->where('islander_no IS NOT NULL')
+                                   ->where('islander_no !=', '')
+                                   ->where('deleted_at IS NULL')
+                                   ->get()
+                                   ->getRowArray();
+            
+            // Return current user if they are a valid islander, otherwise empty array
+            return $currentUser ? [$currentUser] : [];
+        }
+        
+        return $result;
     }
 }

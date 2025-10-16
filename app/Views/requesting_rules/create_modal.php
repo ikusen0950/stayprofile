@@ -72,7 +72,7 @@
             <!--begin::Modal body-->
             <div class="modal-body scroll-y p-4">
                 <!--begin::Form-->
-                <form id="createAuthorizationRuleForm" class="form">
+                <form id="createRequestingRuleForm" class="form">
                     <!--begin::Scroll-->
                     <div class="d-flex flex-column">
 
@@ -199,8 +199,8 @@ const departments = <?= json_encode($departments ?? []) ?>;
 const sections = <?= json_encode($sections ?? []) ?>;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const createForm = document.getElementById('createAuthorizationRuleForm');
-    const createModal = document.getElementById('createAuthorizationRuleModal');
+    const createForm = document.getElementById('createRequestingRuleForm');
+    const createModal = document.getElementById('createRequestingRuleModal');
     const submitBtn = document.getElementById('createAuthorizationRuleSubmitBtn');
     const addRuleBtn = document.getElementById('addRuleBtn');
     
@@ -209,6 +209,17 @@ document.addEventListener('DOMContentLoaded', function() {
         createModal.addEventListener('shown.bs.modal', function() {
             if (document.getElementById('rulesContainer').children.length === 0) {
                 addNewRule();
+            }
+            
+            // Initialize Select2 for existing elements
+            if (typeof $ !== 'undefined') {
+                $(createModal).find('select[data-control="select2"]').each(function() {
+                    if (!$(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2({
+                            dropdownParent: $('#createRequestingRuleModal')
+                        });
+                    }
+                });
             }
         });
     }
@@ -243,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('is_active', document.querySelector('select[name="is_active"]').value);
             formData.append('rules', JSON.stringify(rulesData));
             
-            fetch('/authorization-rules/store-multiple', {
+            fetch('/requesting-rules/store-multiple', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -335,7 +346,7 @@ function addNewRule() {
                 <div class="col-md-4 mb-4">
                     <div class="fv-row">
                         <label class="required fw-semibold fs-6 mb-2">Rule Type</label>
-                        <select name="rules[${ruleCounter}][rule_type]" class="form-select form-select-solid rule-type-select" data-control="select2" data-placeholder="Select rule type..." data-dropdown-parent="#createAuthorizationRuleModal" onchange="handleRuleTypeChange('${ruleId}')">
+                        <select name="rules[${ruleCounter}][rule_type]" class="form-select form-select-solid rule-type-select" data-control="select2" data-placeholder="Select rule type..." data-dropdown-parent="#createRequestingRuleModal" onchange="handleRuleTypeChange('${ruleId}')">
                             <option value="">Select Rule Type</option>
                             <option value="all">All (Admin)</option>
                             <option value="division">Division</option>
@@ -349,7 +360,7 @@ function addNewRule() {
                 <div class="col-md-4 mb-4">
                     <div class="fv-row">
                         <label class="required fw-semibold fs-6 mb-2">Target Type</label>
-                        <select name="rules[${ruleCounter}][target_type]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select target type..." data-dropdown-parent="#createAuthorizationRuleModal">
+                        <select name="rules[${ruleCounter}][target_type]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select target type..." data-dropdown-parent="#createRequestingRuleModal">
                             <option value="">Select Target Type</option>
                             <option value="both">Both</option>
                             <option value="islanders">Islanders Only</option>
@@ -362,7 +373,7 @@ function addNewRule() {
                 <div class="col-md-4 mb-4">
                     <div class="fv-row">
                         <label class="required fw-semibold fs-6 mb-2">Approval Level</label>
-                        <select name="rules[${ruleCounter}][approval_level]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select approval level..." data-dropdown-parent="#createAuthorizationRuleModal">
+                        <select name="rules[${ruleCounter}][approval_level]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select approval level..." data-dropdown-parent="#createRequestingRuleModal">
                             <option value="">Select Approval Level</option>
                             <option value="no_approval" selected>No Approval Required</option>
                             <option value="level_1">Level 1 Approval</option>
@@ -378,7 +389,7 @@ function addNewRule() {
                 <!-- Divisions -->
                 <div class="col-12 mb-4" id="${ruleId}_division_container" style="display: none;">
                     <label class="fw-semibold fs-6 mb-2">Divisions</label>
-                    <select name="rules[${ruleCounter}][division_ids][]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select divisions..." data-dropdown-parent="#createAuthorizationRuleModal" multiple>
+                    <select name="rules[${ruleCounter}][division_ids][]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select divisions..." data-dropdown-parent="#createRequestingRuleModal" multiple>
                         ${generateDivisionOptions()}
                     </select>
                 </div>
@@ -386,7 +397,7 @@ function addNewRule() {
                 <!-- Departments -->
                 <div class="col-12 mb-4" id="${ruleId}_department_container" style="display: none;">
                     <label class="fw-semibold fs-6 mb-2">Departments</label>
-                    <select name="rules[${ruleCounter}][department_ids][]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select departments..." data-dropdown-parent="#createAuthorizationRuleModal" multiple>
+                    <select name="rules[${ruleCounter}][department_ids][]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select departments..." data-dropdown-parent="#createRequestingRuleModal" multiple>
                         ${generateDepartmentOptions()}
                     </select>
                 </div>
@@ -394,7 +405,7 @@ function addNewRule() {
                 <!-- Sections -->
                 <div class="col-12 mb-4" id="${ruleId}_section_container" style="display: none;">
                     <label class="fw-semibold fs-6 mb-2">Sections</label>
-                    <select name="rules[${ruleCounter}][section_ids][]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select sections..." data-dropdown-parent="#createAuthorizationRuleModal" multiple>
+                    <select name="rules[${ruleCounter}][section_ids][]" class="form-select form-select-solid" data-control="select2" data-placeholder="Select sections..." data-dropdown-parent="#createRequestingRuleModal" multiple>
                         ${generateSectionOptions()}
                     </select>
                 </div>
@@ -404,12 +415,23 @@ function addNewRule() {
     
     document.getElementById('rulesContainer').insertAdjacentHTML('beforeend', ruleHtml);
     
-    // Initialize Select2 for the new elements
-    if (typeof $ !== 'undefined') {
-        $(`#${ruleId} select[data-control="select2"]`).select2({
-            dropdownParent: $('#createAuthorizationRuleModal')
-        });
-    }
+    // Initialize Select2 for the new elements with a small delay
+    setTimeout(() => {
+        if (typeof $ !== 'undefined') {
+            try {
+                $(`#${ruleId} select[data-control="select2"]`).each(function() {
+                    if (!$(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2({
+                            dropdownParent: $('#createRequestingRuleModal'),
+                            width: '100%'
+                        });
+                    }
+                });
+            } catch (error) {
+                console.warn('Select2 initialization error:', error);
+            }
+        }
+    }, 100);
 }
 
 // Remove rule function
@@ -480,7 +502,7 @@ function handleRuleTypeChange(ruleId) {
 // Clear validation errors
 function clearValidationErrors() {
     // Remove all validation classes and error messages
-    const form = document.getElementById('createAuthorizationRuleForm');
+    const form = document.getElementById('createRequestingRuleForm');
     
     // Clear field validation states
     const inputs = form.querySelectorAll('.form-control, .form-select');

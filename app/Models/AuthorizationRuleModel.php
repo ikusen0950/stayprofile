@@ -40,12 +40,11 @@ class AuthorizationRuleModel extends Model
     protected $validationRules = [
         'user_id' => [
             'label'  => 'User',
-            'rules'  => 'required|numeric|is_not_unique[users.id]|is_unique[authorization_rules.user_id]',
+            'rules'  => 'required|numeric|is_not_unique[users.id]',
             'errors' => [
                 'required'      => 'User is required.',
                 'numeric'       => 'User must be a valid number.',
-                'is_not_unique' => 'Selected user does not exist.',
-                'is_unique'     => 'This user already has an authorization rule. Please edit the existing rule instead.'
+                'is_not_unique' => 'Selected user does not exist.'
             ]
         ],
         'rule_type' => [
@@ -128,7 +127,6 @@ class AuthorizationRuleModel extends Model
     protected $validationMessages = [];
     protected $skipValidation     = false;
 
-    protected $beforeInsert = ['setCreatedBy', 'processJsonFields'];
     protected $beforeUpdate = ['setUpdatedBy', 'processJsonFields'];
 
     /**
@@ -227,6 +225,7 @@ class AuthorizationRuleModel extends Model
                       ->join('users uu', 'uu.id = ar.updated_by', 'left')
                       ->where('ar.id', $id)
                       ->where('ar.deleted_at IS NULL')
+                      ->where('ar.can_request', 0)
                       ->get()
                       ->getRowArray();
     }
@@ -247,7 +246,8 @@ class AuthorizationRuleModel extends Model
                 ->join('users u', 'u.id = ar.user_id', 'left')
                 ->join('users cu', 'cu.id = ar.created_by', 'left')
                 ->join('users uu', 'uu.id = ar.updated_by', 'left')
-                ->where('ar.deleted_at IS NULL');
+                ->where('ar.deleted_at IS NULL')
+                ->where('ar.can_request', 0);
         
         if (!empty($search)) {
             $builder->groupStart()
@@ -273,7 +273,8 @@ class AuthorizationRuleModel extends Model
         $builder = $this->db->table('authorization_rules ar');
         
         $builder->join('users u', 'u.id = ar.user_id', 'left')
-                ->where('ar.deleted_at IS NULL');
+                ->where('ar.deleted_at IS NULL')
+                ->where('ar.can_request', 0);
         
         if (!empty($search)) {
             $builder->groupStart()
@@ -296,6 +297,7 @@ class AuthorizationRuleModel extends Model
         return $this->where('user_id', $userId)
                    ->where('is_active', 1)
                    ->where('deleted_at IS NULL')
+                   ->where('can_request', 0)
                    ->findAll();
     }
 
@@ -361,9 +363,23 @@ class AuthorizationRuleModel extends Model
         
         foreach ($jsonFields as $field) {
             if (isset($rule[$field]) && !is_null($rule[$field])) {
-                $rule[$field] = json_decode($rule[$field], true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    $rule[$field] = [];
+                // If it's already an array, keep it as is
+                if (is_array($rule[$field])) {
+                    continue;
+                }
+                
+                // Try to decode as JSON
+                $decoded = json_decode($rule[$field], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $rule[$field] = $decoded;
+                } else {
+                    // If it's not valid JSON but not empty, it might be a single value
+                    // Convert single values to array format
+                    if (!empty($rule[$field]) && is_numeric($rule[$field])) {
+                        $rule[$field] = [intval($rule[$field])];
+                    } else {
+                        $rule[$field] = [];
+                    }
                 }
             } else {
                 $rule[$field] = [];
@@ -424,6 +440,31 @@ class AuthorizationRuleModel extends Model
         }
 
         return $rule;
+    }
+
+    /**
+     * Check if user already has an authorization rule (can_request = 0)
+     */
+    public function userHasAuthorizationRule($userId)
+    {
+        return $this->where('user_id', $userId)
+                   ->where('can_request', 0)
+                   ->where('deleted_at IS NULL')
+                   ->countAllResults() > 0;
+    }
+
+    /**
+     * Validate before insert with custom business logic
+     */
+    protected function beforeInsert(array $data)
+    {
+        // Set created_by and created_at
+        $data = $this->setCreatedBy($data);
+        
+        // Process JSON fields
+        $data = $this->processJsonFields($data);
+        
+        return $data;
     }
 
     /**
