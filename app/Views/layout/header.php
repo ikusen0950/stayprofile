@@ -57,7 +57,7 @@
                 height: 60px !important; /* Fixed height */
                 display: flex !important;
                 align-items: center !important;
-                background: var(--bs-app-header-bg, #fff) !important;
+                /* Remove forced background - let original theme color show */
             }
             
             /* Header container */
