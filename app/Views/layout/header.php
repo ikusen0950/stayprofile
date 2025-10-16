@@ -32,6 +32,35 @@
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
 
+    <!--begin::Mobile Status Bar Fix-->
+    <style>
+        /* Mobile status bar spacing */
+        @media (max-width: 768px) {
+            #kt_app_header {
+                margin-top: 30px; /* Space for mobile status bar */
+            }
+            
+            /* For devices with larger status bars (iPhone X and newer) */
+            @supports (padding-top: constant(safe-area-inset-top)) {
+                #kt_app_header {
+                    margin-top: calc(constant(safe-area-inset-top) + 10px);
+                }
+            }
+            
+            @supports (padding-top: env(safe-area-inset-top)) {
+                #kt_app_header {
+                    margin-top: calc(env(safe-area-inset-top) + 10px);
+                }
+            }
+        }
+        
+        /* Ensure the app takes full height */
+        #kt_app_root {
+            min-height: 100vh;
+        }
+    </style>
+    <!--end::Mobile Status Bar Fix-->
+
 
 
     <!-- AOS Animation Library -->
