@@ -42,88 +42,59 @@
             --safe-area-inset-right: env(safe-area-inset-right);
         }
 
-        /* Apply safe area padding to the main app container */
-        .app-root {
-            padding-top: var(--safe-area-inset-top);
-            padding-bottom: var(--safe-area-inset-bottom);
-            padding-left: var(--safe-area-inset-left);
-            padding-right: var(--safe-area-inset-right);
-        }
-
-        /* Ensure the header doesn't overlap with status bar */
-        .app-header {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-
-        /* Mobile specific adjustments */
-        @media (max-width: 768px) {
-            .app-header .app-container {
-                margin-top: 0.5rem !important;
-            }
-        }
-
-        /* Capacitor specific adjustments */
-        @supports (padding-top: env(safe-area-inset-top)) {
-            .app-root {
-                padding-top: calc(env(safe-area-inset-top) + 0px);
-            }
-        }
-
         /* Status bar background for mobile */
         .status-bar-background {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: var(--safe-area-inset-top);
-            background-color: #ffffff; /* Match your app's primary color */
+            height: env(safe-area-inset-top);
+            background-color: #ffffff;
             z-index: 10000;
             display: none;
         }
 
-        /* Show status bar background only in Capacitor */
-        body.capacitor-app .status-bar-background {
-            display: block;
+        /* Dark theme support for status bar */
+        [data-bs-theme="dark"] .status-bar-background {
+            background-color: #1e1e2e;
         }
 
-        /* Additional styles when running in Capacitor */
+        /* Mobile-first approach - minimal safe area handling */
+        @media (max-width: 768px) {
+            /* Only apply safe area to status bar background */
+            body.capacitor-app .status-bar-background {
+                display: block;
+                height: env(safe-area-inset-top, 20px); /* fallback to 20px */
+            }
+            
+            /* Adjust header container margin for mobile */
+            body.capacitor-app .app-header .app-container {
+                margin-top: env(safe-area-inset-top, 20px) !important;
+            }
+            
+            /* Fallback for older devices */
+            body.capacitor-app.older-device .app-header .app-container {
+                margin-top: 20px !important;
+            }
+        }
+
+        /* Specific device handling with conservative values */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            /* iPhone X and newer */
+            @supports (padding-top: env(safe-area-inset-top)) {
+                body.capacitor-app .app-header .app-container {
+                    margin-top: calc(env(safe-area-inset-top) + 10px) !important;
+                }
+            }
+        }
+
+        /* Ensure app content is visible */
         body.capacitor-app {
-            /* Ensure full viewport usage */
-            height: 100vh;
-            height: calc(100vh - env(safe-area-inset-bottom));
+            overflow-x: hidden;
         }
 
         body.capacitor-app .app-root {
             min-height: 100vh;
-            min-height: calc(100vh - env(safe-area-inset-bottom));
-        }
-
-        /* Dark theme support for status bar */
-        [data-bs-theme="dark"] .status-bar-background {
-            background-color: #1e1e2e; /* Dark theme color */
-        }
-
-        /* Fix for iPhone notch and Android status bars */
-        @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
-            /* iPhone X/XS */
-            .app-root {
-                padding-top: 44px;
-            }
-        }
-
-        @media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
-            /* iPhone XR */
-            .app-root {
-                padding-top: 44px;
-            }
-        }
-
-        @media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
-            /* iPhone XS Max */
-            .app-root {
-                padding-top: 44px;
-            }
         }
     </style>
     <!--end::Mobile Safe Area Styles-->
@@ -146,35 +117,27 @@
         if (isCapacitor) {
             document.body.classList.add('capacitor-app');
             
-            // Additional safe area handling for Capacitor
-            const appRoot = document.getElementById('kt_app_root');
-            if (appRoot) {
-                appRoot.style.paddingTop = 'env(safe-area-inset-top)';
+            // Check if device supports safe area insets
+            const supportsSafeArea = CSS.supports('padding-top: env(safe-area-inset-top)');
+            if (!supportsSafeArea) {
+                document.body.classList.add('older-device');
             }
 
             // Configure status bar if plugin is available
-            // Note: Make sure to install @capacitor/status-bar plugin
-            // and configure it in your Capacitor app's main.ts or index.ts
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
                 const { StatusBar } = window.Capacitor.Plugins;
                 
-                // Set status bar style
-                StatusBar.setStyle({ style: 'Light' }); // or 'Dark' based on your theme
-                StatusBar.setBackgroundColor({ color: '#ffffff' }); // Match your app's color
-                StatusBar.show();
+                try {
+                    // Set status bar style based on current theme
+                    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    StatusBar.setStyle({ style: isDark ? 'Dark' : 'Light' });
+                    StatusBar.setBackgroundColor({ color: isDark ? '#1e1e2e' : '#ffffff' });
+                    StatusBar.show();
+                } catch (error) {
+                    console.log('StatusBar plugin not available or not configured');
+                }
             }
         }
-
-        // Handle orientation changes
-        window.addEventListener('orientationchange', function() {
-            setTimeout(function() {
-                // Force a small layout recalculation after orientation change
-                const appRoot = document.getElementById('kt_app_root');
-                if (appRoot && isCapacitor) {
-                    appRoot.style.paddingTop = 'env(safe-area-inset-top)';
-                }
-            }, 100);
-        });
     });
     </script>
 </head>
