@@ -37,19 +37,19 @@
         /* Mobile status bar spacing */
         @media (max-width: 768px) {
             #kt_app_header {
-                margin-top: 30px; /* Space for mobile status bar */
+                margin-top: 50px; /* Increased space for mobile status bar */
             }
             
             /* For devices with larger status bars (iPhone X and newer) */
             @supports (padding-top: constant(safe-area-inset-top)) {
                 #kt_app_header {
-                    margin-top: calc(constant(safe-area-inset-top) + 10px);
+                    margin-top: calc(constant(safe-area-inset-top) + 20px);
                 }
             }
             
             @supports (padding-top: env(safe-area-inset-top)) {
                 #kt_app_header {
-                    margin-top: calc(env(safe-area-inset-top) + 10px);
+                    margin-top: calc(env(safe-area-inset-top) + 20px);
                 }
             }
         }
