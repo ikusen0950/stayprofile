@@ -35,6 +35,7 @@
     <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
     <link href="/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/mobile-fix.css" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
 
     <!-- AOS Animation Library -->
@@ -43,45 +44,55 @@
 
     <!-- Mobile Status Bar Handling -->
     <style>
-        /* iOS Status Bar handling */
-        @supports (padding-top: env(safe-area-inset-top)) {
-            .app-header {
-                padding-top: env(safe-area-inset-top) !important;
+        /* Mobile status bar handling for all devices */
+        @media screen and (max-width: 768px) {
+            /* Base mobile padding for status bar */
+            #kt_app_header {
+                padding-top: 44px !important; /* Increased for better clearance */
             }
             
-            body {
-                padding-top: env(safe-area-inset-top);
-            }
-        }
-
-        /* Android Status Bar handling - fallback */
-        @media screen and (max-width: 768px) {
-            .capacitor-mobile .app-header {
-                padding-top: 24px !important; /* Standard status bar height */
-            }
-            
-            .capacitor-mobile body {
-                padding-top: 24px;
-            }
-        }
-
-        /* Ensure header container respects the padding */
-        .app-header .app-container {
-            margin-top: 0 !important;
-        }
-
-        /* Adjust for different mobile devices */
-        @media screen and (max-width: 768px) {
-            /* iPhone X and newer with notch */
+            /* iOS devices with safe area support */
             @supports (padding-top: env(safe-area-inset-top)) {
-                .app-header {
+                #kt_app_header {
                     padding-top: calc(env(safe-area-inset-top) + 10px) !important;
                 }
             }
             
-            /* Standard mobile devices */
-            .app-header {
-                min-height: 60px;
+            /* Capacitor app specific handling */
+            .capacitor-mobile #kt_app_header {
+                padding-top: 44px !important;
+            }
+            
+            /* For iOS in Capacitor */
+            .capacitor-mobile.ios #kt_app_header {
+                padding-top: 54px !important; /* Extra space for iOS status bar */
+            }
+            
+            /* For Android in Capacitor */
+            .capacitor-mobile.android #kt_app_header {
+                padding-top: 34px !important; /* Android status bar height */
+            }
+            
+            /* Ensure the header container doesn't add extra margin */
+            #kt_app_header .app-container {
+                margin-top: 0 !important;
+            }
+            
+            /* Adjust app page wrapper to account for header padding */
+            .app-page {
+                padding-top: 0 !important;
+            }
+            
+            /* Fix potential body padding conflicts */
+            body {
+                padding-top: 0 !important;
+            }
+        }
+        
+        /* Fallback for very small screens */
+        @media screen and (max-height: 667px) {
+            #kt_app_header {
+                padding-top: 24px !important;
             }
         }
     </style>
@@ -92,34 +103,52 @@
         window.top.location.replace(window.self.location.href);
     }
 
-    // Detect Capacitor mobile app environment
+    // Enhanced Capacitor mobile app detection and setup
     document.addEventListener('DOMContentLoaded', function() {
         // Check if running in Capacitor
         if (window.Capacitor) {
             document.body.classList.add('capacitor-mobile');
             
+            // Detect platform
+            if (window.Capacitor.platform === 'ios') {
+                document.body.classList.add('ios');
+            } else if (window.Capacitor.platform === 'android') {
+                document.body.classList.add('android');
+            }
+            
             // Import StatusBar plugin if available
             if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
                 const { StatusBar } = window.Capacitor.Plugins;
                 
-                // Set status bar style
+                // Set status bar style to light content (white text on dark background)
                 StatusBar.setStyle({
-                    style: 'LIGHT' // or 'DARK' depending on your header color
+                    style: 'LIGHT'
                 });
                 
                 // Set status bar background color to match your header
                 StatusBar.setBackgroundColor({
-                    color: '#1e293b' // Update this to match your header background color
+                    color: '#1e293b' // Dark slate color to match header
                 });
                 
-                // Show status bar
+                // Make sure status bar is visible
                 StatusBar.show();
+                
+                // Set overlay to false so content doesn't go behind status bar
+                StatusBar.setOverlaysWebView({
+                    overlay: false
+                });
             }
         }
         
-        // Alternative detection for mobile apps
+        // Alternative detection for mobile apps (PWA)
         if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
             document.body.classList.add('mobile-app');
+        }
+        
+        // Additional mobile detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            document.body.classList.add('mobile-device');
         }
     });
     </script>
