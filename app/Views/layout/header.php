@@ -50,6 +50,11 @@
             #kt_app_header {
                 padding-top: 44px !important; /* Reduced from 54px */
                 min-height: 70px !important; /* Reduced from 80px */
+                z-index: 1000 !important; /* Ensure header is below sidebar */
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
             }
             
             /* Header container specific adjustments */
@@ -57,12 +62,40 @@
                 padding-top: 8px !important; /* Reduced from 15px */
                 padding-bottom: 8px !important; /* Reduced from 15px */
                 min-height: 50px !important; /* Reduced from 60px */
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+            }
+            
+            /* Fix logo and button alignment */
+            #kt_app_header_container .d-flex {
+                align-items: center !important;
+                height: 100% !important;
+            }
+            
+            /* Ensure sidebar appears above header */
+            #kt_app_sidebar {
+                z-index: 1050 !important; /* Higher than header */
+            }
+            
+            /* Adjust page content to account for fixed header */
+            #kt_app_page {
+                padding-top: 114px !important; /* Account for header height */
+            }
+            
+            /* Fix sidebar overlay */
+            .app-sidebar-overlay {
+                z-index: 1040 !important;
             }
             
             /* iOS devices with safe area support */
             @supports (padding-top: env(safe-area-inset-top)) {
                 #kt_app_header {
                     padding-top: calc(env(safe-area-inset-top) + 15px) !important;
+                }
+                
+                #kt_app_page {
+                    padding-top: calc(env(safe-area-inset-top) + 85px) !important;
                 }
             }
             
@@ -78,6 +111,10 @@
                 min-height: 52px !important; /* Reduced from 65px */
             }
             
+            .capacitor-mobile #kt_app_page {
+                padding-top: 114px !important;
+            }
+            
             /* For iOS in Capacitor */
             .capacitor-mobile.ios #kt_app_header {
                 padding-top: 54px !important; /* Reduced from 64px */
@@ -88,6 +125,10 @@
                 padding-top: 12px !important; /* Reduced from 25px */
                 padding-bottom: 10px !important; /* Reduced from 20px */
                 min-height: 55px !important; /* Reduced from 70px */
+            }
+            
+            .capacitor-mobile.ios #kt_app_page {
+                padding-top: 129px !important;
             }
             
             /* For Android in Capacitor */
@@ -102,19 +143,27 @@
                 min-height: 50px !important; /* Reduced from 62px */
             }
             
+            .capacitor-mobile.android #kt_app_page {
+                padding-top: 106px !important;
+            }
+            
             /* Ensure the header container doesn't add extra margin */
             #kt_app_header .app-container {
                 margin-top: 0 !important;
             }
             
-            /* Adjust app page wrapper to account for header padding */
-            .app-page {
-                padding-top: 0 !important;
-            }
-            
             /* Fix potential body padding conflicts */
             body {
                 padding-top: 0 !important;
+            }
+            
+            /* Fix logo and button positioning */
+            #kt_app_header_container .btn {
+                margin: 0 !important;
+            }
+            
+            #kt_app_header_container img {
+                vertical-align: middle !important;
             }
         }
         
@@ -129,6 +178,10 @@
                 padding-top: 6px !important;
                 padding-bottom: 6px !important;
                 min-height: 45px !important;
+            }
+            
+            #kt_app_page {
+                padding-top: 90px !important;
             }
         }
     </style>
