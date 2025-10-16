@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="description" content="Islanders App" />
     <meta name="keywords" content="Islanders, App" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="<?= csrf_hash() ?>" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
@@ -32,72 +32,7 @@
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
 
-    <!--begin::Mobile Safe Area Styles for Capacitor-->
-    <style>
-        /* Safe area handling for mobile devices in Capacitor */
-        :root {
-            --safe-area-inset-top: env(safe-area-inset-top);
-            --safe-area-inset-bottom: env(safe-area-inset-bottom);
-            --safe-area-inset-left: env(safe-area-inset-left);
-            --safe-area-inset-right: env(safe-area-inset-right);
-        }
 
-        /* Status bar background for mobile */
-        .status-bar-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: env(safe-area-inset-top);
-            background-color: #ffffff;
-            z-index: 10000;
-            display: none;
-        }
-
-        /* Dark theme support for status bar */
-        [data-bs-theme="dark"] .status-bar-background {
-            background-color: #1e1e2e;
-        }
-
-        /* Mobile-first approach - minimal safe area handling */
-        @media (max-width: 768px) {
-            /* Only apply safe area to status bar background */
-            body.capacitor-app .status-bar-background {
-                display: block;
-                height: env(safe-area-inset-top, 20px); /* fallback to 20px */
-            }
-            
-            /* Adjust header container margin for mobile */
-            body.capacitor-app .app-header .app-container {
-                margin-top: env(safe-area-inset-top, 20px) !important;
-            }
-            
-            /* Fallback for older devices */
-            body.capacitor-app.older-device .app-header .app-container {
-                margin-top: 20px !important;
-            }
-        }
-
-        /* Specific device handling with conservative values */
-        @media screen and (max-width: 768px) and (orientation: portrait) {
-            /* iPhone X and newer */
-            @supports (padding-top: env(safe-area-inset-top)) {
-                body.capacitor-app .app-header .app-container {
-                    margin-top: calc(env(safe-area-inset-top) + 10px) !important;
-                }
-            }
-        }
-
-        /* Ensure app content is visible */
-        body.capacitor-app {
-            overflow-x: hidden;
-        }
-
-        body.capacitor-app .app-root {
-            min-height: 100vh;
-        }
-    </style>
-    <!--end::Mobile Safe Area Styles-->
 
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -108,37 +43,6 @@
     if (window.top != window.self) {
         window.top.location.replace(window.self.location.href);
     }
-
-    // Capacitor/Mobile app detection and safe area handling
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check if running in Capacitor
-        const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform();
-        
-        if (isCapacitor) {
-            document.body.classList.add('capacitor-app');
-            
-            // Check if device supports safe area insets
-            const supportsSafeArea = CSS.supports('padding-top: env(safe-area-inset-top)');
-            if (!supportsSafeArea) {
-                document.body.classList.add('older-device');
-            }
-
-            // Configure status bar if plugin is available
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
-                const { StatusBar } = window.Capacitor.Plugins;
-                
-                try {
-                    // Set status bar style based on current theme
-                    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                    StatusBar.setStyle({ style: isDark ? 'Dark' : 'Light' });
-                    StatusBar.setBackgroundColor({ color: isDark ? '#1e1e2e' : '#ffffff' });
-                    StatusBar.show();
-                } catch (error) {
-                    console.log('StatusBar plugin not available or not configured');
-                }
-            }
-        }
-    });
     </script>
 </head>
 <!--end::Head-->
@@ -175,9 +79,7 @@
     <!--end::Theme mode setup on page load-->
 
 
-    <!--begin::Status bar background for mobile-->
-    <div class="status-bar-background"></div>
-    <!--end::Status bar background-->
+
 
     <!--begin::App-->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
