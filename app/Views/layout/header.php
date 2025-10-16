@@ -48,7 +48,7 @@
         @media screen and (max-width: 768px) {
             /* Base mobile padding for status bar */
             #kt_app_header {
-                padding-top: 44px !important; /* Reduced from 54px */
+                padding-top: 54px !important; /* Increased back to push below status bar */
                 min-height: 70px !important; /* Reduced from 80px */
                 z-index: 1000 !important; /* Ensure header is below sidebar */
                 position: fixed !important;
@@ -62,7 +62,7 @@
             /* Header container specific adjustments */
             #kt_app_header_container {
                 padding-top: 0px !important; /* Remove top padding */
-                padding-bottom: 12px !important; /* Add bottom padding */
+                padding-bottom: 8px !important; /* Reduced bottom padding */
                 min-height: 50px !important; /* Reduced from 60px */
                 display: flex !important;
                 align-items: center !important;
@@ -84,7 +84,7 @@
             
             /* Adjust page content to account for fixed header */
             #kt_app_page {
-                padding-top: 114px !important; /* Account for header height */
+                padding-top: 90px !important; /* Reduced from 114px */
             }
             
             /* Fix sidebar overlay */
@@ -95,60 +95,60 @@
             /* iOS devices with safe area support */
             @supports (padding-top: env(safe-area-inset-top)) {
                 #kt_app_header {
-                    padding-top: calc(env(safe-area-inset-top) + 15px) !important;
+                    padding-top: calc(env(safe-area-inset-top) + 20px) !important;
                 }
                 
                 #kt_app_page {
-                    padding-top: calc(env(safe-area-inset-top) + 85px) !important;
+                    padding-top: calc(env(safe-area-inset-top) + 65px) !important;
                 }
             }
             
             /* Capacitor app specific handling */
             .capacitor-mobile #kt_app_header {
-                padding-top: 44px !important;
+                padding-top: 54px !important;
                 min-height: 70px !important;
             }
             
             .capacitor-mobile #kt_app_header_container {
                 padding-top: 0px !important;
-                padding-bottom: 15px !important;
+                padding-bottom: 10px !important;
                 min-height: 52px !important;
             }
             
             .capacitor-mobile #kt_app_page {
-                padding-top: 114px !important;
+                padding-top: 90px !important;
             }
             
             /* For iOS in Capacitor */
             .capacitor-mobile.ios #kt_app_header {
-                padding-top: 54px !important; /* Reduced from 64px */
+                padding-top: 64px !important; /* Increased for iOS status bar */
                 min-height: 75px !important; /* Reduced from 90px */
             }
             
             .capacitor-mobile.ios #kt_app_header_container {
                 padding-top: 0px !important;
-                padding-bottom: 18px !important;
+                padding-bottom: 12px !important;
                 min-height: 55px !important;
             }
             
             .capacitor-mobile.ios #kt_app_page {
-                padding-top: 129px !important;
+                padding-top: 105px !important;
             }
             
             /* For Android in Capacitor */
             .capacitor-mobile.android #kt_app_header {
-                padding-top: 38px !important; /* Reduced from 44px */
+                padding-top: 48px !important; /* Increased for Android status bar */
                 min-height: 68px !important; /* Reduced from 75px */
             }
             
             .capacitor-mobile.android #kt_app_header_container {
                 padding-top: 0px !important;
-                padding-bottom: 12px !important;
+                padding-bottom: 8px !important;
                 min-height: 50px !important;
             }
             
             .capacitor-mobile.android #kt_app_page {
-                padding-top: 106px !important;
+                padding-top: 85px !important;
             }
             
             /* Ensure the header container doesn't add extra margin */
@@ -174,18 +174,18 @@
         /* Fallback for very small screens */
         @media screen and (max-height: 667px) {
             #kt_app_header {
-                padding-top: 30px !important;
+                padding-top: 40px !important;
                 min-height: 60px !important;
             }
             
             #kt_app_header_container {
                 padding-top: 0px !important;
-                padding-bottom: 8px !important;
+                padding-bottom: 6px !important;
                 min-height: 45px !important;
             }
             
             #kt_app_page {
-                padding-top: 90px !important;
+                padding-top: 75px !important;
             }
         }
     </style>
