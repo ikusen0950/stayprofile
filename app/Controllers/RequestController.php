@@ -334,6 +334,13 @@ class RequestController extends BaseController
         // Return different views based on type
         switch($type) {
             case 'exit-pass':
+                // Override leave reasons for exit pass with specific module filter
+                try {
+                    $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatusForExitPass();
+                } catch (\Exception $e) {
+                    log_message('error', 'Failed to load exit pass leave reasons: ' . $e->getMessage());
+                    $data['leave_reasons'] = [];
+                }
                 return view('requests/create_exit_pass_modal', $data);
             case 'transfer':
                 return view('requests/create_transfer', $data);

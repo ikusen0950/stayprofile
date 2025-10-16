@@ -275,6 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (userTypeSelect && islanderSection && visitorSection) {
         // Initialize Select2 for all dropdowns
         if (window.jQuery) {
+            // Global Select2 configuration to prevent auto-focus on search
+            $.fn.select2.defaults.set('dropdownAutoWidth', true);
+            $.fn.select2.defaults.set('selectOnClose', false);
+            
             // Initialize User Type Select2 with change event
             $(userTypeSelect).select2({
                 dropdownParent: $('#exitPassModal'),
@@ -292,13 +296,34 @@ document.addEventListener('DOMContentLoaded', function() {
             $(islanderSelect).select2({
                 dropdownParent: $('#exitPassModal'),
                 placeholder: 'Select Islander',
-                allowClear: true
+                allowClear: true,
+                dropdownAutoWidth: true,
+                selectOnClose: false
             });
             
             $(visitorSelect).select2({
                 dropdownParent: $('#exitPassModal'),
                 placeholder: 'Select Visitor',
-                allowClear: true
+                allowClear: true,
+                dropdownAutoWidth: true,
+                selectOnClose: false
+            });
+
+            // Initialize Leave Reason Select2
+            $('select[name="leave_reason"]').select2({
+                dropdownParent: $('#exitPassModal'),
+                placeholder: 'Select leave reason',
+                allowClear: true,
+                dropdownAutoWidth: true,
+                selectOnClose: false
+            });
+
+            // Global event handler to prevent auto-focus on Select2 search inputs
+            $('#exitPassModal').on('select2:open', function() {
+                setTimeout(function() {
+                    // Remove focus from any search input that gets auto-focused
+                    $('.select2-search__field').blur();
+                }, 1);
             });
         }
         

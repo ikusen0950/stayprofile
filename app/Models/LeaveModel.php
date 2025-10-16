@@ -211,4 +211,18 @@ class LeaveModel extends Model
         
         return $builder->get()->getResultArray();
     }
+
+    /**
+     * Get active leaves with status information specifically for exit pass modal
+     */
+    public function getActiveLeavesWithStatusForExitPass()
+    {
+        $builder = $this->db->table('leaves l');
+        $builder->select('l.id, l.name, l.description')
+                ->where('l.status_id', 1) // Active status for leaves
+                ->where('l.module_id', 15) // Filter by module ID 15 for exit pass
+                ->orderBy('l.name', 'ASC');
+        
+        return $builder->get()->getResultArray();
+    }
 }
