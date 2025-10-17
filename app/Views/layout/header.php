@@ -49,9 +49,9 @@
                 padding-top: var(--status-bar-height) !important;
             }
             
-            /* Reduce space - main content closer to header */
+            /* Minimal space - main content very close to header */
             #kt_app_page {
-                padding-top: calc(60px + var(--status-bar-height));
+                padding-top: calc(45px + var(--status-bar-height));
             }
             
             /* Fix header positioning with blur background */
@@ -66,17 +66,40 @@
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
             
-            /* Remove conflicting margin from header container and reduce padding */
+            /* Minimal header container padding */
             #kt_app_header_container {
                 margin-top: 0 !important;
-                padding-top: 0.75rem;
-                padding-bottom: 0.75rem;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
             }
             
-            /* Ensure wrapper doesn't overlap */
+            /* Ensure wrapper doesn't overlap and remove any default spacing */
             #kt_app_wrapper {
                 margin-top: 0 !important;
                 padding-top: 0 !important;
+            }
+            
+            /* Remove any default spacing from main content area */
+            .app-main {
+                padding-top: 0 !important;
+                margin-top: 0 !important;
+            }
+            
+            /* Target common CodeIgniter/Bootstrap spacing classes */
+            .container, .container-fluid {
+                padding-top: 0 !important;
+            }
+            
+            /* Remove any toolbar or breadcrumb spacing */
+            .app-toolbar, .toolbar {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+            }
+            
+            /* Target any content wrapper */
+            .content, .main-content {
+                padding-top: 0 !important;
+                margin-top: 0 !important;
             }
         }
 
@@ -119,15 +142,15 @@
                 top: calc(var(--status-bar-height) * 0.8) !important;
             }
             
-            /* Reduce content padding even more in landscape */
+            /* Very tight content padding in landscape */
             #kt_app_page {
-                padding-top: calc(50px + var(--status-bar-height) * 0.8);
+                padding-top: calc(35px + var(--status-bar-height) * 0.8);
             }
             
-            /* Smaller header container padding in landscape */
+            /* Very small header container padding in landscape */
             #kt_app_header_container {
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
+                padding-top: 0.25rem;
+                padding-bottom: 0.25rem;
             }
         }
 
