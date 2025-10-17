@@ -49,25 +49,28 @@
                 padding-top: var(--status-bar-height) !important;
             }
             
-            /* Ensure main content doesn't overlap with header */
+            /* Reduce space - main content closer to header */
             #kt_app_page {
-                padding-top: calc(80px + var(--status-bar-height));
+                padding-top: calc(60px + var(--status-bar-height));
             }
             
-            /* Fix header positioning */
+            /* Fix header positioning with blur background */
             #kt_app_header {
                 top: var(--status-bar-height) !important;
                 position: fixed !important;
                 z-index: 1000 !important;
                 width: 100% !important;
-                background: var(--status-bar-bg) !important;
+                background: rgba(255, 255, 255, 0.85) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
             
-            /* Remove conflicting margin from header container */
+            /* Remove conflicting margin from header container and reduce padding */
             #kt_app_header_container {
                 margin-top: 0 !important;
-                padding-top: 1rem;
-                padding-bottom: 1rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
             }
             
             /* Ensure wrapper doesn't overlap */
@@ -115,9 +118,20 @@
             #kt_app_header {
                 top: calc(var(--status-bar-height) * 0.8) !important;
             }
+            
+            /* Reduce content padding even more in landscape */
+            #kt_app_page {
+                padding-top: calc(50px + var(--status-bar-height) * 0.8);
+            }
+            
+            /* Smaller header container padding in landscape */
+            #kt_app_header_container {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
         }
 
-        /* Theme support - match header background */
+        /* Theme support - blur backgrounds for different themes */
         [data-bs-theme="dark"] {
             --status-bar-bg: #1e1e2d;
         }
@@ -126,8 +140,21 @@
             --status-bar-bg: #ffffff;
         }
 
-        /* Ensure header has proper background */
-        #kt_app_header {
+        /* Dark theme blur background */
+        @media (max-width: 768px) {
+            [data-bs-theme="dark"] #kt_app_header {
+                background: rgba(30, 30, 45, 0.85) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+            
+            [data-bs-theme="light"] #kt_app_header {
+                background: rgba(255, 255, 255, 0.85) !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+            }
+        }
+
+        /* Status bar background should still be solid */
+        body::before {
             background-color: var(--status-bar-bg) !important;
         }
     </style>
