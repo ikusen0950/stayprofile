@@ -41,14 +41,16 @@
             left: 0;
             right: 0;
             height: 50px; /* Match the header margin */
-            background-color: var(--bs-app-header-bg, #ffffff);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 9999;
             display: none;
         }
         
         /* Dark theme support */
         [data-bs-theme="dark"] .mobile-status-bar-bg {
-            background-color: var(--bs-app-header-bg-dark, #1e1e2e);
+            background: rgba(30, 30, 46, 0.85);
         }
         
         /* Mobile status bar spacing */
@@ -59,7 +61,10 @@
             
             #kt_app_header {
                 margin-top: 50px; /* Increased space for mobile status bar */
-                background-color: var(--bs-app-header-bg, #ffffff);
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             }
             
             /* For devices with larger status bars (iPhone X and newer) */
@@ -83,7 +88,8 @@
             
             /* Dark theme header background */
             [data-bs-theme="dark"] #kt_app_header {
-                background-color: var(--bs-app-header-bg-dark, #1e1e2e);
+                background: rgba(30, 30, 46, 0.85);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
         }
         
