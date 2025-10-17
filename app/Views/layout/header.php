@@ -205,6 +205,17 @@
                 background: #ffffff !important;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
+            
+            /* Search bar theme support */
+            [data-bs-theme="dark"] .mobile-search-bar {
+                background: #ffffff !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            [data-bs-theme="light"] .mobile-search-bar {
+                background: #ffffff !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+            }
         }
 
         /* Status bar background should still be solid */
