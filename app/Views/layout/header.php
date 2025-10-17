@@ -104,6 +104,29 @@
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }
+            
+            /* Fixed mobile search bar positioning - globally applied */
+            .mobile-search-bar {
+                position: fixed !important;
+                top: calc(30px + var(--status-bar-height)) !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 999 !important;
+                background: #ffffff !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+            }
+            
+            /* Adjust main content to account for both header and search bar */
+            #kt_app_page {
+                padding-top: calc(110px + var(--status-bar-height)) !important;
+            }
+            
+            /* Adjust mobile content container */
+            .d-lg-none .container-fluid {
+                padding-top: 0 !important;
+            }
         }
 
         /* Status bar background overlay */
@@ -145,9 +168,14 @@
                 top: calc(var(--status-bar-height) * 0.8) !important;
             }
             
-            /* Extra tight content padding in landscape */
+            /* Adjust search bar for landscape */
+            .mobile-search-bar {
+                top: calc(25px + var(--status-bar-height) * 0.8) !important;
+            }
+            
+            /* Adjust content padding for landscape with search bar */
             #kt_app_page {
-                padding-top: calc(25px + var(--status-bar-height) * 0.8);
+                padding-top: calc(95px + var(--status-bar-height) * 0.8) !important;
             }
             
             /* Extra small header container padding in landscape */
