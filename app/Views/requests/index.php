@@ -163,7 +163,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 <!--begin::Mobile UI (visible on mobile only)-->
 <div class="d-lg-none">
     <!-- Fixed Search Bar -->
-    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 65px !important;">
+    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 55px !important;">
         <div class="container-fluid">
             <div class="mb-2">
                 <h1 class="text-dark fw-bold ms-2">Positions</h1>
