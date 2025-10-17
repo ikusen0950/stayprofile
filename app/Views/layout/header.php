@@ -61,7 +61,8 @@
                 z-index: 1000 !important;
                 width: 100% !important;
                 background: #ffffff !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                border-bottom: none !important;
+                height: 30px !important;
             }
             
             /* Minimal header container padding and remove margin */
@@ -108,7 +109,7 @@
             /* Fixed mobile search bar positioning - globally applied */
             .mobile-search-bar {
                 position: fixed !important;
-                top: calc(30px + var(--status-bar-height)) !important;
+                top: calc(var(--status-bar-height) + 30px) !important;
                 left: 0 !important;
                 right: 0 !important;
                 z-index: 999 !important;
@@ -116,6 +117,21 @@
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
                 backdrop-filter: blur(10px) !important;
                 -webkit-backdrop-filter: blur(10px) !important;
+                margin: 0 !important;
+                padding-top: 1rem !important;
+                border-top: none !important;
+            }
+            
+            /* Override any inline styles on mobile search bar - more specific selector */
+            .d-lg-none .mobile-search-bar,
+            .mobile-search-bar[style*="top"],
+            div.mobile-search-bar {
+                top: calc(var(--status-bar-height) + 30px) !important;
+            }
+            
+            /* Remove header border to eliminate any visual gap */
+            #kt_app_header {
+                border-bottom: none !important;
             }
             
             /* Adjust main content to account for both header and search bar */
@@ -169,8 +185,10 @@
             }
             
             /* Adjust search bar for landscape */
-            .mobile-search-bar {
-                top: calc(25px + var(--status-bar-height) * 0.8) !important;
+            .mobile-search-bar,
+            .mobile-search-bar[style*="top"],
+            div.mobile-search-bar {
+                top: calc(var(--status-bar-height) * 0.8 + 25px) !important;
             }
             
             /* Adjust content padding for landscape with search bar */
@@ -198,23 +216,25 @@
         @media (max-width: 768px) {
             [data-bs-theme="dark"] #kt_app_header {
                 background: #ffffff !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                border-bottom: none !important;
             }
             
             [data-bs-theme="light"] #kt_app_header {
                 background: #ffffff !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                border-bottom: none !important;
             }
             
             /* Search bar theme support */
             [data-bs-theme="dark"] .mobile-search-bar {
                 background: #ffffff !important;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                border-top: none !important;
             }
             
             [data-bs-theme="light"] .mobile-search-bar {
                 background: #ffffff !important;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                border-top: none !important;
             }
         }
 
