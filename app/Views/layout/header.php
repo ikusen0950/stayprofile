@@ -40,10 +40,44 @@
         /* Mobile status bar safe area handling */
         :root {
             --status-bar-height: env(safe-area-inset-top, 0px);
-            --status-bar-bg: #1e1e2d; /* Match header background - adjust if needed */
+            --status-bar-bg: #ffffff; /* Default white background */
         }
 
-        /* Status bar background for mobile apps */
+        /* Mobile app body adjustments - always apply padding for mobile screens */
+        @media (max-width: 768px) {
+            body {
+                padding-top: var(--status-bar-height) !important;
+            }
+            
+            /* Ensure main content doesn't overlap with header */
+            #kt_app_page {
+                padding-top: calc(80px + var(--status-bar-height));
+            }
+            
+            /* Fix header positioning */
+            #kt_app_header {
+                top: var(--status-bar-height) !important;
+                position: fixed !important;
+                z-index: 1000 !important;
+                width: 100% !important;
+                background: var(--status-bar-bg) !important;
+            }
+            
+            /* Remove conflicting margin from header container */
+            #kt_app_header_container {
+                margin-top: 0 !important;
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+            
+            /* Ensure wrapper doesn't overlap */
+            #kt_app_wrapper {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+            }
+        }
+
+        /* Status bar background overlay */
         body::before {
             content: '';
             position: fixed;
@@ -52,58 +86,49 @@
             right: 0;
             height: var(--status-bar-height);
             background-color: var(--status-bar-bg);
-            z-index: 10001; /* Higher than header */
-            display: none; /* Hidden by default, shown only in mobile app */
+            z-index: 10001;
+            display: none;
         }
 
-        /* Show status bar background in mobile app environment */
-        .mobile-app body::before,
-        .capacitor-app body::before {
-            display: block;
-        }
-
-        /* Adjust body padding for mobile apps */
-        .mobile-app body,
-        .capacitor-app body {
-            padding-top: var(--status-bar-height);
-        }
-
-        /* Ensure header doesn't overlap with status bar */
-        .mobile-app #kt_app_header,
-        .capacitor-app #kt_app_header {
-            top: var(--status-bar-height);
-            position: fixed;
-        }
-
-        /* Additional mobile app adjustments */
+        /* Show status bar background on mobile */
         @media (max-width: 768px) {
-            .mobile-app #kt_app_header,
-            .capacitor-app #kt_app_header {
-                padding-top: 0;
+            body::before {
+                display: block;
             }
-            
-            .mobile-app .app-header,
-            .capacitor-app .app-header {
-                min-height: calc(80px + var(--status-bar-height));
-            }
+        }
+
+        /* Mobile app specific adjustments */
+        .mobile-app, .capacitor-app {
+            /* Additional mobile app styles if needed */
         }
 
         /* Handle landscape orientation */
         @media (orientation: landscape) and (max-height: 500px) {
-            .mobile-app body::before,
-            .capacitor-app body::before {
-                height: calc(var(--status-bar-height) * 0.8); /* Slightly reduce for landscape */
+            body::before {
+                height: calc(var(--status-bar-height) * 0.8);
+            }
+            
+            body {
+                padding-top: calc(var(--status-bar-height) * 0.8) !important;
+            }
+            
+            #kt_app_header {
+                top: calc(var(--status-bar-height) * 0.8) !important;
             }
         }
 
-        /* Dark theme support */
+        /* Theme support - match header background */
         [data-bs-theme="dark"] {
-            --status-bar-bg: #1c1c1c; /* Darker background for dark theme */
+            --status-bar-bg: #1e1e2d;
         }
 
-        /* Light theme support */
         [data-bs-theme="light"] {
-            --status-bar-bg: #f8f9fa; /* Light background for light theme */
+            --status-bar-bg: #ffffff;
+        }
+
+        /* Ensure header has proper background */
+        #kt_app_header {
+            background-color: var(--status-bar-bg) !important;
         }
     </style>
 
@@ -134,14 +159,16 @@
             document.body.classList.add('mobile-app');
             console.log('PWA standalone mode detected');
         }
-        // Check for mobile user agent as fallback
-        else if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            // Only add mobile-app class if it seems to be in an app context
-            if (window.location.protocol === 'file:' || window.location.hostname === 'localhost') {
-                document.body.classList.add('mobile-app');
-                console.log('Mobile app context detected via user agent');
-            }
+        
+        // Always add mobile class for small screens (this ensures CSS works on all mobile devices)
+        if (window.innerWidth <= 768) {
+            document.body.classList.add('mobile-screen');
+            console.log('Mobile screen size detected');
         }
+        
+        // Debug: Log safe area values
+        const safeAreaTop = getComputedStyle(document.documentElement).getPropertyValue('--status-bar-height');
+        console.log('Safe area top:', safeAreaTop);
     });
     </script>
 </head>
