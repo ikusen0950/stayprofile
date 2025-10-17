@@ -108,7 +108,7 @@
 
 
                     <!--begin::Navbar-->
-                    <?= $this->include('layouts/navbar.php') ?>
+                    <?= $this->include('layout/navbar.php') ?>
                     <!--end::Navbar-->
                 </div>
                 <!--end::Header container-->
@@ -119,5 +119,5 @@
 
 
                 <!--begin::Sidebar-->
-                <?= $this->include('layouts/sidebar.php') ?>
+                <?= $this->include('layout/sidebar.php') ?>
                 <!--end::Sidebar-->
