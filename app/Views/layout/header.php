@@ -34,23 +34,56 @@
 
     <!--begin::Mobile Status Bar Fix-->
     <style>
+        /* Mobile status bar background fill */
+        .mobile-status-bar-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px; /* Match the header margin */
+            background-color: var(--bs-app-header-bg, #ffffff);
+            z-index: 9999;
+            display: none;
+        }
+        
+        /* Dark theme support */
+        [data-bs-theme="dark"] .mobile-status-bar-bg {
+            background-color: var(--bs-app-header-bg-dark, #1e1e2e);
+        }
+        
         /* Mobile status bar spacing */
         @media (max-width: 768px) {
+            .mobile-status-bar-bg {
+                display: block;
+            }
+            
             #kt_app_header {
                 margin-top: 50px; /* Increased space for mobile status bar */
+                background-color: var(--bs-app-header-bg, #ffffff);
             }
             
             /* For devices with larger status bars (iPhone X and newer) */
             @supports (padding-top: constant(safe-area-inset-top)) {
+                .mobile-status-bar-bg {
+                    height: calc(constant(safe-area-inset-top) + 20px);
+                }
                 #kt_app_header {
                     margin-top: calc(constant(safe-area-inset-top) + 20px);
                 }
             }
             
             @supports (padding-top: env(safe-area-inset-top)) {
+                .mobile-status-bar-bg {
+                    height: calc(env(safe-area-inset-top) + 20px);
+                }
                 #kt_app_header {
                     margin-top: calc(env(safe-area-inset-top) + 20px);
                 }
+            }
+            
+            /* Dark theme header background */
+            [data-bs-theme="dark"] #kt_app_header {
+                background-color: var(--bs-app-header-bg-dark, #1e1e2e);
             }
         }
         
@@ -107,8 +140,9 @@
     </script>
     <!--end::Theme mode setup on page load-->
 
-
-
+    <!--begin::Mobile Status Bar Background-->
+    <div class="mobile-status-bar-bg"></div>
+    <!--end::Mobile Status Bar Background-->
 
     <!--begin::App-->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
