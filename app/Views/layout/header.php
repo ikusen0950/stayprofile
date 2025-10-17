@@ -49,28 +49,31 @@
                 padding-top: var(--status-bar-height) !important;
             }
             
-            /* Minimal space - main content very close to header */
+            /* Very minimal space - main content very close to header */
             #kt_app_page {
-                padding-top: calc(45px + var(--status-bar-height));
+                padding-top: calc(30px + var(--status-bar-height));
             }
             
-            /* Fix header positioning with blur background */
+            /* Fix header positioning with solid white background */
             #kt_app_header {
                 top: var(--status-bar-height) !important;
                 position: fixed !important;
                 z-index: 1000 !important;
                 width: 100% !important;
-                background: rgba(255, 255, 255, 0.85) !important;
-                backdrop-filter: blur(10px) !important;
-                -webkit-backdrop-filter: blur(10px) !important;
+                background: #ffffff !important;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
             
-            /* Minimal header container padding */
+            /* Minimal header container padding and remove margin */
             #kt_app_header_container {
                 margin-top: 0 !important;
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
+                padding-top: 0.25rem;
+                padding-bottom: 0.25rem;
+            }
+            
+            /* Force remove any Bootstrap margin classes */
+            #kt_app_header_container.mt-7 {
+                margin-top: 0 !important;
             }
             
             /* Ensure wrapper doesn't overlap and remove any default spacing */
@@ -142,19 +145,19 @@
                 top: calc(var(--status-bar-height) * 0.8) !important;
             }
             
-            /* Very tight content padding in landscape */
+            /* Extra tight content padding in landscape */
             #kt_app_page {
-                padding-top: calc(35px + var(--status-bar-height) * 0.8);
+                padding-top: calc(25px + var(--status-bar-height) * 0.8);
             }
             
-            /* Very small header container padding in landscape */
+            /* Extra small header container padding in landscape */
             #kt_app_header_container {
-                padding-top: 0.25rem;
-                padding-bottom: 0.25rem;
+                padding-top: 0.15rem;
+                padding-bottom: 0.15rem;
             }
         }
 
-        /* Theme support - blur backgrounds for different themes */
+        /* Theme support - solid white backgrounds for different themes */
         [data-bs-theme="dark"] {
             --status-bar-bg: #1e1e2d;
         }
@@ -163,15 +166,15 @@
             --status-bar-bg: #ffffff;
         }
 
-        /* Dark theme blur background */
+        /* Solid white header background for all themes on mobile */
         @media (max-width: 768px) {
             [data-bs-theme="dark"] #kt_app_header {
-                background: rgba(30, 30, 45, 0.85) !important;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                background: #ffffff !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
             
             [data-bs-theme="light"] #kt_app_header {
-                background: rgba(255, 255, 255, 0.85) !important;
+                background: #ffffff !important;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
         }
