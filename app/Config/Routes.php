@@ -47,6 +47,8 @@ $routes->get('api/test', 'TestController::test');
 $routes->get('api/save-token', 'Notification::saveToken');
 $routes->post('api/save-token', 'Notification::saveToken');
 $routes->get('api/test-push', 'Notification::testPush');
+$routes->post('notifications/markAsRead', 'Notification::markAsRead');
+$routes->get('notification/read/(:num)', 'Notification::markAsReadAndRedirect/$1');
 
 // Password change routes
 $routes->get('change-password', 'Dashboard::changePassword', ['filter' => 'login']);
