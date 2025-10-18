@@ -1150,11 +1150,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const REGISTRATION_TIMEOUT = 15000; // 15 seconds
             let registrationTimer = null;
             let isRegistrationComplete = false;
+            let currentStep = 'initializing';
+            let stepDetails = {};
 
             // Set up error timeout for iOS
             registrationTimer = setTimeout(() => {
                 if (!isRegistrationComplete) {
                     console.error('Registration timeout - no response after', REGISTRATION_TIMEOUT, 'ms');
+                    console.error('Process stuck at step:', currentStep);
+                    console.error('Step details:', stepDetails);
+                    
                     btn.disabled = false;
                     btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
                     
@@ -1168,7 +1173,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         pluginAvailable: !!(window.Capacitor?.Plugins?.PushNotifications),
                         permissions: 'timeout-during-process',
                         timeoutAfterSeconds: REGISTRATION_TIMEOUT / 1000,
-                        step: 'timeout-occurred'
+                        step: 'timeout-occurred',
+                        currentStep: currentStep,
+                        stepDetails: stepDetails,
+                        stuckAt: `Process timed out while executing: ${currentStep}`
                     };
                     
                     if (platform === 'ios') {
@@ -1179,36 +1187,57 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div style="text-align: left;">
                                     <p><strong>Push notification registration timed out after ${REGISTRATION_TIMEOUT/1000} seconds.</strong></p>
                                     
+                                    <div style="background: #ffebee; padding: 10px; border-radius: 4px; border-left: 4px solid #f44336; margin: 10px 0;">
+                                        <strong>🎯 Process stuck at:</strong> <code>${debugInfo.currentStep}</code><br>
+                                        <strong>Details:</strong> ${debugInfo.stuckAt}
+                                    </div>
+                                    
                                     <details style="margin: 10px 0;">
-                                        <summary style="cursor: pointer; font-weight: bold; color: #1976d2;">🐛 Debug Information (Tap to expand)</summary>
-                                        <div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                                            <strong>Platform:</strong> ${debugInfo.platform}<br>
-                                            <strong>Capacitor:</strong> ${debugInfo.isCapacitor} (v${debugInfo.capacitorVersion})<br>
-                                            <strong>Plugin Available:</strong> ${debugInfo.pluginAvailable}<br>
-                                            <strong>Time:</strong> ${debugInfo.timestamp}<br>
-                                            <strong>User Agent:</strong> ${debugInfo.userAgent.substring(0, 100)}...
+                                        <summary style="cursor: pointer; font-weight: bold; color: #1976d2;">� Step Details (Tap to expand)</summary>
+                                        <div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 11px;">
+                                            <pre>${JSON.stringify(debugInfo.stepDetails, null, 2)}</pre>
                                         </div>
                                     </details>
                                     
-                                    <p><strong>Possible causes:</strong></p>
-                                    <ul style="margin: 10px 0;">
-                                        <li>Missing Apple Push Notification certificates in Firebase</li>
-                                        <li>Network connectivity issues</li>
-                                        <li>iOS app not properly configured in Firebase</li>
-                                        <li>Missing entitlements in iOS app</li>
-                                        <li>Apple Developer account issues</li>
-                                    </ul>
+                                    <details style="margin: 10px 0;">
+                                        <summary style="cursor: pointer; font-weight: bold; color: #1976d2;">🐛 Full Debug Information (Tap to expand)</summary>
+                                        <div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 10px; max-height: 200px; overflow-y: auto;">
+                                            <pre>${JSON.stringify(debugInfo, null, 2)}</pre>
+                                        </div>
+                                    </details>
                                     
-                                    <p><strong>Next steps:</strong></p>
-                                    <ul style="margin: 10px 0;">
-                                        <li>Check Firebase Console for iOS setup</li>
-                                        <li>Verify APNS certificates</li>
-                                        <li>Try on different network (WiFi/Mobile)</li>
-                                        <li>Contact administrator with debug info</li>
-                                    </ul>
+                                    ${debugInfo.currentStep.includes('permission') ? `
+                                        <div style="background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 10px 0;">
+                                            <strong>⚠️ Permission Issue:</strong>
+                                            <ul style="margin: 5px 0;">
+                                                <li>iOS permission dialog may not be appearing</li>
+                                                <li>System-level permission restrictions</li>
+                                                <li>App not properly configured for notifications</li>
+                                            </ul>
+                                        </div>
+                                    ` : debugInfo.currentStep.includes('register') || debugInfo.currentStep.includes('waiting') ? `
+                                        <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
+                                            <strong>🍎 APNS Connection Issue:</strong>
+                                            <ul style="margin: 5px 0;">
+                                                <li>Missing APNS certificates in Firebase</li>
+                                                <li>Incorrect Bundle ID configuration</li>
+                                                <li>Development vs Production certificate mismatch</li>
+                                                <li>Network connectivity to Apple servers</li>
+                                            </ul>
+                                        </div>
+                                    ` : `
+                                        <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; border-left: 4px solid #2196f3; margin: 10px 0;">
+                                            <strong>🔧 Setup Issue:</strong>
+                                            <ul style="margin: 5px 0;">
+                                                <li>Capacitor plugin configuration</li>
+                                                <li>Event listener setup problems</li>
+                                                <li>iOS app entitlements missing</li>
+                                            </ul>
+                                        </div>
+                                    `}
                                 </div>
                             `,
-                            width: '90%',
+                            width: '95%',
                             confirmButtonText: 'Copy Debug Info',
                             showCancelButton: true,
                             cancelButtonText: 'Close'
@@ -1252,10 +1281,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let permStatus;
             
             try {
+                currentStep = 'checking-permissions';
+                stepDetails = { action: 'PushNotifications.checkPermissions()' };
                 console.log('Step 1: Checking current permissions...');
+                
                 permStatus = await PushNotifications.checkPermissions();
+                
+                stepDetails = { ...stepDetails, result: permStatus };
                 console.log('Step 1 Complete - Current permission status:', permStatus);
             } catch (permCheckError) {
+                stepDetails = { ...stepDetails, error: permCheckError.message || permCheckError };
                 console.error('Step 1 Failed - Error checking permissions:', permCheckError);
                 clearTimeout(registrationTimer);
                 throw new Error(`Permission check failed: ${permCheckError.message || permCheckError}`);
@@ -1263,15 +1298,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
                 try {
+                    currentStep = 'requesting-permissions';
+                    stepDetails = { action: 'PushNotifications.requestPermissions()', currentStatus: permStatus.receive };
                     console.log('Step 2: Requesting permissions...');
+                    
                     permStatus = await PushNotifications.requestPermissions();
+                    
+                    stepDetails = { ...stepDetails, result: permStatus };
                     console.log('Step 2 Complete - Permission after request:', permStatus);
                 } catch (permRequestError) {
+                    stepDetails = { ...stepDetails, error: permRequestError.message || permRequestError };
                     console.error('Step 2 Failed - Error requesting permissions:', permRequestError);
                     clearTimeout(registrationTimer);
                     throw new Error(`Permission request failed: ${permRequestError.message || permRequestError}`);
                 }
             } else {
+                currentStep = 'permissions-already-set';
+                stepDetails = { action: 'skipped', reason: 'permissions already granted or denied', status: permStatus.receive };
                 console.log('Step 2 Skipped - No permission request needed, current status:', permStatus.receive);
             }
 
@@ -1337,9 +1380,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Push notification permission was denied. Please enable it in your device settings.');
             }
             
+            currentStep = 'permissions-verified';
+            stepDetails = { status: 'permissions-granted', permissionStatus: permStatus };
             console.log('Step 3 Complete - Permissions granted, proceeding to registration...');
 
             // Listen for registration success (set up before register call)
+            currentStep = 'setting-up-success-listener';
+            stepDetails = { action: 'PushNotifications.addListener(registration)' };
+            console.log('Step 4a: Setting up registration success listener...');
+            
             const registrationListener = await PushNotifications.addListener('registration', async (token) => {
                 console.log('Step 5 Complete - Push registration success, token:', token.value);
                 isRegistrationComplete = true;
@@ -1360,7 +1409,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            console.log('Step 4a Complete - Registration success listener set up');
+            
             // Listen for registration error (set up before register call)
+            currentStep = 'setting-up-error-listener';
+            stepDetails = { action: 'PushNotifications.addListener(registrationError)' };
+            console.log('Step 4b: Setting up registration error listener...');
+            
             const errorListener = await PushNotifications.addListener('registrationError', (error) => {
                 console.error('Step 5 Failed - Push registration error:', error);
                 isRegistrationComplete = true;
@@ -1437,13 +1492,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
             });
 
+            console.log('Step 4b Complete - Registration error listener set up');
+
             // Register for push notifications
-            console.log('Step 4: Setting up event listeners complete, registering for push notifications...');
+            currentStep = 'calling-register';
+            stepDetails = { action: 'PushNotifications.register()' };
+            console.log('Step 5: Setting up event listeners complete, registering for push notifications...');
+            
             try {
                 await PushNotifications.register();
-                console.log('Step 4 Complete - Registration call made, waiting for response...');
+                
+                currentStep = 'waiting-for-response';
+                stepDetails = { action: 'waiting for APNS/FCM response', platform: platform };
+                console.log('Step 5 Complete - Registration call made, waiting for response...');
             } catch (registerError) {
-                console.error('Step 4 Failed - Registration call failed:', registerError);
+                stepDetails = { ...stepDetails, error: registerError.message || registerError };
+                console.error('Step 5 Failed - Registration call failed:', registerError);
                 clearTimeout(registrationTimer);
                 throw new Error(`Registration call failed: ${registerError.message || registerError}`);
             }
