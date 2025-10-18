@@ -202,6 +202,43 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <script>
+    // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking)
+    if (window.top != window.self) {
+        window.top.location.replace(window.self.location.href);
+    }
+
+    // Mobile app environment detection
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if running in Capacitor
+        if (window.Capacitor) {
+            document.body.classList.add('capacitor-app');
+            console.log('Capacitor environment detected');
+        }
+        // Check for other mobile app indicators
+        else if (window.cordova || window.PhoneGap || window.phonegap) {
+            document.body.classList.add('mobile-app');
+            console.log('Mobile app environment detected');
+        }
+        // Check for mobile browsers with standalone mode (PWA)
+        else if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.classList.add('mobile-app');
+            console.log('PWA standalone mode detected');
+        }
+
+        // Always add mobile class for small screens (this ensures CSS works on all mobile devices)
+        if (window.innerWidth <= 768) {
+            document.body.classList.add('mobile-screen');
+            console.log('Mobile screen size detected');
+        }
+
+        // Debug: Log safe area values
+        const safeAreaTop = getComputedStyle(document.documentElement).getPropertyValue('--status-bar-height');
+        console.log('Safe area top:', safeAreaTop);
+    });
+    </script>
+
+    <!-- Working FCM Script from other CI4 app -->
+    <script>
     document.addEventListener('deviceready', async () => {
         const {
             PushNotifications
@@ -224,7 +261,7 @@
         PushNotifications.addListener('registration', async (token) => {
             console.log('[Token] →', token.value);
             try {
-                const res = await fetch('https://islanders.finolhu.net/api/save-token', {
+                const res = await fetch('<?= base_url('api/save-token') ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -270,7 +307,6 @@
         });
     });
     </script>
-    
 
     <!-- Deep Link Handler -->
     <script>
