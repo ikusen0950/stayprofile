@@ -1134,9 +1134,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Capacitor Mobile App Notification Handler
+    // Capacitor Mobile App Notification Handler - Simplified Working Approach
     async function handleCapacitorNotifications(btn) {
-        console.log('Handling Capacitor notifications...', 'Platform:', platform);
+        console.log('Using simplified working approach from previous CI4 app...', 'Platform:', platform);
         
         // Check if PushNotifications is available
         if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.PushNotifications) {
@@ -1146,6 +1146,163 @@ document.addEventListener('DOMContentLoaded', function() {
         const PushNotifications = window.Capacitor.Plugins.PushNotifications;
 
         try {
+            console.log('Step 1: Request permissions (simplified approach)...');
+            
+            // Request permissions directly
+            const permission = await PushNotifications.requestPermissions();
+            console.log('Permission result:', permission);
+            
+            if (permission.receive !== 'granted') {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Permission Required',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>Push notification permission is required.</strong></p>
+                            <p>Current status: <code>${permission.receive}</code></p>
+                            
+                            <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                                <strong>Please enable notifications:</strong>
+                                <ol style="margin: 5px 0;">
+                                    <li>Go to device Settings</li>
+                                    <li>Find this app in the app list</li>
+                                    <li>Tap on Notifications</li>
+                                    <li>Turn on "Allow Notifications"</li>
+                                    <li>Return to this app and try again</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            console.log('Step 2: Set up listeners (before registering)...');
+            
+            // Set up success listener
+            const registrationListener = PushNotifications.addListener('registration', async (token) => {
+                console.log('[Token Received] →', token.value);
+                
+                try {
+                    console.log('Saving token to backend...');
+                    await saveTokenToBackend(token.value, platform, btn);
+                } catch (error) {
+                    console.error('[Token Save Error] →', error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Save Failed',
+                        text: 'Failed to save notification token: ' + error.message,
+                        confirmButtonText: 'OK'
+                    });
+                } finally {
+                    registrationListener.remove();
+                }
+            });
+
+            // Set up error listener
+            const errorListener = PushNotifications.addListener('registrationError', (error) => {
+                console.error('[Registration Error] →', error);
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>Push notification registration failed.</strong></p>
+                            <p>Error: ${error.error || 'Unknown error'}</p>
+                            
+                            ${platform === 'ios' ? `
+                                <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
+                                    <strong>🍎 iOS - Missing APNS Certificate</strong>
+                                    <p style="margin: 5px 0;">This error typically means:</p>
+                                    <ul style="margin: 5px 0;">
+                                        <li>No APNS certificate uploaded to Firebase Console</li>
+                                        <li>Bundle ID mismatch between app and Firebase</li>
+                                        <li>Certificate expired or invalid</li>
+                                    </ul>
+                                    
+                                    <strong>Quick Fix:</strong>
+                                    <ol style="margin: 5px 0; font-size: 13px;">
+                                        <li>Go to Firebase Console → Project Settings</li>
+                                        <li>Click "Cloud Messaging" tab</li>
+                                        <li>Upload APNS certificate for iOS app</li>
+                                        <li>Ensure Bundle ID matches exactly</li>
+                                    </ol>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `,
+                    confirmButtonText: 'OK'
+                });
+                
+                errorListener.remove();
+            });
+
+            console.log('Step 3: Register for push notifications...');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
+            
+            // Register (this should trigger one of the listeners above)
+            await PushNotifications.register();
+            
+            console.log('Registration call completed, waiting for response...');
+            
+            // Set timeout for iOS specifically
+            if (platform === 'ios') {
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting to Apple...';
+                
+                setTimeout(() => {
+                    // Check if still waiting after 10 seconds
+                    if (btn.innerHTML.includes('Connecting to Apple')) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'iOS Registration Timeout',
+                            html: `
+                                <div style="text-align: left;">
+                                    <p><strong>iOS push notification setup timed out.</strong></p>
+                                    
+                                    <div style="background: #ffebee; padding: 15px; border-radius: 4px; border-left: 4px solid #f44336; margin: 10px 0;">
+                                        <strong>🎯 ROOT CAUSE: Missing APNS Certificate</strong>
+                                        <p style="margin: 8px 0;">Your iOS app cannot connect to Apple's push notification servers because:</p>
+                                        <ul style="margin: 5px 0; color: #d32f2f;">
+                                            <li><strong>No APNS certificate uploaded to Firebase</strong></li>
+                                            <li>Bundle ID mismatch</li>
+                                            <li>Certificate configuration error</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                                        <strong>🔧 SOLUTION:</strong>
+                                        <ol style="margin: 5px 0;">
+                                            <li><strong>Generate APNS certificate</strong> in Apple Developer Portal</li>
+                                            <li><strong>Upload to Firebase Console</strong> → Project Settings → Cloud Messaging</li>
+                                            <li><strong>Verify Bundle ID</strong> matches in all locations</li>
+                                            <li><strong>Test again</strong> on real iOS device</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonText: 'OK'
+                        });
+                        
+                        // Clean up listeners
+                        registrationListener.remove();
+                        errorListener.remove();
+                    }
+                }, 10000); // 10 second timeout
+            }
             // Add timeout for iOS registration
             const REGISTRATION_TIMEOUT = 15000; // 15 seconds
             let registrationTimer = null;
