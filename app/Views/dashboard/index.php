@@ -1600,26 +1600,7 @@ document.addEventListener('DOMContentLoaded', function() {
             stepDetails = { action: 'PushNotifications.addListener(registration)' };
             console.log('Step 4a: Setting up registration success listener...');
             
-            const registrationListener = await PushNotifications.addListener('registration', async (token) => {
-                console.log('Step 5 Complete - Push registration success, token:', token.value);
-                isRegistrationComplete = true;
-                clearTimeout(registrationTimer);
-                
-                try {
-                    console.log('Step 6: Saving token to backend...');
-                    // Save token to backend
-                    await saveTokenToBackend(token.value, platform, btn);
-                    console.log('Step 6 Complete - Token saved successfully');
-                } catch (error) {
-                    console.error('Step 6 Failed - Error saving token:', error);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-                } finally {
-                    // Remove the listener after processing
-                    registrationListener.remove();
-                }
-            });
-
+            // Registration listener already set up above - using existing listener
             console.log('Step 4a Complete - Registration success listener set up');
             
             // Listen for registration error (set up before register call)
@@ -1627,101 +1608,13 @@ document.addEventListener('DOMContentLoaded', function() {
             stepDetails = { action: 'PushNotifications.addListener(registrationError)' };
             console.log('Step 4b: Setting up registration error listener...');
             
-            const errorListener = await PushNotifications.addListener('registrationError', (error) => {
-                console.error('Step 5 Failed - Push registration error:', error);
-                isRegistrationComplete = true;
-                clearTimeout(registrationTimer);
-                errorListener.remove();
-                
-                // Collect detailed error information
-                const errorInfo = {
-                    platform: platform,
-                    error: error,
-                    errorMessage: error.error || 'Unknown error',
-                    timestamp: new Date().toISOString(),
-                    capacitorVersion: window.Capacitor?.version || 'unknown',
-                    userAgent: navigator.userAgent,
-                    step: 'registration-error'
-                };
-                
-                console.log('Detailed error info:', errorInfo);
-                
-                let errorMessage = 'Failed to register for push notifications';
-                if (platform === 'ios') {
-                    errorMessage = 'iOS push notification registration failed';
-                }
-                
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Registration Failed',
-                    html: `
-                        <div style="text-align: left;">
-                            <p><strong>${errorMessage}</strong></p>
-                            <p>Error: ${errorInfo.errorMessage}</p>
-                            
-                            <details style="margin: 15px 0;">
-                                <summary style="cursor: pointer; font-weight: bold; color: #d32f2f;">🔍 Technical Details (Tap to expand)</summary>
-                                <div style="background: #ffebee; padding: 10px; margin: 5px 0; border-radius: 4px; border-left: 4px solid #f44336;">
-                                    <pre style="font-family: monospace; font-size: 11px; margin: 0; white-space: pre-wrap;">${JSON.stringify(errorInfo, null, 2)}</pre>
-                                </div>
-                            </details>
-                            
-                            ${platform === 'ios' ? `
-                                <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
-                                    <strong>iOS-specific issues:</strong>
-                                    <ul style="margin: 5px 0 0 0;">
-                                        <li>Missing APNS certificates in Firebase</li>
-                                        <li>Incorrect Bundle ID configuration</li>
-                                        <li>Missing aps-environment entitlement</li>
-                                        <li>Development vs Production certificate mismatch</li>
-                                    </ul>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `,
-                    width: '90%',
-                    confirmButtonText: 'Copy Error Details',
-                    showCancelButton: true,
-                    cancelButtonText: 'Close'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const errorText = `Push Notification Error Details:\n${JSON.stringify(errorInfo, null, 2)}`;
-                        if (navigator.clipboard) {
-                            navigator.clipboard.writeText(errorText);
-                            Swal.fire({
-                                icon: 'info',
-                                title: 'Copied!',
-                                text: 'Error details copied to clipboard. Share this with your administrator.',
-                                timer: 3000,
-                                showConfirmButton: false
-                            });
-                        }
-                    }
-                });
-                
-                btn.disabled = false;
-                btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-            });
-
+            // Error listener already set up above - using existing listener
             console.log('Step 4b Complete - Registration error listener set up');
 
             // Register for push notifications
             currentStep = 'calling-register';
             stepDetails = { action: 'PushNotifications.register()' };
-            console.log('Step 5: Setting up event listeners complete, registering for push notifications...');
-            
-            try {
-                await PushNotifications.register();
-                
-                currentStep = 'waiting-for-response';
-                stepDetails = { action: 'waiting for APNS/FCM response', platform: platform };
-                console.log('Step 5 Complete - Registration call made, waiting for response...');
-            } catch (registerError) {
-                stepDetails = { ...stepDetails, error: registerError.message || registerError };
-                console.error('Step 5 Failed - Registration call failed:', registerError);
-                clearTimeout(registrationTimer);
-                throw new Error(`Registration call failed: ${registerError.message || registerError}`);
-            }
+            console.log('Step 5: Registration already called above, listeners are active...');
             
             // For iOS, show additional info
             if (platform === 'ios') {
