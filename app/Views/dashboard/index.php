@@ -958,7 +958,6 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
 </style>
 
 <!-- Notification Permission Modal -->
-<?php if ($show_notification_prompt ?? false): ?>
 <div class="modal fade" id="notificationPermissionModal" tabindex="-1" aria-labelledby="notificationPermissionLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -1056,8 +1055,8 @@ console.log('User has_accepted_agreement:', <?= json_encode($user->has_accepted_
 console.log('======================');
 
 // Notification Permission Handler
-<?php if ($show_notification_prompt ?? false): ?>
-console.log('Show notification prompt:', <?= json_encode($show_notification_prompt ?? false) ?>);
+// Always load notification functions regardless of flag
+console.log('Show notification prompt flag:', <?= json_encode($show_notification_prompt ?? false) ?>);
 
 // Detect if running in Capacitor mobile app
 const isCapacitor = window.Capacitor !== undefined;
@@ -1089,19 +1088,28 @@ function showNotificationModal() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== DOMContentLoaded fired ===');
     
+    // Check if notification prompt should be shown
+    const showNotificationPrompt = <?= json_encode($show_notification_prompt ?? false) ?>;
+    console.log('showNotificationPrompt flag:', showNotificationPrompt);
+    
     // Check if agreement modal is also being shown
     const showAgreementModal = <?= json_encode($show_agreement_modal ?? false) ?>;
-    console.log('showAgreementModal in DOMContentLoaded:', showAgreementModal);
+    console.log('showAgreementModal flag:', showAgreementModal);
     
-    if (!showAgreementModal) {
-        console.log('No agreement modal, scheduling notification modal...');
-        // No agreement modal, show notification modal after delay as usual
-        setTimeout(() => {
-            console.log('Timeout fired, calling showNotificationModal...');
-            showNotificationModal();
-        }, 1000); // 1 second delay
+    // Only proceed if notification prompt should be shown
+    if (showNotificationPrompt) {
+        if (!showAgreementModal) {
+            console.log('No agreement modal, scheduling notification modal...');
+            // No agreement modal, show notification modal after delay as usual
+            setTimeout(() => {
+                console.log('Timeout fired, calling showNotificationModal...');
+                showNotificationModal();
+            }, 1000); // 1 second delay
+        } else {
+            console.log('Agreement modal is showing, notification modal will wait...');
+        }
     } else {
-        console.log('Agreement modal is showing, notification modal will wait...');
+        console.log('Notification prompt not needed (user has device token)');
     }
     // If agreement modal is shown, the notification modal will be triggered after agreement acceptance
     // (handled in the agreement acceptance success callback above)
@@ -1888,6 +1896,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
-<?php endif; ?>
+
 </script>
-<?php endif; ?>
