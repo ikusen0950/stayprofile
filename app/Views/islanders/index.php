@@ -1469,7 +1469,7 @@
                 @media (max-width: 768px) {
                     .mobile-search-bar {
                         position: fixed !important;
-                        top: calc(var(--status-bar-height) + 30px) !important;
+                        top: calc(var(--status-bar-height) + 60px) !important;
                         left: 0 !important;
                         right: 0 !important;
                         z-index: 999 !important;
@@ -1487,7 +1487,7 @@
                     .d-lg-none .mobile-search-bar,
                     .mobile-search-bar[style*="top"],
                     div.mobile-search-bar {
-                        top: calc(var(--status-bar-height) + 30px) !important;
+                        top: calc(var(--status-bar-height) + 60px) !important;
                     }
                     
                     /* Ensure h1 title is visible - stronger selectors */
@@ -1527,7 +1527,7 @@
                     
                     /* Adjust main content to account for search bar height */
                     #kt_app_page {
-                        padding-top: calc(140px + var(--status-bar-height)) !important;
+                        padding-top: calc(170px + var(--status-bar-height)) !important;
                     }
                 }
 
