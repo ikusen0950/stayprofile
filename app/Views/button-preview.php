@@ -37,31 +37,31 @@
                     <h3>Dashboard Implementation</h3>
                     <p class="text-muted">This is how the Register Token button appears in the dashboard toolbar:</p>
                     
-                    <!-- Simulated Dashboard Toolbar -->
+                    <!-- Simulated Dashboard Layout -->
                     <div class="card">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h5>
                         </div>
                         <div class="card-body">
-                            <!-- Toolbar Actions -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">Actions</h6>
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-plus-circle"></i> Add
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm">
-                                        <i class="bi bi-filter"></i> Filter
-                                    </button>
-                                    <!-- The Register Token Button -->
-                                    <button type="button" class="btn btn-success btn-sm" onclick="registerFCMToken()">
-                                        <i class="bi bi-bell-fill"></i> Register Token
-                                    </button>
+                            <!-- Register Token Button - New Position -->
+                            <div class="d-flex justify-content-end mb-4">
+                                <button type="button" class="btn btn-success d-flex align-items-center" onclick="registerFCMToken()">
+                                    <i class="bi bi-bell-fill me-2"></i>
+                                    <span>Register Token</span>
+                                </button>
+                            </div>
+                            
+                            <!-- First Dashboard Card -->
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">First Dashboard Card</h6>
+                                    <p class="card-text text-muted">The Register Token button now appears above the first card in the dashboard content area.</p>
                                 </div>
                             </div>
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle"></i> 
-                                The <strong>Register Token</strong> button allows manual FCM token registration for push notifications.
+                            
+                            <div class="alert alert-success mt-3">
+                                <i class="bi bi-check-circle-fill"></i> 
+                                <strong>Updated Position:</strong> The Register Token button has been moved above the first card in the dashboard for better visibility and accessibility.
                             </div>
                         </div>
                     </div>
@@ -112,9 +112,18 @@
                     
                     <h5>HTML Button Code:</h5>
                     <div class="code-block mb-3">
-&lt;button type="button" class="btn btn-success btn-sm" onclick="registerFCMToken()"&gt;
-    &lt;i class="bi bi-bell-fill"&gt;&lt;/i&gt; Register Token
-&lt;/button&gt;
+&lt;!-- Register Token Button - Above First Card --&gt;
+&lt;div class="d-flex justify-content-end mb-5"&gt;
+    &lt;button type="button" class="btn btn-success d-flex align-items-center" 
+            id="registerTokenBtn" onclick="registerFCMToken()"&gt;
+        &lt;i class="ki-duotone ki-notification-bing fs-2 text-white me-2"&gt;
+            &lt;span class="path1"&gt;&lt;/span&gt;
+            &lt;span class="path2"&gt;&lt;/span&gt;
+            &lt;span class="path3"&gt;&lt;/span&gt;
+        &lt;/i&gt;
+        &lt;span&gt;Register Token&lt;/span&gt;
+    &lt;/button&gt;
+&lt;/div&gt;
                     </div>
 
                     <h5>JavaScript Function:</h5>
@@ -189,11 +198,12 @@ Content-Type: application/json
                     <div class="alert alert-success">
                         <h5><i class="bi bi-check-circle-fill"></i> Integration Complete</h5>
                         <ul class="mb-0">
-                            <li>Button added to dashboard toolbar Actions section</li>
+                            <li>Button moved above first card in dashboard content area</li>
                             <li>JavaScript function implemented with Capacitor detection</li>
                             <li>API endpoint <code>/api/save-token</code> ready and tested</li>
                             <li>Error handling and user feedback systems in place</li>
                             <li>Mobile-first approach with web fallback</li>
+                            <li>Better visibility and accessibility in new position</li>
                         </ul>
                     </div>
                 </div>

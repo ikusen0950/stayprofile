@@ -77,14 +77,6 @@
 
                     <!--begin::Actions-->
                     <div class="d-flex align-self-center flex-center flex-shrink-0">
-                        <!-- Register Token Button -->
-                        <button type="button" class="btn btn-sm btn-success d-flex flex-center ms-3 px-4 py-3" 
-                                id="registerTokenBtn" onclick="registerFCMToken()">
-                            <i class="ki-duotone ki-notification-bing fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                            <span class="d-none d-sm-inline ms-2">Register Token</span>
-                            <span class="d-sm-none">Token</span>
-                        </button>
-
                         <a href="#" class="btn btn-sm btn-secondary d-flex flex-center ms-3 px-4 py-3"
                             data-bs-toggle="modal" data-bs-target="#kt_modal_invite_friends">
                             <i class="ki-duotone ki-plus-square fs-2 text-gray-500"><span class="path1"></span><span
@@ -111,6 +103,20 @@
 
             <!--begin::Content container-->
             <div id="kt_app_content_container" class="app-container  container-fluid ">
+                
+                <!-- Register Token Button -->
+                <div class="d-flex justify-content-end mb-5">
+                    <button type="button" class="btn btn-success d-flex align-items-center" 
+                            id="registerTokenBtn" onclick="registerFCMToken()">
+                        <i class="ki-duotone ki-notification-bing fs-2 text-white me-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <span>Register Token</span>
+                    </button>
+                </div>
+                
                 <!--begin::Row-->
                 <div class="row gy-5 gx-xl-10">
                     <!--begin::Col-->
