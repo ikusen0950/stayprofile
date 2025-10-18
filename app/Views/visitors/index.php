@@ -7,8 +7,101 @@
     -webkit-backdrop-filter: blur(20px);
     z-index: 100 !important;
     transition: all 0.3s ease;
-    border-bottom: 1px solid var(--bs-border-color);
-    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
+    border-bottom: none;
+    background: #ffffff;
+}
+
+/* Mobile search bar positioning override for this page */
+@media (max-width: 768px) {
+
+    /* Header background - white with no border */
+    #kt_app_header,
+    div#kt_app_header,
+    .app-header#kt_app_header {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border-bottom: none !important;
+    }
+
+    /* Ensure header container elements also match */
+    #kt_app_header * {
+        background: transparent !important;
+    }
+
+    .mobile-search-bar {
+        position: fixed !important;
+        top: calc(var(--status-bar-height) + 60px) !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 999 !important;
+        background: #ffffff !important;
+        border-bottom: none !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        margin: 0 !important;
+        padding-top: 1rem !important;
+        border-top: none !important;
+        min-height: 120px !important;
+    }
+
+    /* Override any inline styles on mobile search bar */
+    .d-lg-none .mobile-search-bar,
+    .mobile-search-bar[style*="top"],
+    div.mobile-search-bar {
+        top: calc(var(--status-bar-height) + 60px) !important;
+    }
+
+    /* Ensure h1 title is visible - stronger selectors */
+    .mobile-search-bar h1,
+    .mobile-search-bar .text-dark,
+    .mobile-search-bar .fw-bold,
+    .d-lg-none .mobile-search-bar h1 {
+        color: #1e1e2d !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 0.5rem !important;
+        margin-top: 0 !important;
+        padding: 8px 0 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        line-height: 1.2 !important;
+        text-align: left !important;
+    }
+
+    /* Prevent mobile zoom on input focus */
+    .mobile-search-bar input[type="text"],
+    .mobile-search-bar input[type="search"],
+    .mobile-search-bar input {
+        font-size: 16px !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+    }
+
+    /* Ensure h1 container is visible */
+    .mobile-search-bar .mb-2 {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        min-height: 40px !important;
+    }
+
+    /* Ensure container is properly sized for h1 */
+    .mobile-search-bar .container-fluid,
+    .mobile-search-bar .mb-2 {
+        overflow: visible !important;
+        height: auto !important;
+        min-height: auto !important;
+    }
+
+    /* Adjust main content to account for search bar height */
+    #kt_app_page {
+        padding-top: calc(170px + var(--status-bar-height)) !important;
+    }
 }
 
 /* Hide mobile search bar when sidebar drawer is active */
@@ -24,8 +117,20 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--bs-app-header-base-bg-color, rgba(255, 255, 255, 0.95));
+    background: #ffffff !important;
     z-index: -1;
+}
+
+/* Additional header background override for any framework conflicts */
+@media (max-width: 768px) {
+
+    body[data-kt-app-header-fixed="true"] #kt_app_header,
+    body[data-kt-app-header-fixed-mobile="true"] #kt_app_header,
+    .app-header[data-kt-sticky="true"] {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        border-bottom: none !important;
+    }
 }
 
 /* Dark mode support */
@@ -83,11 +188,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 .mobile-visitor-card {
     transition: all 0.3s ease;
     cursor: pointer;
+    background: #ffffff !important;
+    border-radius: 15px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
 }
 
 .mobile-visitor-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
 }
 
 .mobile-visitor-card:active {
@@ -95,8 +204,89 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 }
 
 .mobile-visitor-card.expanded {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
     border-color: #007bff;
+}
+
+.mobile-actions {
+    transition: all 0.4s ease;
+}
+
+.mobile-actions.show {
+    display: block !important;
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth loading indicator */
+#loading-indicator {
+    transition: opacity 0.3s ease;
+}
+
+/* Enhanced AOS animations for mobile */
+@media (max-width: 991.98px) {
+    [data-aos="fade-up"] {
+        transform: translate3d(0, 30px, 0);
+        opacity: 0;
+    }
+
+    [data-aos="fade-up"].aos-animate {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
+}
+
+/* Full screen modals on mobile */
+@media (max-width: 767.98px) {
+    .modal-dialog {
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    .modal-content {
+        height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .modal-body {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 1rem !important;
+    }
+
+    .modal-header {
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .modal-footer {
+        padding: 1rem !important;
+        border-top: 1px solid var(--bs-border-color) !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Ensure modal backdrop doesn't interfere */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0) !important;
+    }
 }
 
 .mobile-actions {
@@ -183,7 +373,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 <!--begin::Mobile UI (visible on mobile only)-->
 <div class="d-lg-none">
     <!-- Fixed Search Bar -->
-    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
+    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2">
         <div class="container-fluid">
             <div class="mb-2">
                 <h1 class="text-dark fw-bold ms-2">Visitors</h1>
@@ -261,7 +451,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
             <?php try { ?>
             <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
                 <div class="card mobile-visitor-card" data-visitor-id="<?= esc($visitor['id']) ?>"
-                    onclick="toggleMobileActions(this)">
+                    onclick="toggleMobileActions(this)" style="background: #ffffff; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05);">
                     <div class="card-body p-4">
                         <!-- Header with ID and Status -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -895,7 +1085,8 @@ var VisitorsIndex = function() {
             data: {
                 page: currentPage + 1,
                 search: search,
-                ajax: 1
+                ajax: 1,
+                limit: 10 // Ensure consistent limit for mobile
             },
             success: function(response) {
                 if (response.visitors && response.visitors.length > 0) {
@@ -922,6 +1113,151 @@ var VisitorsIndex = function() {
                 }
             }
         });
+    };
+
+    // Append visitors to mobile list
+    var appendVisitors = function(visitors) {
+        const container = document.getElementById('mobile-cards-container');
+        const sentinel = document.getElementById('scroll-sentinel');
+
+        if (!container || !sentinel) {
+            return;
+        }
+
+        visitors.forEach((visitor, index) => {
+            const card = createVisitorCard(visitor);
+            container.insertBefore(card, sentinel);
+        });
+
+        // Refresh AOS animations
+        if (typeof AOS !== 'undefined') {
+            AOS.refresh();
+        }
+    };
+
+    // Create visitor card for mobile view
+    var createVisitorCard = function(visitor) {
+        const card = document.createElement('div');
+        card.className = 'col-12';
+        card.setAttribute('data-aos', 'fade-up');
+        card.setAttribute('data-aos-delay', '100');
+
+        // Determine status color styling to match PHP version
+        let statusBadge = '';
+        if (visitor.status_name && visitor.status_color) {
+            // Convert hex to light background with 0.15 opacity to match PHP
+            const hex = visitor.status_color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const lightBg = `rgba(${r}, ${g}, ${b}, 0.15)`;
+            statusBadge =
+                `<span style="background: ${lightBg}; color: ${visitor.status_color}; font-weight: 600; padding: 4px 12px; border-radius: 5px; font-size: 11px;">${visitor.status_name.toUpperCase()}</span>`;
+        } else {
+            statusBadge = '';
+        }
+
+        // Determine image URL (match desktop logic)
+        let imageUrl = '';
+        if (visitor.image) {
+            imageUrl = `${window.location.origin}/assets/media/users/${visitor.image}`;
+        } else {
+            imageUrl =
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(visitor.full_name || '')}&background=f4f4f4&color=9ba1b6&font-size=0.5`;
+        }
+
+        card.innerHTML = `
+            <div class="card mobile-visitor-card" data-visitor-id="${visitor.id}" onclick="toggleMobileActions(this)" style="background: #ffffff; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05);">
+                <div class="card-body p-4">
+                    <!-- Header with ID and Status -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <small style="color: #a0a0a0; font-size: 12px; font-weight: 500;">
+                                ${visitor.islander_no || 'N/A'}
+                            </small>
+                        </div>
+                        <div>
+                            ${statusBadge}
+                        </div>
+                    </div>
+
+                    <!-- Name Section -->
+                    <div class="row mb-4">
+                        <div class="col-3 mt-2 text-start">
+                            <img src="${imageUrl}" class="ms-2 rounded" width="80" height="80" style="max-width: 80px; max-height: 80px; object-fit: cover;">
+                        </div>
+                        <div class="col-9 mt-2 text-start">
+                            <strong class="text-black text-uppercase text-truncate">
+                                ${visitor.full_name || 'N/A'}
+                            </strong>
+                            <br><small class=""><i class="ki-duotone ki-badge"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>&nbsp;${visitor.islander_no || 'N/A'}</small>
+                            <br><small class=""><i class="ki-duotone ki-setting-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>&nbsp;${visitor.department_name || 'N/A'}</small>
+                            <br><small class=""><i class="ki-duotone ki-more-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>&nbsp;${visitor.position_name || 'N/A'}</small>
+                            <br><small class=""><i class="ki-duotone ki-shield"><span class="path1"></span><span class="path2"></span></i>&nbsp;Visitor / ${visitor.type_description || 'Visitor'}</small>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="d-flex justify-content-between align-items-center" style="border-top: 1px solid #f0f0f0; padding-top: 15px;">
+                        <small style="color: #999; font-size: 12px; font-weight: 500;">
+                            ${visitor.created_by_name || 'System Administrator'}
+                        </small>
+                        <small style="color: #999; font-size: 12px; font-weight: 500;">
+                            ${visitor.created_at ? new Date(visitor.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}) : ''}
+                        </small>
+                    </div>
+
+                    <!-- Action Buttons (Hidden by default) -->
+                    <div class="mobile-actions mt-3 pt-3 border-top d-none">
+                        <div class="row g-1">
+                            <div class="col-3">
+                                <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-visitor-btn" data-visitor-id="${visitor.id}">
+                                    <i class="ki-duotone ki-eye fs-1 me-1">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    <span class="d-none d-sm-inline">View</span>
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-visitor-btn" data-visitor-id="${visitor.id}">
+                                    <i class="ki-duotone ki-pencil fs-1 me-1">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <span class="d-none d-sm-inline">Edit</span>
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-light-success btn-sm w-100 d-flex align-items-center justify-content-center enrol-islander-btn" data-visitor-id="${visitor.id}" title="Enrol as Islander">
+                                    <i class="ki-duotone ki-user-tick fs-1 me-1">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    <span class="d-none d-sm-inline">Enrol</span>
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-visitor-btn" data-visitor-id="${visitor.id}">
+                                    <i class="ki-duotone ki-trash fs-1 me-1">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                        <span class="path5"></span>
+                                    </i>
+                                    <span class="d-none d-sm-inline">Delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        return card;
     };
 
     // Handle search
