@@ -1047,6 +1047,14 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
 </div>
 
 <script>
+// Debug Dashboard Modal Flags
+console.log('=== DASHBOARD DEBUG ===');
+console.log('show_agreement_modal:', <?= json_encode($show_agreement_modal ?? false) ?>);
+console.log('show_notification_prompt:', <?= json_encode($show_notification_prompt ?? false) ?>);
+console.log('User device_token:', <?= json_encode($user->device_token ?? 'undefined') ?>);
+console.log('User has_accepted_agreement:', <?= json_encode($user->has_accepted_agreement ?? 'undefined') ?>);
+console.log('======================');
+
 // Notification Permission Handler
 <?php if ($show_notification_prompt ?? false): ?>
 console.log('Show notification prompt:', <?= json_encode($show_notification_prompt ?? false) ?>);
@@ -1059,22 +1067,41 @@ console.log('Is Capacitor:', isCapacitor);
 
 // Function to show notification modal
 function showNotificationModal() {
-    console.log('Attempting to show notification modal...');
+    console.log('=== showNotificationModal called ===');
     var modalElement = document.getElementById('notificationPermissionModal');
+    console.log('Modal element found:', modalElement !== null);
+    
     if (modalElement) {
-        var notificationModal = new bootstrap.Modal(modalElement);
-        notificationModal.show();
-        console.log('Notification permission modal shown');
+        try {
+            console.log('Creating Bootstrap modal instance...');
+            var notificationModal = new bootstrap.Modal(modalElement);
+            console.log('Modal instance created, showing...');
+            notificationModal.show();
+            console.log('Notification permission modal shown successfully');
+        } catch (error) {
+            console.error('Error showing notification modal:', error);
+        }
+    } else {
+        console.error('Modal element notificationPermissionModal not found!');
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOMContentLoaded fired ===');
+    
     // Check if agreement modal is also being shown
     const showAgreementModal = <?= json_encode($show_agreement_modal ?? false) ?>;
+    console.log('showAgreementModal in DOMContentLoaded:', showAgreementModal);
     
     if (!showAgreementModal) {
+        console.log('No agreement modal, scheduling notification modal...');
         // No agreement modal, show notification modal after delay as usual
-        setTimeout(showNotificationModal, 1000); // 1 second delay
+        setTimeout(() => {
+            console.log('Timeout fired, calling showNotificationModal...');
+            showNotificationModal();
+        }, 1000); // 1 second delay
+    } else {
+        console.log('Agreement modal is showing, notification modal will wait...');
     }
     // If agreement modal is shown, the notification modal will be triggered after agreement acceptance
     // (handled in the agreement acceptance success callback above)

@@ -25,14 +25,24 @@ class Dashboard extends BaseController
             return redirect()->to('/change-password');
         }
         
+        // Debug logging
+        $showAgreementModal = $user->has_accepted_agreement == 1; // 1 = need to show, 0 = no need to show
+        $showNotificationPrompt = empty($user->device_token);
+        
+        log_message('debug', 'Dashboard Debug - User ID: ' . $user->id . 
+                    ', has_accepted_agreement: ' . ($user->has_accepted_agreement ?? 'null') . 
+                    ', device_token: ' . ($user->device_token ? 'has_token' : 'null_or_empty') .
+                    ', show_agreement_modal: ' . ($showAgreementModal ? 'true' : 'false') .
+                    ', show_notification_prompt: ' . ($showNotificationPrompt ? 'true' : 'false'));
+
         $data = [
             'title' => 'Dashboard',
             'user' => $user,
             'session_id' => session()->session_id,
             'session_data' => session()->get(),
             'session_expiry_days' => config('Session')->expiration / (24 * 60 * 60), // Convert seconds to days
-            'show_agreement_modal' => $user->has_accepted_agreement == 1, // Show modal if agreement has been accepted
-            'show_notification_prompt' => empty($user->device_token) // Show notification prompt if no device token
+            'show_agreement_modal' => $showAgreementModal, // Show modal if agreement NEEDS to be shown (1)
+            'show_notification_prompt' => $showNotificationPrompt // Show notification prompt if no device token
         ];
 
         return view('dashboard/index', $data);
