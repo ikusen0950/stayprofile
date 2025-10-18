@@ -948,3 +948,246 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
     }
 }
 </style>
+
+<!-- Notification Permission Modal -->
+<?php if ($show_notification_prompt ?? false): ?>
+<div class="modal fade" id="notificationPermissionModal" tabindex="-1" aria-labelledby="notificationPermissionLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white d-flex align-items-center" id="notificationPermissionLabel">
+                    <i class="ki-duotone ki-notification-bing fs-2x me-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <span>Enable Push Notifications</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-5">
+                    <i class="ki-duotone ki-notification-on fs-5x text-primary mb-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h4 class="fw-bold mb-3">Stay Updated!</h4>
+                    <p class="text-gray-700 mb-4">
+                        Enable push notifications to receive instant updates about:
+                    </p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2">
+                            <i class="ki-duotone ki-check-circle fs-2 text-success me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            New requests and assignments
+                        </li>
+                        <li class="mb-2">
+                            <i class="ki-duotone ki-check-circle fs-2 text-success me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            Status updates and approvals
+                        </li>
+                        <li class="mb-2">
+                            <i class="ki-duotone ki-check-circle fs-2 text-success me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            Important system announcements
+                        </li>
+                        <li class="mb-2">
+                            <i class="ki-duotone ki-check-circle fs-2 text-success me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            Team messages and reminders
+                        </li>
+                    </ul>
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="ki-duotone ki-information-5 fs-2x text-info me-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <div class="text-start">
+                            <small>You can change this setting anytime in your browser or profile settings.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-light" id="skipNotificationBtn">
+                    <i class="ki-duotone ki-cross fs-2 me-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    Maybe Later
+                </button>
+                <button type="button" class="btn btn-primary" id="enableNotificationBtn">
+                    <i class="ki-duotone ki-notification-on fs-2 me-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    Enable Notifications
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Notification Permission Handler
+<?php if ($show_notification_prompt ?? false): ?>
+console.log('Show notification prompt:', <?= json_encode($show_notification_prompt ?? false) ?>);
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if browser supports notifications
+    if (!('Notification' in window)) {
+        console.log('This browser does not support notifications');
+        return;
+    }
+
+    // Check if service workers are supported (for web push)
+    if (!('serviceWorker' in navigator)) {
+        console.log('Service workers not supported');
+        return;
+    }
+
+    // Show the modal after a short delay (to let page load)
+    setTimeout(function() {
+        var modalElement = document.getElementById('notificationPermissionModal');
+        if (modalElement) {
+            var notificationModal = new bootstrap.Modal(modalElement);
+            notificationModal.show();
+            console.log('Notification permission modal shown');
+        }
+    }, 1000); // 1 second delay
+
+    // Handle "Enable Notifications" button
+    document.getElementById('enableNotificationBtn').addEventListener('click', async function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Requesting...';
+
+        try {
+            // Request notification permission
+            const permission = await Notification.requestPermission();
+            
+            if (permission === 'granted') {
+                console.log('Notification permission granted');
+                
+                // Register service worker and get token
+                await registerPushNotification(btn);
+            } else if (permission === 'denied') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Permission Denied',
+                    text: 'You have denied notification permissions. You can enable them later in your browser settings.',
+                    confirmButtonText: 'OK'
+                });
+                closeNotificationModal();
+            } else {
+                // Permission dismissed
+                closeNotificationModal();
+            }
+        } catch (error) {
+            console.error('Error requesting notification permission:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to request notification permission. Please try again.',
+                confirmButtonText: 'OK'
+            });
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+        }
+    });
+
+    // Handle "Maybe Later" button
+    document.getElementById('skipNotificationBtn').addEventListener('click', function() {
+        closeNotificationModal();
+        Swal.fire({
+            icon: 'info',
+            title: 'Skipped',
+            text: 'You can enable notifications anytime from your profile settings.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    });
+
+    async function registerPushNotification(btn) {
+        try {
+            // For web push, we need to register a service worker
+            // Note: This is a simplified version. For full web push implementation,
+            // you'll need Firebase config and service worker file
+            
+            // For now, we'll just save a web token identifier
+            const webToken = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Send token to backend
+            const response = await fetch('<?= base_url('api/device/register-token') ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '<?= csrf_token() ?>'
+                },
+                body: JSON.stringify({
+                    device_token: webToken,
+                    platform: 'web',
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                closeNotificationModal();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Enabled!',
+                    text: 'Push notifications have been enabled successfully.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
+                // Reload page to update the prompt status
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                throw new Error(data.message || 'Failed to register token');
+            }
+        } catch (error) {
+            console.error('Error registering push notification:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Registration Failed',
+                text: error.message || 'Failed to register for notifications. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+        }
+    }
+
+    function closeNotificationModal() {
+        var modalElement = document.getElementById('notificationPermissionModal');
+        if (modalElement) {
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+        }
+    }
+});
+<?php endif; ?>
+</script>
+<?php endif; ?>

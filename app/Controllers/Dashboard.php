@@ -31,7 +31,8 @@ class Dashboard extends BaseController
             'session_id' => session()->session_id,
             'session_data' => session()->get(),
             'session_expiry_days' => config('Session')->expiration / (24 * 60 * 60), // Convert seconds to days
-            'show_agreement_modal' => $user->has_accepted_agreement == 1 // Show modal if agreement has been accepted
+            'show_agreement_modal' => $user->has_accepted_agreement == 1, // Show modal if agreement has been accepted
+            'show_notification_prompt' => empty($user->device_token) // Show notification prompt if no device token
         ];
 
         return view('dashboard/index', $data);
