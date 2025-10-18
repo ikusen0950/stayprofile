@@ -1085,6 +1085,32 @@ console.log('User device_token:', <?= json_encode($user->device_token ?? 'undefi
 console.log('User has_accepted_agreement:', <?= json_encode($user->has_accepted_agreement ?? 'undefined') ?>);
 console.log('======================');
 
+// Test button functionality on load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Dashboard loaded - checking button functionality...');
+    
+    const registerBtn = document.getElementById('registerTokenBtn');
+    if (registerBtn) {
+        console.log('✅ Register Token button found');
+        
+        // Test click handler
+        registerBtn.addEventListener('click', function(e) {
+            console.log('🖱️ Register Token button clicked!');
+        });
+        
+    } else {
+        console.error('❌ Register Token button NOT found!');
+    }
+    
+    // Environment check
+    const isCapacitor = typeof window.Capacitor !== 'undefined';
+    console.log('📱 Environment:');
+    console.log('- Capacitor available:', isCapacitor);
+    console.log('- Platform:', isCapacitor ? window.Capacitor.getPlatform() : 'web');
+    console.log('- PushNotifications available:', !!(isCapacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications));
+    console.log('- SweetAlert available:', typeof Swal !== 'undefined');
+});
+
 // Simple notification system - FCM logic is now in header.php like working app
 console.log('Show notification prompt flag:', <?= json_encode($show_notification_prompt ?? false) ?>);
 
@@ -1095,112 +1121,194 @@ console.log('Platform detected:', platform);
 console.log('Is Capacitor:', isCapacitor);
 console.log('FCM registration handled automatically in header.php (like working CI4 app)');
 
-// Register FCM Token Button Function
+// Register FCM Token Button Function - iOS Compatible
 async function registerFCMToken() {
+    console.log('=== registerFCMToken called ===');
+    
     const btn = document.getElementById('registerTokenBtn');
+    if (!btn) {
+        console.error('Register token button not found!');
+        return;
+    }
+    
     const originalHTML = btn.innerHTML;
+    
+    // Check environment first
+    const isCapacitor = typeof window.Capacitor !== 'undefined';
+    const hasPlugins = isCapacitor && window.Capacitor.Plugins;
+    const hasPushNotifications = hasPlugins && window.Capacitor.Plugins.PushNotifications;
+    
+    console.log('Environment check:');
+    console.log('- isCapacitor:', isCapacitor);
+    console.log('- hasPlugins:', hasPlugins);
+    console.log('- hasPushNotifications:', hasPushNotifications);
+    console.log('- Platform:', isCapacitor ? window.Capacitor.getPlatform() : 'web');
     
     try {
         // Show loading state
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
         
-        if (isCapacitor) {
+        // Show immediate feedback to user
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Processing...',
+                text: 'Setting up FCM token registration',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        } else {
+            alert('Processing FCM token registration...');
+        }
+        
+        if (isCapacitor && hasPushNotifications) {
             // Mobile app - trigger FCM registration
             console.log('Capacitor app detected - triggering FCM registration...');
             
-            if (window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
-                const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+            const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+            
+            // Request permissions first
+            console.log('Requesting push notification permissions...');
+            const permission = await PushNotifications.requestPermissions();
+            console.log('Permission result:', permission);
+            
+            if (permission.receive === 'granted' || permission.receive === 'prompt') {
+                // Set up listener for token BEFORE registering
+                console.log('Setting up registration listener...');
                 
-                // Request permissions
-                const permission = await PushNotifications.requestPermissions();
-                console.log('Permission result:', permission);
-                
-                if (permission.receive === 'granted') {
-                    // Set up listener for token
-                    const listener = PushNotifications.addListener('registration', async (token) => {
-                        console.log('Received FCM token:', token.value);
-                        
-                        try {
-                            // Save token to backend
-                            const response = await fetch('<?= base_url('api/save-token') ?>', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    token: token.value
-                                })
-                            });
-                            
-                            const result = await response.json();
-                            console.log('Token save result:', result);
-                            
-                            if (response.ok && result.status === 'success') {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: 'FCM token registered successfully!',
-                                    toast: true,
-                                    position: 'top-end',
-                                    showConfirmButton: false,
-                                    timer: 3000
-                                });
-                                
-                                // Update button to show success
-                                btn.innerHTML = '<i class="ki-duotone ki-check fs-2 text-white"><span class="path1"></span><span class="path2"></span></i><span class="d-none d-sm-inline ms-2">Token Registered</span>';
-                                btn.classList.remove('btn-success');
-                                btn.classList.add('btn-light-success');
-                                
-                                setTimeout(() => location.reload(), 2000);
-                            } else {
-                                throw new Error(result.message || 'Failed to save token');
-                            }
-                        } catch (error) {
-                            console.error('Error saving token:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to save token: ' + error.message
-                            });
-                        } finally {
-                            listener.remove();
-                        }
-                    });
+                const tokenPromise = new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Token registration timeout (10s)'));
+                    }, 10000);
                     
-                    // Register for notifications
-                    await PushNotifications.register();
+                    const listener = PushNotifications.addListener('registration', async (token) => {
+                        console.log('✅ Received FCM token:', token.value);
+                        clearTimeout(timeout);
+                        listener.remove();
+                        resolve(token.value);
+                    });
+                });
+                
+                // Also set up error listener
+                const errorListener = PushNotifications.addListener('registrationError', (error) => {
+                    console.error('❌ FCM registration error:', error);
+                    errorListener.remove();
+                });
+                
+                // Register for notifications
+                console.log('Calling PushNotifications.register()...');
+                await PushNotifications.register();
+                
+                // Wait for token
+                const fcmToken = await tokenPromise;
+                console.log('Got token, saving to server:', fcmToken);
+                
+                // Save token to backend
+                const response = await fetch('<?= base_url('api/save-token') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        token: fcmToken,
+                        device_type: 'ios'
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Token save result:', result);
+                
+                if (response.ok && result.status === 'success') {
+                    const message = 'FCM token registered successfully!';
+                    console.log('✅ Success:', message);
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: message,
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        alert(message);
+                    }
+                    
+                    // Update button to show success
+                    btn.innerHTML = '<i class="ki-duotone ki-check fs-2 text-white"><span class="path1"></span><span class="path2"></span></i><span class="ms-2">Token Registered</span>';
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-light-success');
+                    
+                    // Refresh page after delay
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
                     
                 } else {
-                    throw new Error('Push notification permission not granted');
+                    throw new Error(result.message || 'Failed to save token to server');
                 }
+                
             } else {
-                throw new Error('PushNotifications plugin not available');
+                throw new Error('Push notification permission denied. Please enable in Settings > Notifications.');
             }
+            
+        } else if (isCapacitor) {
+            // Capacitor but no PushNotifications plugin
+            const message = 'PushNotifications plugin not available. Please check Capacitor configuration.';
+            console.error('❌', message);
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Plugin Missing',
+                    html: message + '<br><br>Check capacitor.config.ts and ensure @capacitor/push-notifications is installed.',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                alert(message);
+            }
+            
         } else {
-            // Web browser - show info
-            Swal.fire({
-                icon: 'info',
-                title: 'Web Browser',
-                text: 'FCM token registration is primarily for mobile apps. Use the notification permission modal for web browsers.',
-                confirmButtonText: 'OK'
-            });
+            // Web browser
+            const message = 'This feature is for mobile apps. For web notifications, use browser settings.';
+            console.log('ℹ️', message);
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Web Browser',
+                    text: message,
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                alert(message);
+            }
         }
         
     } catch (error) {
-        console.error('Token registration error:', error);
+        console.error('❌ Token registration error:', error);
         
-        Swal.fire({
-            icon: 'error',
-            title: 'Registration Failed',
-            text: error.message || 'Failed to register FCM token. Please try again.',
-            confirmButtonText: 'OK'
-        });
+        const errorMessage = error.message || 'Failed to register FCM token. Please try again.';
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Registration Failed',
+                html: errorMessage + '<br><br>Check console for details.',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            alert('Error: ' + errorMessage);
+        }
         
     } finally {
         // Restore button state
         btn.disabled = false;
         btn.innerHTML = originalHTML;
+        console.log('=== registerFCMToken completed ===');
     }
 }
 

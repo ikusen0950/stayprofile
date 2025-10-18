@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS FCM Button Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .debug-panel {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .test-button {
+            margin: 10px;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="bi bi-bug"></i> iOS FCM Button Debug Test</h1>
+                <p class="text-muted">This page helps debug FCM token registration issues on iOS devices.</p>
+                
+                <!-- Environment Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5>Environment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="debug-panel">
+                            <div><strong>User Agent:</strong> <span id="userAgent"></span></div>
+                            <div><strong>Platform:</strong> <span id="platform"></span></div>
+                            <div><strong>Capacitor Available:</strong> <span id="capacitorAvailable"></span></div>
+                            <div><strong>Capacitor Platform:</strong> <span id="capacitorPlatform"></span></div>
+                            <div><strong>PushNotifications Plugin:</strong> <span id="pushNotificationsAvailable"></span></div>
+                            <div><strong>SweetAlert Available:</strong> <span id="sweetAlertAvailable"></span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Test Buttons -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Test Buttons</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <button type="button" class="btn btn-success test-button" onclick="testBasicAlert()">
+                            Test Basic Alert
+                        </button>
+                        
+                        <button type="button" class="btn btn-warning test-button" onclick="testSweetAlert()">
+                            Test SweetAlert
+                        </button>
+                        
+                        <button type="button" class="btn btn-info test-button" onclick="testCapacitorDetection()">
+                            Test Capacitor Detection
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger test-button" onclick="testPushNotificationsPlugin()">
+                            Test PushNotifications Plugin
+                        </button>
+                        
+                        <button type="button" class="btn btn-primary test-button" onclick="testFullFCMFlow()">
+                            Test Full FCM Flow
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Console Log -->
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>Console Log</h5>
+                        <button class="btn btn-sm btn-outline-light float-end" onclick="clearLog()">Clear</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleLog" class="debug-panel" style="height: 300px; overflow-y: auto; background: #000; color: #00ff00;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Custom console log to display on page
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToLog(message, type = 'log') {
+            const logElement = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff0000' : type === 'warn' ? '#ffff00' : '#00ff00';
+            logElement.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToLog(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToLog('ERROR: ' + args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToLog('WARN: ' + args.join(' '), 'warn');
+        };
+        
+        function clearLog() {
+            document.getElementById('consoleLog').innerHTML = '';
+        }
+        
+        // Load environment info
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== iOS FCM Debug Test Started ===');
+            
+            // Basic environment info
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('platform').textContent = navigator.platform;
+            
+            // Capacitor info
+            const isCapacitor = typeof window.Capacitor !== 'undefined';
+            document.getElementById('capacitorAvailable').textContent = isCapacitor ? 'YES' : 'NO';
+            document.getElementById('capacitorPlatform').textContent = isCapacitor ? window.Capacitor.getPlatform() : 'N/A';
+            
+            // Plugins info
+            const hasPushNotifications = isCapacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+            document.getElementById('pushNotificationsAvailable').textContent = hasPushNotifications ? 'YES' : 'NO';
+            
+            // SweetAlert info
+            document.getElementById('sweetAlertAvailable').textContent = typeof Swal !== 'undefined' ? 'YES' : 'NO';
+            
+            console.log('Environment loaded successfully');
+        });
+        
+        // Test functions
+        function testBasicAlert() {
+            console.log('Testing basic alert...');
+            alert('Basic alert works! ✅');
+        }
+        
+        function testSweetAlert() {
+            console.log('Testing SweetAlert...');
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'SweetAlert Works!',
+                    text: 'SweetAlert is functioning properly ✅'
+                });
+            } else {
+                alert('SweetAlert not available ❌');
+            }
+        }
+        
+        function testCapacitorDetection() {
+            console.log('Testing Capacitor detection...');
+            
+            const isCapacitor = typeof window.Capacitor !== 'undefined';
+            const platform = isCapacitor ? window.Capacitor.getPlatform() : 'web';
+            
+            const message = `Capacitor: ${isCapacitor ? 'Available' : 'Not Available'}\\nPlatform: ${platform}`;
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: isCapacitor ? 'success' : 'info',
+                    title: 'Capacitor Detection',
+                    text: message
+                });
+            } else {
+                alert(message);
+            }
+        }
+        
+        async function testPushNotificationsPlugin() {
+            console.log('Testing PushNotifications plugin...');
+            
+            try {
+                const isCapacitor = typeof window.Capacitor !== 'undefined';
+                
+                if (!isCapacitor) {
+                    throw new Error('Capacitor not available');
+                }
+                
+                if (!window.Capacitor.Plugins) {
+                    throw new Error('Capacitor.Plugins not available');
+                }
+                
+                if (!window.Capacitor.Plugins.PushNotifications) {
+                    throw new Error('PushNotifications plugin not available');
+                }
+                
+                const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+                console.log('PushNotifications plugin found, testing permissions...');
+                
+                const permission = await PushNotifications.requestPermissions();
+                console.log('Permission result:', permission);
+                
+                const message = `PushNotifications plugin works!\\nPermission: ${permission.receive}`;
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Plugin Test Success',
+                        text: message
+                    });
+                } else {
+                    alert(message);
+                }
+                
+            } catch (error) {
+                console.error('Plugin test failed:', error);
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Plugin Test Failed',
+                        text: error.message
+                    });
+                } else {
+                    alert('Plugin test failed: ' + error.message);
+                }
+            }
+        }
+        
+        async function testFullFCMFlow() {
+            console.log('Testing full FCM flow...');
+            
+            try {
+                const isCapacitor = typeof window.Capacitor !== 'undefined';
+                
+                if (!isCapacitor) {
+                    throw new Error('This test is only for Capacitor apps');
+                }
+                
+                const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+                if (!PushNotifications) {
+                    throw new Error('PushNotifications plugin not available');
+                }
+                
+                console.log('Requesting permissions...');
+                const permission = await PushNotifications.requestPermissions();
+                console.log('Permission result:', permission);
+                
+                if (permission.receive !== 'granted') {
+                    throw new Error('Permission not granted: ' + permission.receive);
+                }
+                
+                console.log('Setting up registration listener...');
+                const tokenPromise = new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Token registration timeout'));
+                    }, 10000);
+                    
+                    const listener = PushNotifications.addListener('registration', (token) => {
+                        console.log('Received token:', token.value);
+                        clearTimeout(timeout);
+                        listener.remove();
+                        resolve(token.value);
+                    });
+                });
+                
+                console.log('Registering for push notifications...');
+                await PushNotifications.register();
+                
+                const token = await tokenPromise;
+                console.log('Successfully got FCM token!', token);
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'FCM Flow Success!',
+                        html: `Token received: <br><small>${token}</small>`,
+                        confirmButtonText: 'Great!'
+                    });
+                } else {
+                    alert('FCM Flow Success! Token: ' + token.substring(0, 50) + '...');
+                }
+                
+            } catch (error) {
+                console.error('Full FCM flow failed:', error);
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'FCM Flow Failed',
+                        text: error.message
+                    });
+                } else {
+                    alert('FCM Flow Failed: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
