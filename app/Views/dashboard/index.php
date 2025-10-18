@@ -1338,40 +1338,122 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }, 10000); // 10 second timeout
             }
-            // Add timeout for iOS registration
-            const REGISTRATION_TIMEOUT = 15000; // 15 seconds
-            let registrationTimer = null;
-            let isRegistrationComplete = false;
-            let currentStep = 'initializing';
-            let stepDetails = {};
 
-            // Set up error timeout for iOS
-            registrationTimer = setTimeout(() => {
-                if (!isRegistrationComplete) {
-                    console.error('Registration timeout - no response after', REGISTRATION_TIMEOUT, 'ms');
-                    console.error('Process stuck at step:', currentStep);
-                    console.error('Step details:', stepDetails);
-                    
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-                    
-                    // Collect debug information
-                    const debugInfo = {
-                        platform: platform,
-                        isCapacitor: isCapacitor,
-                        userAgent: navigator.userAgent,
-                        timestamp: new Date().toISOString(),
-                        capacitorVersion: window.Capacitor?.version || 'unknown',
-                        pluginAvailable: !!(window.Capacitor?.Plugins?.PushNotifications),
-                        permissions: 'timeout-during-process',
-                        timeoutAfterSeconds: REGISTRATION_TIMEOUT / 1000,
-                        step: 'timeout-occurred',
-                        currentStep: currentStep,
-                        stepDetails: stepDetails,
-                        stuckAt: `Process timed out while executing: ${currentStep}`
-                    };
-                    
-                    if (platform === 'ios') {
+        } catch (error) {
+            console.error('Capacitor notification error:', error);
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Push Notification Error',
+                text: error.message || 'Failed to enable notifications. Please try again.',
+                confirmButtonText: 'OK'
+            });
+            
+            throw error;
+        }
+    }
+
+    // Web Browser Notification Handler  
+    async function handleWebNotifications(btn) {
+        console.log('Handling web notifications...');
+        
+        // Check if browser supports notifications
+        if (!('Notification' in window)) {
+            throw new Error('This browser does not support notifications');
+        }
+
+        // Request permission
+        const permission = await Notification.requestPermission();
+        console.log('Web notification permission:', permission);
+
+        if (permission === 'granted') {
+            // Generate web token
+            const webToken = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            console.log('Generated web token:', webToken);
+            
+            // Save token to backend
+            await saveTokenToBackend(webToken, 'web', btn);
+        } else if (permission === 'denied') {
+            throw new Error('Notification permission was denied. Please enable it in your browser settings.');
+        } else {
+            // Permission dismissed
+            closeNotificationModal();
+        }
+    }
+
+    // Save token to backend
+    async function saveTokenToBackend(deviceToken, platformType, btn) {
+        try {
+            console.log('Saving token to backend...', { deviceToken: deviceToken.substring(0, 30) + '...', platform: platformType });
+            
+            const response = await fetch('<?= base_url('api/device/register-token') ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '<?= csrf_token() ?>'
+                },
+                body: JSON.stringify({
+                    device_token: deviceToken,
+                    platform: platformType,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                })
+            });
+
+            const data = await response.json();
+            console.log('Backend response:', data);
+
+            if (response.ok && data.success) {
+                closeNotificationModal();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Enabled!',
+                    text: 'Push notifications have been enabled successfully.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
+                // Reload page to update the prompt status
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                // Show the actual error message from backend
+                const errorMsg = data.messages?.error || data.message || 'Failed to register token';
+                console.error('Backend error:', errorMsg);
+                throw new Error(errorMsg);
+            }
+        } catch (error) {
+            console.error('Error saving token to backend:', error);
+            
+            // Show error to user
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to save notification token. Please check console for details.',
+                confirmButtonText: 'OK'
+            });
+            
+            throw error;
+        }
+    }
+
+    function closeNotificationModal() {
+        var modalElement = document.getElementById('notificationPermissionModal');
+        if (modalElement) {
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+        }
+    }
+});
+
+</script>
                         Swal.fire({
                             icon: 'error',
                             title: 'iOS Registration Timeout',
@@ -1624,9 +1706,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error('Capacitor notification error:', error);
-            if (registrationTimer) {
-                clearTimeout(registrationTimer);
-            }
             
             // Enhanced error information for mobile debugging
             const generalErrorInfo = {
