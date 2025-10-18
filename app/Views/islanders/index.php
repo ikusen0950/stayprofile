@@ -55,14 +55,21 @@
             padding-top: calc(30px + var(--status-bar-height));
         }
 
-        /* Fix header positioning with solid white background */
+        /* Fix header positioning with exact matching search bar background */
         #kt_app_header {
             top: var(--status-bar-height) !important;
             position: fixed !important;
             z-index: 1000 !important;
             width: 100% !important;
             background: #ffffff !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Ensure header container also has matching background */
+        #kt_app_header_container {
+            background: transparent !important;
         }
 
         /* Minimal header container padding and remove margin */
