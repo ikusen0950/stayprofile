@@ -1507,8 +1507,6 @@
                         height: auto !important;
                         line-height: 1.2 !important;
                         text-align: left !important;
-                        background: rgba(255, 255, 0, 0.1) !important; /* Temporary debug background */
-                        border: 1px solid red !important; /* Temporary debug border */
                     }
                     
                     /* Ensure h1 container is visible */
@@ -1516,7 +1514,6 @@
                         display: block !important;
                         visibility: visible !important;
                         opacity: 1 !important;
-                        background: rgba(0, 255, 0, 0.1) !important; /* Temporary debug background */
                         min-height: 40px !important;
                     }
                     
