@@ -1485,3 +1485,422 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<div style="background: #ffebee; padding: 10px; border-radius: 4px; border-left: 4px solid #f44336; margin: 10px 0;">
+    <strong>🎯 Process stuck at:</strong> <code>${debugInfo.currentStep}</code><br>
+    <strong>Details:</strong> ${debugInfo.stuckAt}
+</div>
+
+<details style="margin: 10px 0;">
+    <summary style="cursor: pointer; font-weight: bold; color: #1976d2;">� Step Details (Tap to expand)</summary>
+    <div
+        style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 11px;">
+        <pre>${JSON.stringify(debugInfo.stepDetails, null, 2)}</pre>
+    </div>
+</details>
+
+<details style="margin: 10px 0;">
+    <summary style="cursor: pointer; font-weight: bold; color: #1976d2;">🐛 Full Debug Information (Tap to expand)
+    </summary>
+    <div
+        style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 10px; max-height: 200px; overflow-y: auto;">
+        <pre>${JSON.stringify(debugInfo, null, 2)}</pre>
+    </div>
+</details>
+
+${debugInfo.currentStep.includes('permission') ? `
+<div style="background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 10px 0;">
+    <strong>⚠️ Permission Issue:</strong>
+    <ul style="margin: 5px 0;">
+        <li>iOS permission dialog may not be appearing</li>
+        <li>System-level permission restrictions</li>
+        <li>App not properly configured for notifications</li>
+    </ul>
+</div>
+` : debugInfo.currentStep === 'waiting-for-response' ? `
+<div style="background: #ffebee; padding: 15px; border-radius: 4px; border-left: 4px solid #f44336; margin: 10px 0;">
+    <strong>🎯 IDENTIFIED ISSUE: APNS Certificate Missing</strong>
+    <p style="margin: 8px 0;">The process is stuck waiting for Apple's push notification servers to respond. This
+        means:</p>
+    <ul style="margin: 5px 0; color: #d32f2f;">
+        <li><strong>Missing APNS certificates in Firebase Console</strong></li>
+        <li>Bundle ID mismatch between iOS app and Firebase</li>
+        <li>APNS certificate not uploaded to Firebase project</li>
+    </ul>
+    <div style="background: #fff; padding: 10px; margin: 10px 0; border-radius: 4px;">
+        <strong>🔧 Required Fix:</strong>
+        <ol style="margin: 5px 0;">
+            <li>Generate APNS certificate in Apple Developer Portal</li>
+            <li>Upload certificate to Firebase Console → Cloud Messaging</li>
+            <li>Verify Bundle IDs match exactly</li>
+            <li>Test again on real iOS device</li>
+        </ol>
+    </div>
+</div>
+` : debugInfo.currentStep.includes('register') || debugInfo.currentStep.includes('waiting') ? `
+<div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
+    <strong>🍎 APNS Connection Issue:</strong>
+    <ul style="margin: 5px 0;">
+        <li>Missing APNS certificates in Firebase</li>
+        <li>Incorrect Bundle ID configuration</li>
+        <li>Development vs Production certificate mismatch</li>
+        <li>Network connectivity to Apple servers</li>
+    </ul>
+</div>
+` : `
+<div style="background: #e3f2fd; padding: 10px; border-radius: 4px; border-left: 4px solid #2196f3; margin: 10px 0;">
+    <strong>🔧 Setup Issue:</strong>
+    <ul style="margin: 5px 0;">
+        <li>Capacitor plugin configuration</li>
+        <li>Event listener setup problems</li>
+        <li>iOS app entitlements missing</li>
+    </ul>
+</div>
+`}
+</div>
+`,
+width: '95%',
+confirmButtonText: 'Copy Debug Info',
+showCancelButton: true,
+cancelButtonText: 'Close'
+}).then((result) => {
+if (result.isConfirmed) {
+// Copy debug info to clipboard
+const debugText = `iOS Push Notification Debug Info:\n${JSON.stringify(debugInfo, null, 2)}`;
+if (navigator.clipboard) {
+navigator.clipboard.writeText(debugText);
+Swal.fire({
+icon: 'success',
+title: 'Copied!',
+text: 'Debug information copied to clipboard',
+timer: 2000,
+showConfirmButton: false
+});
+}
+}
+});
+} else {
+Swal.fire({
+icon: 'error',
+title: 'Registration Timeout',
+html: `
+<div style="text-align: left;">
+    <p>Push notification registration timed out.</p>
+    <details style="margin: 10px 0;">
+        <summary style="cursor: pointer; font-weight: bold;">Debug Info</summary>
+        <pre style="background: #f5f5f5; padding: 10px; font-size: 12px;">${JSON.stringify(debugInfo, null, 2)}</pre>
+    </details>
+</div>
+`,
+confirmButtonText: 'OK'
+});
+}
+}
+}, REGISTRATION_TIMEOUT);
+
+// Request permission
+console.log('Requesting push notification permission...');
+let permStatus;
+
+try {
+currentStep = 'checking-permissions';
+stepDetails = { action: 'PushNotifications.checkPermissions()' };
+console.log('Step 1: Checking current permissions...');
+
+permStatus = await PushNotifications.checkPermissions();
+
+stepDetails = { ...stepDetails, result: permStatus };
+console.log('Step 1 Complete - Current permission status:', permStatus);
+} catch (permCheckError) {
+stepDetails = { ...stepDetails, error: permCheckError.message || permCheckError };
+console.error('Step 1 Failed - Error checking permissions:', permCheckError);
+clearTimeout(registrationTimer);
+throw new Error(`Permission check failed: ${permCheckError.message || permCheckError}`);
+}
+
+if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+try {
+currentStep = 'requesting-permissions';
+stepDetails = { action: 'PushNotifications.requestPermissions()', currentStatus: permStatus.receive };
+console.log('Step 2: Requesting permissions...');
+
+permStatus = await PushNotifications.requestPermissions();
+
+stepDetails = { ...stepDetails, result: permStatus };
+console.log('Step 2 Complete - Permission after request:', permStatus);
+} catch (permRequestError) {
+stepDetails = { ...stepDetails, error: permRequestError.message || permRequestError };
+console.error('Step 2 Failed - Error requesting permissions:', permRequestError);
+clearTimeout(registrationTimer);
+throw new Error(`Permission request failed: ${permRequestError.message || permRequestError}`);
+}
+} else {
+currentStep = 'permissions-already-set';
+stepDetails = { action: 'skipped', reason: 'permissions already granted or denied', status: permStatus.receive };
+console.log('Step 2 Skipped - No permission request needed, current status:', permStatus.receive);
+}
+
+if (permStatus.receive !== 'granted') {
+clearTimeout(registrationTimer);
+
+// Show detailed permission error
+const permissionInfo = {
+platform: platform,
+permissionStatus: permStatus,
+timestamp: new Date().toISOString(),
+userAgent: navigator.userAgent,
+step: 'permission-denied'
+};
+
+console.log('Step 3 Failed - Permission denied:', permissionInfo);
+
+Swal.fire({
+icon: 'warning',
+title: 'Permission Denied',
+html: `
+<div style="text-align: left;">
+    <p><strong>Push notification permission was denied or unavailable.</strong></p>
+    <p>Current status: <code>${permStatus.receive}</code></p>
+
+    <details style="margin: 15px 0;">
+        <summary style="cursor: pointer; font-weight: bold; color: #ff9800;">📱 Permission Details (Tap to expand)
+        </summary>
+        <div style="background: #fffbf0; padding: 10px; margin: 5px 0; border-radius: 4px;">
+            <pre
+                style="font-family: monospace; font-size: 11px; margin: 0;">${JSON.stringify(permissionInfo, null, 2)}</pre>
+        </div>
+    </details>
+
+    <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+        <strong>To enable notifications:</strong>
+        <ol style="margin: 5px 0;">
+            <li>Go to device Settings</li>
+            <li>Find this app in the app list</li>
+            <li>Tap on Notifications</li>
+            <li>Turn on "Allow Notifications"</li>
+            <li>Return to this app and try again</li>
+        </ol>
+    </div>
+</div>
+`,
+width: '90%',
+confirmButtonText: 'Copy Permission Info',
+showCancelButton: true,
+cancelButtonText: 'Open Settings',
+reverseButtons: true
+}).then((result) => {
+if (result.isConfirmed) {
+if (navigator.clipboard) {
+navigator.clipboard.writeText(JSON.stringify(permissionInfo, null, 2));
+}
+} else if (result.dismiss === Swal.DismissReason.cancel) {
+// Try to open app settings (may not work on all platforms)
+if (window.Capacitor?.Plugins?.App?.openSettings) {
+window.Capacitor.Plugins.App.openSettings();
+}
+}
+});
+
+throw new Error('Push notification permission was denied. Please enable it in your device settings.');
+}
+
+currentStep = 'permissions-verified';
+stepDetails = { status: 'permissions-granted', permissionStatus: permStatus };
+console.log('Step 3 Complete - Permissions granted, proceeding to registration...');
+
+// Listen for registration success (set up before register call)
+currentStep = 'setting-up-success-listener';
+stepDetails = { action: 'PushNotifications.addListener(registration)' };
+console.log('Step 4a: Setting up registration success listener...');
+
+// Registration listener already set up above - using existing listener
+console.log('Step 4a Complete - Registration success listener set up');
+
+// Listen for registration error (set up before register call)
+currentStep = 'setting-up-error-listener';
+stepDetails = { action: 'PushNotifications.addListener(registrationError)' };
+console.log('Step 4b: Setting up registration error listener...');
+
+// Error listener already set up above - using existing listener
+console.log('Step 4b Complete - Registration error listener set up');
+
+// Register for push notifications
+currentStep = 'calling-register';
+stepDetails = { action: 'PushNotifications.register()' };
+console.log('Step 5: Registration already called above, listeners are active...');
+
+// For iOS, show additional info
+if (platform === 'ios') {
+console.log('iOS registration initiated - waiting for APNS response...');
+btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting to Apple...';
+}
+
+} catch (error) {
+console.error('Capacitor notification error:', error);
+
+// Enhanced error information for mobile debugging
+const generalErrorInfo = {
+platform: platform,
+error: error.message || error.toString(),
+errorType: error.constructor.name,
+stack: error.stack,
+timestamp: new Date().toISOString(),
+capacitorVersion: window.Capacitor?.version || 'unknown',
+pluginAvailable: !!(window.Capacitor?.Plugins?.PushNotifications),
+userAgent: navigator.userAgent
+};
+
+console.log('Complete error context:', generalErrorInfo);
+
+// Show detailed error popup for mobile
+Swal.fire({
+icon: 'error',
+title: 'Push Notification Error',
+html: `
+<div style="text-align: left;">
+    <p><strong>An error occurred while setting up push notifications.</strong></p>
+    <p>Error: ${error.message || 'Unknown error'}</p>
+
+    <details style="margin: 15px 0;">
+        <summary style="cursor: pointer; font-weight: bold; color: #d32f2f;">🛠️ Full Error Details (Tap to expand)
+        </summary>
+        <div
+            style="background: #ffebee; padding: 10px; margin: 5px 0; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+            <pre
+                style="font-family: monospace; font-size: 10px; margin: 0; white-space: pre-wrap;">${JSON.stringify(generalErrorInfo, null, 2)}</pre>
+        </div>
+    </details>
+
+    <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin: 10px 0;">
+        <strong>💡 Troubleshooting:</strong>
+        <ul style="margin: 5px 0;">
+            <li>Check your internet connection</li>
+            <li>Try closing and reopening the app</li>
+            <li>Restart your device</li>
+            <li>Contact support with error details</li>
+        </ul>
+    </div>
+</div>
+`,
+width: '95%',
+confirmButtonText: 'Copy All Details',
+showCancelButton: true,
+cancelButtonText: 'Close'
+}).then((result) => {
+if (result.isConfirmed) {
+const fullErrorText = `Push Notification Complete Error Report:\n${JSON.stringify(generalErrorInfo, null, 2)}`;
+if (navigator.clipboard) {
+navigator.clipboard.writeText(fullErrorText);
+Swal.fire({
+icon: 'success',
+title: 'Copied!',
+text: 'Complete error details copied. Please share with technical support.',
+timer: 3000,
+showConfirmButton: false
+});
+}
+}
+});
+
+throw error;
+}
+}
+
+// Web Browser Notification Handler
+async function handleWebNotifications(btn) {
+console.log('Handling web notifications...');
+
+// Check if browser supports notifications
+if (!('Notification' in window)) {
+throw new Error('This browser does not support notifications');
+}
+
+// Request permission
+const permission = await Notification.requestPermission();
+console.log('Web notification permission:', permission);
+
+if (permission === 'granted') {
+// Generate web token
+const webToken = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+console.log('Generated web token:', webToken);
+
+// Save token to backend
+await saveTokenToBackend(webToken, 'web', btn);
+} else if (permission === 'denied') {
+throw new Error('Notification permission was denied. Please enable it in your browser settings.');
+} else {
+// Permission dismissed
+closeNotificationModal();
+}
+}
+
+// Save token to backend
+async function saveTokenToBackend(deviceToken, platformType, btn) {
+try {
+console.log('Saving token to backend...', { deviceToken: deviceToken.substring(0, 30) + '...', platform: platformType
+});
+
+const response = await fetch('<?= base_url('api/device/register-token') ?>', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Requested-With': 'XMLHttpRequest',
+'X-CSRF-TOKEN': '<?= csrf_token() ?>'
+},
+body: JSON.stringify({
+device_token: deviceToken,
+platform: platformType,
+'<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+})
+});
+
+const data = await response.json();
+console.log('Backend response:', data);
+
+if (response.ok && data.success) {
+closeNotificationModal();
+Swal.fire({
+icon: 'success',
+title: 'Enabled!',
+text: 'Push notifications have been enabled successfully.',
+toast: true,
+position: 'top-end',
+showConfirmButton: false,
+timer: 3000,
+timerProgressBar: true
+});
+
+// Reload page to update the prompt status
+setTimeout(() => location.reload(), 2000);
+} else {
+// Show the actual error message from backend
+const errorMsg = data.messages?.error || data.message || 'Failed to register token';
+console.error('Backend error:', errorMsg);
+throw new Error(errorMsg);
+}
+} catch (error) {
+console.error('Error saving token to backend:', error);
+
+// Show error to user
+Swal.fire({
+icon: 'error',
+title: 'Error',
+text: error.message || 'Failed to save notification token. Please check console for details.',
+confirmButtonText: 'OK'
+});
+
+throw error;
+}
+}
+
+function closeNotificationModal() {
+var modalElement = document.getElementById('notificationPermissionModal');
+if (modalElement) {
+var modal = bootstrap.Modal.getInstance(modalElement);
+if (modal) {
+modal.hide();
+}
+}
+}
+});
+
+</script>
