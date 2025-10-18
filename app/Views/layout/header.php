@@ -37,213 +37,164 @@
 
     <!-- Mobile Status Bar Handling for Capacitor Apps -->
     <style>
-        /* Mobile status bar safe area handling */
-        :root {
-            --status-bar-height: env(safe-area-inset-top, 0px);
-            --status-bar-bg: #ffffff; /* Default white background */
+    /* Mobile status bar safe area handling */
+    :root {
+        --status-bar-height: env(safe-area-inset-top, 0px);
+        --status-bar-bg: #ffffff;
+        /* Default white background */
+    }
+
+    /* Mobile app body adjustments - always apply padding for mobile screens */
+    @media (max-width: 768px) {
+        body {
+            padding-top: var(--status-bar-height) !important;
         }
 
-        /* Mobile app body adjustments - always apply padding for mobile screens */
-        @media (max-width: 768px) {
-            body {
-                padding-top: var(--status-bar-height) !important;
-            }
-            
-            /* Very minimal space - main content very close to header */
-            #kt_app_page {
-                padding-top: calc(30px + var(--status-bar-height));
-            }
-            
-            /* Fix header positioning with matching search bar background */
-            #kt_app_header {
-                top: var(--status-bar-height) !important;
-                position: fixed !important;
-                z-index: 1000 !important;
-                width: 100% !important;
-                background: #ffffff !important;
-                backdrop-filter: blur(10px) !important;
-                -webkit-backdrop-filter: blur(10px) !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-                height: 30px !important;
-            }
-            
-            /* Minimal header container padding and remove margin */
-            #kt_app_header_container {
-                margin-top: 0 !important;
-                padding-top: 0.25rem;
-                padding-bottom: 0.25rem;
-            }
-            
-            /* Force remove any Bootstrap margin classes */
-            #kt_app_header_container.mt-7 {
-                margin-top: 0 !important;
-            }
-            
-            /* Ensure wrapper doesn't overlap and remove any default spacing */
-            #kt_app_wrapper {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-            }
-            
-            /* Remove any default spacing from main content area */
-            .app-main {
-                padding-top: 0 !important;
-                margin-top: 0 !important;
-            }
-            
-            /* Target common CodeIgniter/Bootstrap spacing classes */
-            .container, .container-fluid {
-                padding-top: 0 !important;
-            }
-            
-            /* Remove any toolbar or breadcrumb spacing */
-            .app-toolbar, .toolbar {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-            }
-            
-            /* Target any content wrapper */
-            .content, .main-content {
-                padding-top: 0 !important;
-                margin-top: 0 !important;
-            }
-            
-            /* Fixed mobile search bar positioning - globally applied */
-            .mobile-search-bar {
-                position: fixed !important;
-                top: calc(var(--status-bar-height) + 30px) !important;
-                left: 0 !important;
-                right: 0 !important;
-                z-index: 999 !important;
-                background: #ffffff !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-                backdrop-filter: blur(10px) !important;
-                -webkit-backdrop-filter: blur(10px) !important;
-                margin: 0 !important;
-                padding-top: 1rem !important;
-                border-top: none !important;
-            }
-            
-            /* Override any inline styles on mobile search bar - more specific selector */
-            .d-lg-none .mobile-search-bar,
-            .mobile-search-bar[style*="top"],
-            div.mobile-search-bar {
-                top: calc(var(--status-bar-height) + 30px) !important;
-            }
-            
-            /* Remove header border to eliminate any visual gap */
-            #kt_app_header {
-                border-bottom: none !important;
-            }
-            
-            /* Adjust main content to account for both header and search bar */
-            #kt_app_page {
-                padding-top: calc(110px + var(--status-bar-height)) !important;
-            }
-            
-            /* Adjust mobile content container */
-            .d-lg-none .container-fluid {
-                padding-top: 0 !important;
-            }
+        /* Very minimal space - main content very close to header */
+        #kt_app_page {
+            padding-top: calc(30px + var(--status-bar-height));
         }
 
-        /* Status bar background overlay */
+        /* Fix header positioning with exact matching prototype background */
+        #kt_app_header {
+            top: var(--status-bar-height) !important;
+            position: fixed !important;
+            z-index: 1000 !important;
+            width: 100% !important;
+            background: #f4f4f4 !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Ensure header container also has matching background */
+        #kt_app_header_container {
+            background: transparent !important;
+        }
+
+        /* Minimal header container padding and remove margin */
+        #kt_app_header_container {
+            margin-top: 0 !important;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
+        /* Force remove any Bootstrap margin classes */
+        #kt_app_header_container.mt-7 {
+            margin-top: 0 !important;
+        }
+
+        /* Ensure wrapper doesn't overlap and remove any default spacing */
+        #kt_app_wrapper {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Remove any default spacing from main content area */
+        .app-main {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        /* Target common CodeIgniter/Bootstrap spacing classes */
+        .container,
+        .container-fluid {
+            padding-top: 0 !important;
+        }
+
+        /* Remove any toolbar or breadcrumb spacing */
+        .app-toolbar,
+        .toolbar {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Target any content wrapper */
+        .content,
+        .main-content {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+    }
+
+    /* Status bar background overlay */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--status-bar-height);
+        background-color: var(--status-bar-bg);
+        z-index: 10001;
+        display: none;
+    }
+
+    /* Show status bar background on mobile */
+    @media (max-width: 768px) {
         body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--status-bar-height);
-            background-color: var(--status-bar-bg);
-            z-index: 10001;
-            display: none;
+            display: block;
         }
+    }
 
-        /* Show status bar background on mobile */
-        @media (max-width: 768px) {
-            body::before {
-                display: block;
-            }
-        }
+    /* Mobile app specific adjustments */
+    .mobile-app,
+    .capacitor-app {
+        /* Additional mobile app styles if needed */
+    }
 
-        /* Mobile app specific adjustments */
-        .mobile-app, .capacitor-app {
-            /* Additional mobile app styles if needed */
-        }
-
-        /* Handle landscape orientation */
-        @media (orientation: landscape) and (max-height: 500px) {
-            body::before {
-                height: calc(var(--status-bar-height) * 0.8);
-            }
-            
-            body {
-                padding-top: calc(var(--status-bar-height) * 0.8) !important;
-            }
-            
-            #kt_app_header {
-                top: calc(var(--status-bar-height) * 0.8) !important;
-            }
-            
-            /* Adjust search bar for landscape */
-            .mobile-search-bar,
-            .mobile-search-bar[style*="top"],
-            div.mobile-search-bar {
-                top: calc(var(--status-bar-height) * 0.8 + 25px) !important;
-            }
-            
-            /* Adjust content padding for landscape with search bar */
-            #kt_app_page {
-                padding-top: calc(95px + var(--status-bar-height) * 0.8) !important;
-            }
-            
-            /* Extra small header container padding in landscape */
-            #kt_app_header_container {
-                padding-top: 0.15rem;
-                padding-bottom: 0.15rem;
-            }
-        }
-
-        /* Theme support - solid white backgrounds for different themes */
-        [data-bs-theme="dark"] {
-            --status-bar-bg: #1e1e2d;
-        }
-
-        [data-bs-theme="light"] {
-            --status-bar-bg: #ffffff;
-        }
-
-        /* Solid white header background for all themes on mobile */
-        @media (max-width: 768px) {
-            [data-bs-theme="dark"] #kt_app_header {
-                background: #ffffff !important;
-                border-bottom: none !important;
-            }
-            
-            [data-bs-theme="light"] #kt_app_header {
-                background: #ffffff !important;
-                border-bottom: none !important;
-            }
-            
-            /* Search bar theme support */
-            [data-bs-theme="dark"] .mobile-search-bar {
-                background: #ffffff !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-                border-top: none !important;
-            }
-            
-            [data-bs-theme="light"] .mobile-search-bar {
-                background: #ffffff !important;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-                border-top: none !important;
-            }
-        }
-
-        /* Status bar background should still be solid */
+    /* Handle landscape orientation */
+    @media (orientation: landscape) and (max-height: 500px) {
         body::before {
-            background-color: var(--status-bar-bg) !important;
+            height: calc(var(--status-bar-height) * 0.8);
         }
+
+        body {
+            padding-top: calc(var(--status-bar-height) * 0.8) !important;
+        }
+
+        #kt_app_header {
+            top: calc(var(--status-bar-height) * 0.8) !important;
+        }
+
+        /* Extra tight content padding in landscape */
+        #kt_app_page {
+            padding-top: calc(25px + var(--status-bar-height) * 0.8);
+        }
+
+        /* Extra small header container padding in landscape */
+        #kt_app_header_container {
+            padding-top: 0.15rem;
+            padding-bottom: 0.15rem;
+        }
+    }
+
+    /* Theme support - solid white backgrounds for different themes */
+    [data-bs-theme="dark"] {
+        --status-bar-bg: #1e1e2d;
+    }
+
+    [data-bs-theme="light"] {
+        --status-bar-bg: #ffffff;
+    }
+
+    /* Solid white header background for all themes on mobile */
+    @media (max-width: 768px) {
+        [data-bs-theme="dark"] #kt_app_header {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        [data-bs-theme="light"] #kt_app_header {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+    }
+
+    /* Status bar background should still be solid */
+    body::before {
+        background-color: var(--status-bar-bg) !important;
+    }
     </style>
 
     <!-- AOS Animation Library -->
@@ -273,13 +224,13 @@
             document.body.classList.add('mobile-app');
             console.log('PWA standalone mode detected');
         }
-        
+
         // Always add mobile class for small screens (this ensures CSS works on all mobile devices)
         if (window.innerWidth <= 768) {
             document.body.classList.add('mobile-screen');
             console.log('Mobile screen size detected');
         }
-        
+
         // Debug: Log safe area values
         const safeAreaTop = getComputedStyle(document.documentElement).getPropertyValue('--status-bar-height');
         console.log('Safe area top:', safeAreaTop);
@@ -343,8 +294,8 @@
                     $currentPath = $currentUri->getPath();
                     $isDashboard = ($currentPath === '/' || $currentPath === '/dashboard');
                     ?>
-                    <div class="d-flex align-items-center d-block d-lg-none ms-n3" 
-                         title="<?= $isDashboard ? 'Show sidebar menu' : 'Go back' ?>">
+                    <div class="d-flex align-items-center d-block d-lg-none ms-n3"
+                        title="<?= $isDashboard ? 'Show sidebar menu' : 'Go back' ?>">
                         <?php if ($isDashboard): ?>
                         <div class="btn btn-icon btn-active-color-primary w-35px h-35px me-2"
                             id="kt_app_sidebar_mobile_toggle">
