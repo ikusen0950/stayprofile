@@ -1474,6 +1474,14 @@
 
                 /* Mobile search bar positioning override for this page */
                 @media (max-width: 768px) {
+                    /* Header background matching search bar */
+                    #kt_app_header {
+                        background: #ffffff !important;
+                        backdrop-filter: blur(10px) !important;
+                        -webkit-backdrop-filter: blur(10px) !important;
+                        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                    }
+                    
                     .mobile-search-bar {
                         position: fixed !important;
                         top: calc(var(--status-bar-height) + 60px) !important;
