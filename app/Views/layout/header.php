@@ -223,6 +223,12 @@
         // ✅ Save device token
         PushNotifications.addListener('registration', async (token) => {
             console.log('[Token] →', token.value);
+            
+            // Store token globally for button access
+            window.currentFCMToken = token.value;
+            localStorage.setItem('fcm_token', token.value);
+            console.log('[Token Stored Globally] →', token.value);
+            
             try {
                 const res = await fetch('https://islanders.finolhu.net/api/save-token', {
                     method: 'POST',
