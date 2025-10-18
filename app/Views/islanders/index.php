@@ -55,13 +55,13 @@
             padding-top: calc(30px + var(--status-bar-height));
         }
 
-        /* Fix header positioning with exact matching search bar background */
+        /* Fix header positioning with exact matching prototype background */
         #kt_app_header {
             top: var(--status-bar-height) !important;
             position: fixed !important;
             z-index: 1000 !important;
             width: 100% !important;
-            background: #ffffff !important;
+            background: #f4f4f4 !important;
             backdrop-filter: blur(10px) !important;
             -webkit-backdrop-filter: blur(10px) !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -1469,14 +1469,14 @@
                     z-index: 100 !important;
                     transition: all 0.3s ease;
                     border-bottom: 1px solid var(--bs-border-color);
-                    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
+                    background: #f4f4f4;
                 }
 
                 /* Mobile search bar positioning override for this page */
                 @media (max-width: 768px) {
-                    /* Header background matching search bar */
+                    /* Header background matching prototype */
                     #kt_app_header {
-                        background: #ffffff !important;
+                        background: #f4f4f4 !important;
                         backdrop-filter: blur(10px) !important;
                         -webkit-backdrop-filter: blur(10px) !important;
                         border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -1488,7 +1488,7 @@
                         left: 0 !important;
                         right: 0 !important;
                         z-index: 999 !important;
-                        background: #ffffff !important;
+                        background: #f4f4f4 !important;
                         border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
                         backdrop-filter: blur(10px) !important;
                         -webkit-backdrop-filter: blur(10px) !important;
