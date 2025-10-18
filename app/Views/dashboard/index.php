@@ -1166,7 +1166,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         timestamp: new Date().toISOString(),
                         capacitorVersion: window.Capacitor?.version || 'unknown',
                         pluginAvailable: !!(window.Capacitor?.Plugins?.PushNotifications),
-                        permissions: 'timeout-before-check'
+                        permissions: 'timeout-during-process',
+                        timeoutAfterSeconds: REGISTRATION_TIMEOUT / 1000,
+                        step: 'timeout-occurred'
                     };
                     
                     if (platform === 'ios') {
@@ -1247,13 +1249,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Request permission
             console.log('Requesting push notification permission...');
-            let permStatus = await PushNotifications.checkPermissions();
-            console.log('Current permission status:', permStatus);
+            let permStatus;
+            
+            try {
+                console.log('Step 1: Checking current permissions...');
+                permStatus = await PushNotifications.checkPermissions();
+                console.log('Step 1 Complete - Current permission status:', permStatus);
+            } catch (permCheckError) {
+                console.error('Step 1 Failed - Error checking permissions:', permCheckError);
+                clearTimeout(registrationTimer);
+                throw new Error(`Permission check failed: ${permCheckError.message || permCheckError}`);
+            }
 
             if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
-                console.log('Requesting permissions...');
-                permStatus = await PushNotifications.requestPermissions();
-                console.log('Permission after request:', permStatus);
+                try {
+                    console.log('Step 2: Requesting permissions...');
+                    permStatus = await PushNotifications.requestPermissions();
+                    console.log('Step 2 Complete - Permission after request:', permStatus);
+                } catch (permRequestError) {
+                    console.error('Step 2 Failed - Error requesting permissions:', permRequestError);
+                    clearTimeout(registrationTimer);
+                    throw new Error(`Permission request failed: ${permRequestError.message || permRequestError}`);
+                }
+            } else {
+                console.log('Step 2 Skipped - No permission request needed, current status:', permStatus.receive);
             }
 
             if (permStatus.receive !== 'granted') {
@@ -1264,8 +1283,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     platform: platform,
                     permissionStatus: permStatus,
                     timestamp: new Date().toISOString(),
-                    userAgent: navigator.userAgent
+                    userAgent: navigator.userAgent,
+                    step: 'permission-denied'
                 };
+                
+                console.log('Step 3 Failed - Permission denied:', permissionInfo);
                 
                 Swal.fire({
                     icon: 'warning',
@@ -1314,18 +1336,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 throw new Error('Push notification permission was denied. Please enable it in your device settings.');
             }
+            
+            console.log('Step 3 Complete - Permissions granted, proceeding to registration...');
 
             // Listen for registration success (set up before register call)
             const registrationListener = await PushNotifications.addListener('registration', async (token) => {
-                console.log('Push registration success, token:', token.value);
+                console.log('Step 5 Complete - Push registration success, token:', token.value);
                 isRegistrationComplete = true;
                 clearTimeout(registrationTimer);
                 
                 try {
+                    console.log('Step 6: Saving token to backend...');
                     // Save token to backend
                     await saveTokenToBackend(token.value, platform, btn);
+                    console.log('Step 6 Complete - Token saved successfully');
                 } catch (error) {
-                    console.error('Error saving token:', error);
+                    console.error('Step 6 Failed - Error saving token:', error);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
                 } finally {
@@ -1336,7 +1362,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Listen for registration error (set up before register call)
             const errorListener = await PushNotifications.addListener('registrationError', (error) => {
-                console.error('Push registration error:', error);
+                console.error('Step 5 Failed - Push registration error:', error);
                 isRegistrationComplete = true;
                 clearTimeout(registrationTimer);
                 errorListener.remove();
@@ -1348,7 +1374,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessage: error.error || 'Unknown error',
                     timestamp: new Date().toISOString(),
                     capacitorVersion: window.Capacitor?.version || 'unknown',
-                    userAgent: navigator.userAgent
+                    userAgent: navigator.userAgent,
+                    step: 'registration-error'
                 };
                 
                 console.log('Detailed error info:', errorInfo);
@@ -1411,8 +1438,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Register for push notifications
-            console.log('Registering for push notifications...');
-            await PushNotifications.register();
+            console.log('Step 4: Setting up event listeners complete, registering for push notifications...');
+            try {
+                await PushNotifications.register();
+                console.log('Step 4 Complete - Registration call made, waiting for response...');
+            } catch (registerError) {
+                console.error('Step 4 Failed - Registration call failed:', registerError);
+                clearTimeout(registrationTimer);
+                throw new Error(`Registration call failed: ${registerError.message || registerError}`);
+            }
             
             // For iOS, show additional info
             if (platform === 'ios') {
