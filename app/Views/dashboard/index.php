@@ -1161,6 +1161,9 @@ async function registerFCMToken() {
             } else if (localStorage.getItem('fcm_token')) {
                 fcmToken = localStorage.getItem('fcm_token');
                 console.log('✅ Found token in localStorage:', fcmToken);
+            } else if (localStorage.getItem('pending_fcm_token')) {
+                fcmToken = localStorage.getItem('pending_fcm_token');
+                console.log('✅ Found pending token (auth failed earlier):', fcmToken);
             } else {
                 console.log('No existing token found, triggering new registration...');
                 
@@ -1249,36 +1252,37 @@ async function registerFCMToken() {
             const result = await response.json();
             console.log('Token save result:', result);
             
-            if (response.ok && result.status === 'success') {
-                const message = 'FCM token registered successfully!';
-                console.log('✅ Success:', message);
-                
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: message,
-                        confirmButtonText: 'OK'
-                    });
+                if (response.ok && result.status === 'success') {
+                    const message = 'FCM token registered successfully!';
+                    console.log('✅ Success:', message);
+                    
+                    // Clear any pending tokens
+                    localStorage.removeItem('pending_fcm_token');
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: message + (result.verified === 'yes' ? ' ✓ Verified in database.' : ''),
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        alert(message);
+                    }
+                    
+                    // Update button to show success
+                    btn.innerHTML = '<i class="ki-duotone ki-check fs-2 text-white"><span class="path1"></span><span class="path2"></span></i><span class="ms-2">Token Registered</span>';
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-light-success');
+                    
+                    // Refresh page after delay
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                    
                 } else {
-                    alert(message);
-                }
-                
-                // Update button to show success
-                btn.innerHTML = '<i class="ki-duotone ki-check fs-2 text-white"><span class="path1"></span><span class="path2"></span></i><span class="ms-2">Token Registered</span>';
-                btn.classList.remove('btn-success');
-                btn.classList.add('btn-light-success');
-                
-                // Refresh page after delay
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-                
-            } else {
-                throw new Error(result.message || 'Failed to save token to server');
-            }
-            
-        } else if (isCapacitor) {
+                    throw new Error(result.message || 'Failed to save token to server');
+                }        } else if (isCapacitor) {
             // Capacitor but no PushNotifications plugin
             const message = 'PushNotifications plugin not available. Please check Capacitor configuration.';
             console.error('❌', message);

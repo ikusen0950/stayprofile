@@ -229,20 +229,48 @@
             localStorage.setItem('fcm_token', token.value);
             console.log('[Token Stored Globally] →', token.value);
             
+            // Wait a moment to ensure user session is ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             try {
-                const res = await fetch('https://islanders.finolhu.net/api/save-token', {
+                console.log('[Token Save] → Attempting to save token to server...');
+                const res = await fetch('<?= base_url('api/save-token') ?>', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify({
-                        token: token.value
+                        token: token.value,
+                        device_type: 'ios'
                     })
                 });
+                
+                console.log('[Token Save] → Response status:', res.status, res.statusText);
+                
+                if (res.status === 401) {
+                    console.log('[Token Save] → User not authenticated, will retry later...');
+                    // Store token for manual registration via button
+                    localStorage.setItem('pending_fcm_token', token.value);
+                    return;
+                }
+                
                 const result = await res.json();
                 console.log('[Token Save Response] →', result);
+                
+                if (result.status === 'success') {
+                    console.log('[Token Save] ✅ Token saved successfully!');
+                    localStorage.removeItem('pending_fcm_token'); // Clear pending token
+                } else {
+                    console.log('[Token Save] ❌ Failed:', result.message);
+                    // Store for later retry
+                    localStorage.setItem('pending_fcm_token', token.value);
+                }
+                
             } catch (error) {
                 console.error('[Token Save Error] →', error);
+                // Store for later retry
+                localStorage.setItem('pending_fcm_token', token.value);
             }
         });
 

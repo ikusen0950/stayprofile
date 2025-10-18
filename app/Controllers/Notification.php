@@ -92,14 +92,43 @@ class Notification extends BaseController
         $token = $data[ 'token' ];
 
         // Save the token to the database
-        $userModel = model( \App\Models\users_model::class );
-        $userModel->update( $user, [ 'device_token' => $token ] );
+        $userModel = model( \App\Models\UserModel::class );
+        
+        // Log before update
+        log_message( 'debug', 'Attempting to update user ' . $user . ' with token: ' . substr($token, 0, 20) . '...' );
+        
+        $updateResult = $userModel->update( $user, [ 'device_token' => $token ] );
+        
+        // Log the update result for debugging
+        log_message( 'debug', 'Token update result: ' . ($updateResult ? 'success' : 'failed') . ' for user ' . $user );
+        
+        // Check if update was successful
+        if (!$updateResult) {
+            // Get validation errors if any
+            $errors = $userModel->errors();
+            log_message( 'error', 'Token update failed. Errors: ' . json_encode($errors) );
+            
+            return $this->response->setJSON( [
+                'status' => 'error',
+                'message' => 'Failed to save token to database',
+                'errors' => $errors,
+                'user_id' => $user
+            ] )->setStatusCode( 500 );
+        }
+        
+        // Verify the token was actually saved by reading it back
+        $updatedUser = $userModel->find($user);
+        $savedToken = $updatedUser ? $updatedUser->device_token : null;
+        
+        log_message( 'debug', 'Verification - saved token: ' . ($savedToken ? substr($savedToken, 0, 20) . '...' : 'null') );
 
         return $this->response->setJSON( [
             'status' => 'success',
             'message' => 'Token saved',
             'user_id' => $user,
-            'token' => $token
+            'token' => substr($token, 0, 20) . '...', // Only show first 20 chars for security
+            'verified' => $savedToken === $token ? 'yes' : 'no',
+            'saved_token_preview' => $savedToken ? substr($savedToken, 0, 20) . '...' : 'null'
         ] );
     }
 

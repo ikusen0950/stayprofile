@@ -53,6 +53,10 @@ $routes->get('api/test-push-simple', 'Notification::testPushSimple'); // Test wi
 $routes->get('button-preview', function() {
     return view('button-preview');
 });
+
+// Debug routes (development only)
+$routes->get('debug/test-token-save', 'Debug::testTokenSave');
+$routes->get('debug/check-user', 'Debug::checkCurrentUser');
 $routes->post('notifications/markAsRead', 'Notification::markAsRead');
 $routes->get('notification/read/(:num)', 'Notification::markAsReadAndRedirect/$1');
 
