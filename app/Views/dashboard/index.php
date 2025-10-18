@@ -1215,6 +1215,25 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 <li>App not properly configured for notifications</li>
                                             </ul>
                                         </div>
+                                    ` : debugInfo.currentStep === 'waiting-for-response' ? `
+                                        <div style="background: #ffebee; padding: 15px; border-radius: 4px; border-left: 4px solid #f44336; margin: 10px 0;">
+                                            <strong>🎯 IDENTIFIED ISSUE: APNS Certificate Missing</strong>
+                                            <p style="margin: 8px 0;">The process is stuck waiting for Apple's push notification servers to respond. This means:</p>
+                                            <ul style="margin: 5px 0; color: #d32f2f;">
+                                                <li><strong>Missing APNS certificates in Firebase Console</strong></li>
+                                                <li>Bundle ID mismatch between iOS app and Firebase</li>
+                                                <li>APNS certificate not uploaded to Firebase project</li>
+                                            </ul>
+                                            <div style="background: #fff; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                                                <strong>🔧 Required Fix:</strong>
+                                                <ol style="margin: 5px 0;">
+                                                    <li>Generate APNS certificate in Apple Developer Portal</li>
+                                                    <li>Upload certificate to Firebase Console → Cloud Messaging</li>
+                                                    <li>Verify Bundle IDs match exactly</li>
+                                                    <li>Test again on real iOS device</li>
+                                                </ol>
+                                            </div>
+                                        </div>
                                     ` : debugInfo.currentStep.includes('register') || debugInfo.currentStep.includes('waiting') ? `
                                         <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
                                             <strong>🍎 APNS Connection Issue:</strong>
