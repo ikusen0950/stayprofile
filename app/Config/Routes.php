@@ -38,6 +38,11 @@ $routes->group('api', function($routes) {
     $routes->post('device/register-token', 'Api\DeviceController::registerToken', ['filter' => 'login']);
     $routes->post('device/remove-token', 'Api\DeviceController::removeToken', ['filter' => 'login']);
     $routes->get('device/token-status', 'Api\DeviceController::tokenStatus', ['filter' => 'login']);
+    
+    // Working FCM routes from other CI4 app
+    $routes->get('api/save-token', 'Notification::saveToken');
+    $routes->post('api/save-token', 'Notification::saveToken');
+    $routes->get('api/test-push', 'Notification::testPush');
 });
 
 // Password change routes

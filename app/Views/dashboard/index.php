@@ -1063,7 +1063,7 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
 </div>
 
 <script>
-// Debug Dashboard Modal Flags
+// Debug Dashboard Modal Flags  
 console.log('=== DASHBOARD DEBUG ===');
 console.log('show_agreement_modal:', <?= json_encode($show_agreement_modal ?? false) ?>);
 console.log('show_notification_prompt:', <?= json_encode($show_notification_prompt ?? false) ?>);
@@ -1071,8 +1071,7 @@ console.log('User device_token:', <?= json_encode($user->device_token ?? 'undefi
 console.log('User has_accepted_agreement:', <?= json_encode($user->has_accepted_agreement ?? 'undefined') ?>);
 console.log('======================');
 
-// Notification Permission Handler
-// Always load notification functions regardless of flag
+// Simple notification system - FCM logic is now in header.php like working app
 console.log('Show notification prompt flag:', <?= json_encode($show_notification_prompt ?? false) ?>);
 
 // Detect if running in Capacitor mobile app
@@ -1080,18 +1079,16 @@ const isCapacitor = window.Capacitor !== undefined;
 const platform = isCapacitor ? window.Capacitor.getPlatform() : 'web';
 console.log('Platform detected:', platform);
 console.log('Is Capacitor:', isCapacitor);
+console.log('FCM registration handled automatically in header.php (like working CI4 app)');
 
-// Function to show notification modal
+// Simple notification modal function (FCM logic is in header.php)
 function showNotificationModal() {
     console.log('=== showNotificationModal called ===');
     var modalElement = document.getElementById('notificationPermissionModal');
-    console.log('Modal element found:', modalElement !== null);
-
+    
     if (modalElement) {
         try {
-            console.log('Creating Bootstrap modal instance...');
             var notificationModal = new bootstrap.Modal(modalElement);
-            console.log('Modal instance created, showing...');
             notificationModal.show();
             console.log('Notification permission modal shown successfully');
         } catch (error) {
@@ -1131,45 +1128,67 @@ document.addEventListener('DOMContentLoaded', function() {
     // If agreement modal is shown, the notification modal will be triggered after agreement acceptance
     // (handled in the agreement acceptance success callback above)
 
-    // Handle "Enable Notifications" button
+    // Handle "Enable Notifications" button - Simple version (FCM logic is in header.php)
     document.getElementById('enableNotificationBtn').addEventListener('click', async function() {
         const btn = this;
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Requesting...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enabling...';
 
         try {
             if (isCapacitor) {
-                // Mobile app (Capacitor) - Use PushNotifications plugin
-                console.log('Starting Capacitor notification flow for platform:', platform);
-                await handleCapacitorNotifications(btn);
+                console.log('Capacitor app: FCM registration handled automatically in header.php');
+                
+                // Just trigger the deviceready event manually to activate the header's FCM system
+                const event = new Event('deviceready');
+                document.dispatchEvent(event);
+                
+                // Show success message
+                closeNotificationModal();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Enabled!',
+                    text: 'Push notifications are being set up automatically.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
+                // Reload page after delay
+                setTimeout(() => location.reload(), 2000);
             } else {
-                // Web browser - Use Notification API
-                console.log('Starting web notification flow');
-                await handleWebNotifications(btn);
+                // Web browser - simple notification request
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    closeNotificationModal();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Enabled!',
+                        text: 'Browser notifications have been enabled.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    throw new Error('Browser notification permission denied');
+                }
             }
         } catch (error) {
             console.error('Error enabling notifications:', error);
-
-            // Show specific error message for iOS vs others
-            let errorTitle = 'Error';
-            let errorText = error.message || 'Failed to enable notifications. Please try again.';
-
-            if (platform === 'ios' && error.message.includes('timeout')) {
-                errorTitle = 'iOS Setup Required';
-                errorText =
-                    'iOS push notifications require additional setup. Please contact your administrator.';
-            }
-
+            
             Swal.fire({
                 icon: 'error',
-                title: errorTitle,
-                text: errorText,
+                title: 'Error',
+                text: error.message || 'Failed to enable notifications. Please try again.',
                 confirmButtonText: 'OK'
             });
 
             btn.disabled = false;
-            btn.innerHTML =
-                '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+            btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
         }
     });
 
@@ -1188,291 +1207,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Capacitor Mobile App Notification Handler - Simplified Working Approach
-    async function handleCapacitorNotifications(btn) {
-        console.log('Using simplified working approach from previous CI4 app...', 'Platform:', platform);
-
-        // Check if PushNotifications is available
-        if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.PushNotifications) {
-            throw new Error(
-                'PushNotifications plugin not available. Please ensure @capacitor/push-notifications is installed.'
-            );
-        }
-
-        const PushNotifications = window.Capacitor.Plugins.PushNotifications;
-
-        try {
-            console.log('Step 1: Request permissions (simplified approach)...');
-
-            // Request permissions directly
-            const permission = await PushNotifications.requestPermissions();
-            console.log('Permission result:', permission);
-
-            if (permission.receive !== 'granted') {
-                btn.disabled = false;
-                btn.innerHTML =
-                    '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Permission Required',
-                    html: `
-                        <div style="text-align: left;">
-                            <p><strong>Push notification permission is required.</strong></p>
-                            <p>Current status: <code>${permission.receive}</code></p>
-                            
-                            <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
-                                <strong>Please enable notifications:</strong>
-                                <ol style="margin: 5px 0;">
-                                    <li>Go to device Settings</li>
-                                    <li>Find this app in the app list</li>
-                                    <li>Tap on Notifications</li>
-                                    <li>Turn on "Allow Notifications"</li>
-                                    <li>Return to this app and try again</li>
-                                </ol>
-                            </div>
-                        </div>
-                    `,
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
-
-            console.log('Step 2: Set up listeners (before registering)...');
-
-            // Set up success listener
-            const registrationListener = PushNotifications.addListener('registration', async (token) => {
-                console.log('[Token Received] →', token.value);
-
-                try {
-                    console.log('Saving token to backend...');
-                    await saveTokenToBackend(token.value, platform, btn);
-                } catch (error) {
-                    console.error('[Token Save Error] →', error);
-                    btn.disabled = false;
-                    btn.innerHTML =
-                        '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Save Failed',
-                        text: 'Failed to save notification token: ' + error.message,
-                        confirmButtonText: 'OK'
-                    });
-                } finally {
-                    registrationListener.remove();
-                }
-            });
-
-            // Set up error listener
-            const errorListener = PushNotifications.addListener('registrationError', (error) => {
-                console.error('[Registration Error] →', error);
-
-                btn.disabled = false;
-                btn.innerHTML =
-                    '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Registration Failed',
-                    html: `
-                        <div style="text-align: left;">
-                            <p><strong>Push notification registration failed.</strong></p>
-                            <p>Error: ${error.error || 'Unknown error'}</p>
-                            
-                            ${platform === 'ios' ? `
-                                <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
-                                    <strong>🍎 iOS - Missing APNS Certificate</strong>
-                                    <p style="margin: 5px 0;">This error typically means:</p>
-                                    <ul style="margin: 5px 0;">
-                                        <li>No APNS certificate uploaded to Firebase Console</li>
-                                        <li>Bundle ID mismatch between app and Firebase</li>
-                                        <li>Certificate expired or invalid</li>
-                                    </ul>
-                                    
-                                    <strong>Quick Fix:</strong>
-                                    <ol style="margin: 5px 0; font-size: 13px;">
-                                        <li>Go to Firebase Console → Project Settings</li>
-                                        <li>Click "Cloud Messaging" tab</li>
-                                        <li>Upload APNS certificate for iOS app</li>
-                                        <li>Ensure Bundle ID matches exactly</li>
-                                    </ol>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `,
-                    confirmButtonText: 'OK'
-                });
-
-                errorListener.remove();
-            });
-
-            console.log('Step 3: Register for push notifications...');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
-
-            // Register (this should trigger one of the listeners above)
-            await PushNotifications.register();
-
-            console.log('Registration call completed, waiting for response...');
-
-            // Set timeout for iOS specifically
-            if (platform === 'ios') {
-                btn.innerHTML =
-                    '<span class="spinner-border spinner-border-sm me-2"></span>Connecting to Apple...';
-
-                setTimeout(() => {
-                    // Check if still waiting after 10 seconds
-                    if (btn.innerHTML.includes('Connecting to Apple')) {
-                        btn.disabled = false;
-                        btn.innerHTML =
-                            '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'iOS Registration Timeout',
-                            html: `
-                                <div style="text-align: left;">
-                                    <p><strong>iOS push notification setup timed out.</strong></p>
-                                    
-                                    <div style="background: #ffebee; padding: 15px; border-radius: 4px; border-left: 4px solid #f44336; margin: 10px 0;">
-                                        <strong>🎯 ROOT CAUSE: Missing APNS Certificate</strong>
-                                        <p style="margin: 8px 0;">Your iOS app cannot connect to Apple's push notification servers because:</p>
-                                        <ul style="margin: 5px 0; color: #d32f2f;">
-                                            <li><strong>No APNS certificate uploaded to Firebase</strong></li>
-                                            <li>Bundle ID mismatch</li>
-                                            <li>Certificate configuration error</li>
-                                        </ul>
-                                    </div>
-                                    
-                                    <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
-                                        <strong>🔧 SOLUTION:</strong>
-                                        <ol style="margin: 5px 0;">
-                                            <li><strong>Generate APNS certificate</strong> in Apple Developer Portal</li>
-                                            <li><strong>Upload to Firebase Console</strong> → Project Settings → Cloud Messaging</li>
-                                            <li><strong>Verify Bundle ID</strong> matches in all locations</li>
-                                            <li><strong>Test again</strong> on real iOS device</li>
-                                        </ol>
-                                    </div>
-                                </div>
-                            `,
-                            confirmButtonText: 'OK'
-                        });
-
-                        // Clean up listeners
-                        registrationListener.remove();
-                        errorListener.remove();
-                    }
-                }, 10000); // 10 second timeout
-            }
-
-        } catch (error) {
-            console.error('Capacitor notification error:', error);
-
-            btn.disabled = false;
-            btn.innerHTML =
-                '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Push Notification Error',
-                text: error.message || 'Failed to enable notifications. Please try again.',
-                confirmButtonText: 'OK'
-            });
-
-            throw error;
-        }
-    }
-
-    // Web Browser Notification Handler  
-    async function handleWebNotifications(btn) {
-        console.log('Handling web notifications...');
-
-        // Check if browser supports notifications
-        if (!('Notification' in window)) {
-            throw new Error('This browser does not support notifications');
-        }
-
-        // Request permission
-        const permission = await Notification.requestPermission();
-        console.log('Web notification permission:', permission);
-
-        if (permission === 'granted') {
-            // Generate web token
-            const webToken = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            console.log('Generated web token:', webToken);
-
-            // Save token to backend
-            await saveTokenToBackend(webToken, 'web', btn);
-        } else if (permission === 'denied') {
-            throw new Error(
-                'Notification permission was denied. Please enable it in your browser settings.');
-        } else {
-            // Permission dismissed
-            closeNotificationModal();
-        }
-    }
-
-    // Save token to backend
-    async function saveTokenToBackend(deviceToken, platformType, btn) {
-        try {
-            console.log('Saving token to backend...', {
-                deviceToken: deviceToken.substring(0, 30) + '...',
-                platform: platformType
-            });
-
-            const response = await fetch('<?= base_url('api/device/register-token') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': '<?= csrf_token() ?>'
-                },
-                body: JSON.stringify({
-                    device_token: deviceToken,
-                    platform: platformType,
-                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                })
-            });
-
-            const data = await response.json();
-            console.log('Backend response:', data);
-
-            if (response.ok && data.success) {
-                closeNotificationModal();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Enabled!',
-                    text: 'Push notifications have been enabled successfully.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-
-                // Reload page to update the prompt status
-                setTimeout(() => location.reload(), 2000);
-            } else {
-                // Show the actual error message from backend
-                const errorMsg = data.messages?.error || data.message || 'Failed to register token';
-                console.error('Backend error:', errorMsg);
-                throw new Error(errorMsg);
-            }
-        } catch (error) {
-            console.error('Error saving token to backend:', error);
-
-            // Show error to user
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message ||
-                    'Failed to save notification token. Please check console for details.',
-                confirmButtonText: 'OK'
-            });
-
-            throw error;
-        }
-    }
+    // Simple close modal function (complex FCM logic moved to header.php)
 
     function closeNotificationModal() {
         var modalElement = document.getElementById('notificationPermissionModal');

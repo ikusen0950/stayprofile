@@ -236,6 +236,101 @@
         console.log('Safe area top:', safeAreaTop);
     });
     </script>
+
+    <!-- Working FCM Script from other CI4 app -->
+    <script>
+    document.addEventListener('deviceready', async () => {
+        const {
+            PushNotifications
+        } = Capacitor.Plugins;
+
+        if (!PushNotifications) {
+            console.warn('PushNotifications plugin not available');
+            return;
+        }
+
+        const permission = await PushNotifications.requestPermissions();
+        if (permission.receive !== 'granted') {
+            console.warn('Push permission not granted');
+            return;
+        }
+
+        await PushNotifications.register();
+
+        // ✅ Save device token
+        PushNotifications.addListener('registration', async (token) => {
+            console.log('[Token] →', token.value);
+            try {
+                const res = await fetch('<?= base_url('api/save-token') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: token.value
+                    })
+                });
+                const result = await res.json();
+                console.log('[Token Save Response] →', result);
+            } catch (error) {
+                console.error('[Token Save Error] →', error);
+            }
+        });
+
+        // ✅ Foreground push notification
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('[Foreground Push Received] →', notification);
+        });
+
+        // ✅ Handle background/killed notification tap
+        PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+            const data = notification.notification.data;
+            console.log('[Notification Tap] →', data);
+
+            // ✅ Handle deep link or internal routing
+            if (data && data.url) {
+                // Optional: Use Capacitor App plugin for better navigation control
+                if (Capacitor.Plugins.App) {
+                    Capacitor.Plugins.App.getLaunchUrl().then((launchUrl) => {
+                        console.log('[Launch URL] →', launchUrl);
+                    });
+                }
+
+                // Navigate to URL inside app (external or internal)
+                window.location.href = data.url;
+            }
+        });
+
+        // ✅ Handle registration errors
+        PushNotifications.addListener('registrationError', (error) => {
+            console.error('[Registration Error] →', error);
+        });
+    });
+    </script>
+
+    <!-- Deep Link Handler -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.Capacitor && window.Capacitor.Plugins?.App) {
+            window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
+                try {
+                    const url = new URL(event.url);
+                    const path = url.pathname;
+                    console.log('App opened with URL path:', path);
+
+                    if (path) {
+                        // Navigate to that path within the app
+                        window.location.href = path;
+                    }
+                } catch (e) {
+                    console.error('Deep link handling failed:', e);
+                }
+            });
+        } else {
+            console.warn('Capacitor App plugin not available.');
+        }
+    });
+    </script>
 </head>
 <!--end::Head-->
 
