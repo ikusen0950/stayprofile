@@ -33,6 +33,11 @@ $routes->group('api', function($routes) {
     $routes->get('sections-by-department', 'Api::sectionsByDepartment');
     $routes->get('positions-by-status', 'Api::positionsByStatus');
     $routes->post('check-islander-number', 'VisitorsController::checkIslanderNumber');
+    
+    // Device token management for push notifications
+    $routes->post('device/register-token', 'Api\DeviceController::registerToken', ['filter' => 'login']);
+    $routes->post('device/remove-token', 'Api\DeviceController::removeToken', ['filter' => 'login']);
+    $routes->get('device/token-status', 'Api\DeviceController::tokenStatus', ['filter' => 'login']);
 });
 
 // Password change routes
@@ -55,6 +60,20 @@ $routes->group('status', ['filter' => 'login'], function($routes) {
     $routes->get('module/(:num)', 'StatusController::getByModule/$1');
     $routes->get('api', 'StatusController::api');
     $routes->get('modules', 'StatusController::getModules');
+});
+
+// Notifications CRUD routes
+$routes->group('notifications', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'NotificationsController::index');
+    $routes->get('create', 'NotificationsController::create');
+    $routes->post('store', 'NotificationsController::store');
+    $routes->get('show/(:num)', 'NotificationsController::show/$1');
+    $routes->get('(:num)', 'NotificationsController::show/$1');
+    $routes->get('(:num)/edit', 'NotificationsController::edit/$1');
+    $routes->post('(:num)/update', 'NotificationsController::update/$1');
+    $routes->post('update/(:num)', 'NotificationsController::update/$1');
+    $routes->post('(:num)/delete', 'NotificationsController::delete/$1');
+    $routes->post('delete/(:num)', 'NotificationsController::delete/$1');
 });
 
 // Authorization Rules CRUD routes
