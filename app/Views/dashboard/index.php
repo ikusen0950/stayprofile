@@ -1043,20 +1043,14 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
 <?php if ($show_notification_prompt ?? false): ?>
 console.log('Show notification prompt:', <?= json_encode($show_notification_prompt ?? false) ?>);
 
+// Detect if running in Capacitor mobile app
+const isCapacitor = window.Capacitor !== undefined;
+const platform = isCapacitor ? window.Capacitor.getPlatform() : 'web';
+console.log('Platform detected:', platform);
+console.log('Is Capacitor:', isCapacitor);
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if browser supports notifications
-    if (!('Notification' in window)) {
-        console.log('This browser does not support notifications');
-        return;
-    }
-
-    // Check if service workers are supported (for web push)
-    if (!('serviceWorker' in navigator)) {
-        console.log('Service workers not supported');
-        return;
-    }
-
-    // Show the modal after a short delay (to let page load)
+    // Show modal after delay for both web and mobile
     setTimeout(function() {
         var modalElement = document.getElementById('notificationPermissionModal');
         if (modalElement) {
@@ -1073,32 +1067,19 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Requesting...';
 
         try {
-            // Request notification permission
-            const permission = await Notification.requestPermission();
-            
-            if (permission === 'granted') {
-                console.log('Notification permission granted');
-                
-                // Register service worker and get token
-                await registerPushNotification(btn);
-            } else if (permission === 'denied') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Permission Denied',
-                    text: 'You have denied notification permissions. You can enable them later in your browser settings.',
-                    confirmButtonText: 'OK'
-                });
-                closeNotificationModal();
+            if (isCapacitor) {
+                // Mobile app (Capacitor) - Use PushNotifications plugin
+                await handleCapacitorNotifications(btn);
             } else {
-                // Permission dismissed
-                closeNotificationModal();
+                // Web browser - Use Notification API
+                await handleWebNotifications(btn);
             }
         } catch (error) {
-            console.error('Error requesting notification permission:', error);
+            console.error('Error enabling notifications:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to request notification permission. Please try again.',
+                text: error.message || 'Failed to enable notifications. Please try again.',
                 confirmButtonText: 'OK'
             });
             btn.disabled = false;
@@ -1121,16 +1102,102 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    async function registerPushNotification(btn) {
+    // Capacitor Mobile App Notification Handler
+    async function handleCapacitorNotifications(btn) {
+        console.log('Handling Capacitor notifications...');
+        
+        // Check if PushNotifications is available
+        if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.PushNotifications) {
+            throw new Error('PushNotifications plugin not available. Please ensure @capacitor/push-notifications is installed.');
+        }
+
+        const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+
         try {
-            // For web push, we need to register a service worker
-            // Note: This is a simplified version. For full web push implementation,
-            // you'll need Firebase config and service worker file
-            
-            // For now, we'll just save a web token identifier
+            // Request permission
+            console.log('Requesting push notification permission...');
+            let permStatus = await PushNotifications.checkPermissions();
+            console.log('Current permission status:', permStatus);
+
+            if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+                permStatus = await PushNotifications.requestPermissions();
+                console.log('Permission after request:', permStatus);
+            }
+
+            if (permStatus.receive !== 'granted') {
+                throw new Error('Push notification permission was denied. Please enable it in your device settings.');
+            }
+
+            // Register for push notifications
+            console.log('Registering for push notifications...');
+            await PushNotifications.register();
+
+            // Listen for registration success (one-time listener)
+            const registrationListener = await PushNotifications.addListener('registration', async (token) => {
+                console.log('Push registration success, token:', token.value);
+                
+                // Save token to backend
+                await saveTokenToBackend(token.value, platform, btn);
+                
+                // Remove the listener after successful registration
+                registrationListener.remove();
+            });
+
+            // Listen for registration error (one-time listener)
+            const errorListener = await PushNotifications.addListener('registrationError', (error) => {
+                console.error('Push registration error:', error);
+                errorListener.remove();
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: 'Failed to register for push notifications: ' + (error.error || 'Unknown error'),
+                    confirmButtonText: 'OK'
+                });
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+            });
+
+        } catch (error) {
+            console.error('Capacitor notification error:', error);
+            throw error;
+        }
+    }
+
+    // Web Browser Notification Handler
+    async function handleWebNotifications(btn) {
+        console.log('Handling web notifications...');
+        
+        // Check if browser supports notifications
+        if (!('Notification' in window)) {
+            throw new Error('This browser does not support notifications');
+        }
+
+        // Request permission
+        const permission = await Notification.requestPermission();
+        console.log('Web notification permission:', permission);
+
+        if (permission === 'granted') {
+            // Generate web token
             const webToken = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            console.log('Generated web token:', webToken);
             
-            // Send token to backend
+            // Save token to backend
+            await saveTokenToBackend(webToken, 'web', btn);
+        } else if (permission === 'denied') {
+            throw new Error('Notification permission was denied. Please enable it in your browser settings.');
+        } else {
+            // Permission dismissed
+            closeNotificationModal();
+        }
+    }
+
+    // Save token to backend
+    async function saveTokenToBackend(deviceToken, platformType, btn) {
+        try {
+            console.log('Saving token to backend...', { deviceToken: deviceToken.substring(0, 30) + '...', platform: platformType });
+            
             const response = await fetch('<?= base_url('api/device/register-token') ?>', {
                 method: 'POST',
                 headers: {
@@ -1139,13 +1206,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': '<?= csrf_token() ?>'
                 },
                 body: JSON.stringify({
-                    device_token: webToken,
-                    platform: 'web',
+                    device_token: deviceToken,
+                    platform: platformType,
                     '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
                 })
             });
 
             const data = await response.json();
+            console.log('Backend response:', data);
 
             if (data.success) {
                 closeNotificationModal();
@@ -1166,15 +1234,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.message || 'Failed to register token');
             }
         } catch (error) {
-            console.error('Error registering push notification:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Registration Failed',
-                text: error.message || 'Failed to register for notifications. Please try again later.',
-                confirmButtonText: 'OK'
-            });
-            btn.disabled = false;
-            btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+            console.error('Error saving token to backend:', error);
+            throw new Error('Failed to save notification token: ' + error.message);
         }
     }
 
