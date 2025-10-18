@@ -77,6 +77,14 @@
 
                     <!--begin::Actions-->
                     <div class="d-flex align-self-center flex-center flex-shrink-0">
+                        <!-- Register Token Button -->
+                        <button type="button" class="btn btn-sm btn-success d-flex flex-center ms-3 px-4 py-3" 
+                                id="registerTokenBtn" onclick="registerFCMToken()">
+                            <i class="ki-duotone ki-notification-bing fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <span class="d-none d-sm-inline ms-2">Register Token</span>
+                            <span class="d-sm-none">Token</span>
+                        </button>
+
                         <a href="#" class="btn btn-sm btn-secondary d-flex flex-center ms-3 px-4 py-3"
                             data-bs-toggle="modal" data-bs-target="#kt_modal_invite_friends">
                             <i class="ki-duotone ki-plus-square fs-2 text-gray-500"><span class="path1"></span><span
@@ -1080,6 +1088,115 @@ const platform = isCapacitor ? window.Capacitor.getPlatform() : 'web';
 console.log('Platform detected:', platform);
 console.log('Is Capacitor:', isCapacitor);
 console.log('FCM registration handled automatically in header.php (like working CI4 app)');
+
+// Register FCM Token Button Function
+async function registerFCMToken() {
+    const btn = document.getElementById('registerTokenBtn');
+    const originalHTML = btn.innerHTML;
+    
+    try {
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
+        
+        if (isCapacitor) {
+            // Mobile app - trigger FCM registration
+            console.log('Capacitor app detected - triggering FCM registration...');
+            
+            if (window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+                const PushNotifications = window.Capacitor.Plugins.PushNotifications;
+                
+                // Request permissions
+                const permission = await PushNotifications.requestPermissions();
+                console.log('Permission result:', permission);
+                
+                if (permission.receive === 'granted') {
+                    // Set up listener for token
+                    const listener = PushNotifications.addListener('registration', async (token) => {
+                        console.log('Received FCM token:', token.value);
+                        
+                        try {
+                            // Save token to backend
+                            const response = await fetch('<?= base_url('api/save-token') ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    token: token.value
+                                })
+                            });
+                            
+                            const result = await response.json();
+                            console.log('Token save result:', result);
+                            
+                            if (response.ok && result.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: 'FCM token registered successfully!',
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+                                
+                                // Update button to show success
+                                btn.innerHTML = '<i class="ki-duotone ki-check fs-2 text-white"><span class="path1"></span><span class="path2"></span></i><span class="d-none d-sm-inline ms-2">Token Registered</span>';
+                                btn.classList.remove('btn-success');
+                                btn.classList.add('btn-light-success');
+                                
+                                setTimeout(() => location.reload(), 2000);
+                            } else {
+                                throw new Error(result.message || 'Failed to save token');
+                            }
+                        } catch (error) {
+                            console.error('Error saving token:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to save token: ' + error.message
+                            });
+                        } finally {
+                            listener.remove();
+                        }
+                    });
+                    
+                    // Register for notifications
+                    await PushNotifications.register();
+                    
+                } else {
+                    throw new Error('Push notification permission not granted');
+                }
+            } else {
+                throw new Error('PushNotifications plugin not available');
+            }
+        } else {
+            // Web browser - show info
+            Swal.fire({
+                icon: 'info',
+                title: 'Web Browser',
+                text: 'FCM token registration is primarily for mobile apps. Use the notification permission modal for web browsers.',
+                confirmButtonText: 'OK'
+            });
+        }
+        
+    } catch (error) {
+        console.error('Token registration error:', error);
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: error.message || 'Failed to register FCM token. Please try again.',
+            confirmButtonText: 'OK'
+        });
+        
+    } finally {
+        // Restore button state
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
 
 // Simple notification modal function (FCM logic is in header.php)
 function showNotificationModal() {

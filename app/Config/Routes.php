@@ -48,6 +48,11 @@ $routes->get('api/save-token', 'Notification::saveToken');
 $routes->post('api/save-token', 'Notification::saveToken');
 $routes->get('api/test-push', 'Notification::testPush');
 $routes->get('api/test-push-simple', 'Notification::testPushSimple'); // Test without auth
+
+// Button preview route
+$routes->get('button-preview', function() {
+    return view('button-preview');
+});
 $routes->post('notifications/markAsRead', 'Notification::markAsRead');
 $routes->get('notification/read/(:num)', 'Notification::markAsReadAndRedirect/$1');
 
