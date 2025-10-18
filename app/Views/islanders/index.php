@@ -1480,7 +1480,7 @@
                         margin: 0 !important;
                         padding-top: 1rem !important;
                         border-top: none !important;
-                        min-height: 100px !important;
+                        min-height: 120px !important;
                     }
                     
                     /* Override any inline styles on mobile search bar */
@@ -1490,19 +1490,47 @@
                         top: calc(var(--status-bar-height) + 30px) !important;
                     }
                     
-                    /* Ensure h1 title is visible */
-                    .mobile-search-bar h1 {
+                    /* Ensure h1 title is visible - stronger selectors */
+                    .mobile-search-bar h1,
+                    .mobile-search-bar .text-dark,
+                    .mobile-search-bar .fw-bold,
+                    .d-lg-none .mobile-search-bar h1 {
                         color: #1e1e2d !important;
                         font-size: 1.5rem !important;
                         font-weight: 700 !important;
                         margin-bottom: 0.5rem !important;
+                        margin-top: 0 !important;
+                        padding: 8px 0 !important;
                         display: block !important;
                         visibility: visible !important;
+                        opacity: 1 !important;
+                        height: auto !important;
+                        line-height: 1.2 !important;
+                        text-align: left !important;
+                        background: rgba(255, 255, 0, 0.1) !important; /* Temporary debug background */
+                        border: 1px solid red !important; /* Temporary debug border */
+                    }
+                    
+                    /* Ensure h1 container is visible */
+                    .mobile-search-bar .mb-2 {
+                        display: block !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                        background: rgba(0, 255, 0, 0.1) !important; /* Temporary debug background */
+                        min-height: 40px !important;
+                    }
+                    
+                    /* Ensure container is properly sized for h1 */
+                    .mobile-search-bar .container-fluid,
+                    .mobile-search-bar .mb-2 {
+                        overflow: visible !important;
+                        height: auto !important;
+                        min-height: auto !important;
                     }
                     
                     /* Adjust main content to account for search bar height */
                     #kt_app_page {
-                        padding-top: calc(130px + var(--status-bar-height)) !important;
+                        padding-top: calc(140px + var(--status-bar-height)) !important;
                     }
                 }
 
