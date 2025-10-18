@@ -104,30 +104,58 @@ class Notification extends BaseController
     }
 
     public function testPush()
- {
-        helper( 'fcm' );
+    {
+        helper('fcm');
 
-        $deviceToken = user()->device_token ?? null;
+        $userObj = user();
+        $deviceToken = $userObj ? $userObj->device_token : null;
 
-        if ( !$deviceToken ) {
-            return $this->response->setJSON( [
+        if (!$deviceToken) {
+            return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Device token not found for user.'
-            ] );
+            ]);
         }
 
         // This should be the internal or external deep link you want to open
-        // $url = 'https://demo-islander.finolhu.net/authorizations';
         $url = 'authorizations';
 
+        // Use your existing FCM helper function with correct parameters
         $result = send_fcm_push(
-            $deviceToken,
-            'Islanders App 🚀',
-            'Click to view authorizations',
-            $url // passed as click_action
+            $deviceToken,                    // token
+            'Islanders App 🚀',            // title
+            'Test push notification from API', // body
+            $url,                           // click_action
+            $userObj->id,                   // user_id
+            null                            // notification_id (will be auto-generated)
         );
 
-        return $this->response->setJSON( $result );
+        return $this->response->setJSON($result);
+    }
+
+    public function testPushSimple()
+    {
+        helper('fcm');
+
+        // Test with a dummy token (replace with actual token for real testing)
+        $testToken = 'dummy_token_for_testing';
+        
+        // Test the FCM helper function
+        $result = send_fcm_push(
+            $testToken,                        // token
+            'Test Notification 🚀',          // title
+            'This is a test from the API',   // body
+            'authorizations',                // click_action
+            999,                             // user_id (dummy)
+            null                             // notification_id
+        );
+
+        return $this->response->setJSON([
+            'message' => 'FCM test completed',
+            'fcm_result' => $result,
+            'kreait_firebase_installed' => class_exists('Kreait\\Firebase\\Factory'),
+            'service_account_exists' => file_exists(APPPATH . 'Config/firebase_service_account.json')
+        ]);
     }
 
 }

@@ -47,6 +47,7 @@ $routes->get('api/test', 'TestController::test');
 $routes->get('api/save-token', 'Notification::saveToken');
 $routes->post('api/save-token', 'Notification::saveToken');
 $routes->get('api/test-push', 'Notification::testPush');
+$routes->get('api/test-push-simple', 'Notification::testPushSimple'); // Test without auth
 $routes->post('notifications/markAsRead', 'Notification::markAsRead');
 $routes->get('notification/read/(:num)', 'Notification::markAsReadAndRedirect/$1');
 
