@@ -7,21 +7,21 @@
                     -webkit-backdrop-filter: blur(20px);
                     z-index: 100 !important;
                     transition: all 0.3s ease;
-                    border-bottom: 1px solid var(--bs-border-color);
-                    background: #f4f4f4;
+                    border-bottom: none;
+                    background: #ffffff;
                 }
 
                 /* Mobile search bar positioning override for this page */
                 @media (max-width: 768px) {
-                    /* Header background matching prototype - multiple selectors for stronger override */
+                    /* Header background - white with no border */
                     #kt_app_header,
                     div#kt_app_header,
                     .app-header#kt_app_header {
-                        background: #f4f4f4 !important;
-                        background-color: #f4f4f4 !important;
+                        background: #ffffff !important;
+                        background-color: #ffffff !important;
                         backdrop-filter: blur(10px) !important;
                         -webkit-backdrop-filter: blur(10px) !important;
-                        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                        border-bottom: none !important;
                     }
                     
                     /* Ensure header container elements also match */
@@ -35,8 +35,8 @@
                         left: 0 !important;
                         right: 0 !important;
                         z-index: 999 !important;
-                        background: #f4f4f4 !important;
-                        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                        background: #ffffff !important;
+                        border-bottom: none !important;
                         backdrop-filter: blur(10px) !important;
                         -webkit-backdrop-filter: blur(10px) !important;
                         margin: 0 !important;
@@ -106,7 +106,7 @@
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    background: #f4f4f4 !important;
+                    background: #ffffff !important;
                     z-index: -1;
                 }
                 
@@ -115,8 +115,9 @@
                     body[data-kt-app-header-fixed="true"] #kt_app_header,
                     body[data-kt-app-header-fixed-mobile="true"] #kt_app_header,
                     .app-header[data-kt-sticky="true"] {
-                        background: #f4f4f4 !important;
-                        background-color: #f4f4f4 !important;
+                        background: #ffffff !important;
+                        background-color: #ffffff !important;
+                        border-bottom: none !important;
                     }
                 }
 
