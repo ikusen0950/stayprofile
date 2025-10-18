@@ -1215,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             console.log('Backend response:', data);
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 closeNotificationModal();
                 Swal.fire({
                     icon: 'success',
@@ -1231,11 +1231,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reload page to update the prompt status
                 setTimeout(() => location.reload(), 2000);
             } else {
-                throw new Error(data.message || 'Failed to register token');
+                // Show the actual error message from backend
+                const errorMsg = data.messages?.error || data.message || 'Failed to register token';
+                console.error('Backend error:', errorMsg);
+                throw new Error(errorMsg);
             }
         } catch (error) {
             console.error('Error saving token to backend:', error);
-            throw new Error('Failed to save notification token: ' + error.message);
+            
+            // Show error to user
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to save notification token. Please check console for details.',
+                confirmButtonText: 'OK'
+            });
+            
+            throw error;
         }
     }
 

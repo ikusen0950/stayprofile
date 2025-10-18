@@ -28,28 +28,57 @@ class DeviceController extends ResourceController
             $userId = user_id();
             
             if (!$userId) {
+                log_message('error', 'Device token registration: User not authenticated');
                 return $this->failUnauthorized('User not authenticated');
             }
 
             // Get input data
             $json = $this->request->getJSON();
             $deviceToken = $json->device_token ?? $this->request->getPost('device_token');
-            $platform = $json->platform ?? $this->request->getPost('platform'); // 'ios' or 'android'
+            $platform = $json->platform ?? $this->request->getPost('platform'); // 'ios', 'android', or 'web'
+
+            // Log incoming request
+            log_message('info', "Device token registration attempt for user {$userId}, platform: " . ($platform ?? 'unknown'));
 
             // Validate device token
             if (empty($deviceToken)) {
+                log_message('error', 'Device token registration: Token is empty');
                 return $this->fail('Device token is required', 400);
             }
 
-            // Update user's device token
-            $updated = $this->userModel->update($userId, [
-                'device_token' => $deviceToken,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+            // Get the user's current device token to check if it's the same
+            $currentUser = $this->userModel->find($userId);
+            if (!$currentUser) {
+                log_message('error', "Device token registration: User {$userId} not found");
+                return $this->failNotFound('User not found');
+            }
+
+            // Check if the token is the same as the current one
+            if ($currentUser->device_token === $deviceToken) {
+                log_message('info', "Device token for user {$userId} is already up to date");
+                return $this->respond([
+                    'success' => true,
+                    'message' => 'Device token is already registered',
+                    'data' => [
+                        'user_id' => $userId,
+                        'platform' => $platform ?? 'unknown',
+                        'registered_at' => $currentUser->updated_at
+                    ]
+                ], 200);
+            }
+
+            // Update user's device token - force update even if data is "same"
+            $db = \Config\Database::connect();
+            $updated = $db->table('users')
+                ->where('id', $userId)
+                ->update([
+                    'device_token' => $deviceToken,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
 
             if ($updated) {
                 // Log the device registration
-                log_message('info', "Device token registered for user {$userId} on platform: " . ($platform ?? 'unknown'));
+                log_message('info', "Device token registered successfully for user {$userId} on platform: " . ($platform ?? 'unknown'));
 
                 return $this->respond([
                     'success' => true,
@@ -61,12 +90,13 @@ class DeviceController extends ResourceController
                     ]
                 ], 200);
             } else {
+                log_message('error', "Failed to update device token for user {$userId}");
                 return $this->fail('Failed to register device token', 500);
             }
 
         } catch (\Exception $e) {
-            log_message('error', 'Device token registration error: ' . $e->getMessage());
-            return $this->fail('An error occurred while registering device token', 500);
+            log_message('error', 'Device token registration exception: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
+            return $this->fail('An error occurred while registering device token: ' . $e->getMessage(), 500);
         }
     }
 
