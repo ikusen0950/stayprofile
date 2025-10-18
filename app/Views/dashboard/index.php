@@ -891,6 +891,14 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
                 timer: 3000,
                 timerProgressBar: true
             });
+            
+            // Show notification modal after agreement is accepted
+            <?php if ($show_notification_prompt ?? false): ?>
+            console.log('Agreement accepted, scheduling notification modal...');
+            setTimeout(() => {
+                showNotificationModal();
+            }, 1000); // Show notification modal 1 second after agreement acceptance
+            <?php endif; ?>
         } else {
             // Show error
             Swal.fire({
@@ -1049,16 +1057,27 @@ const platform = isCapacitor ? window.Capacitor.getPlatform() : 'web';
 console.log('Platform detected:', platform);
 console.log('Is Capacitor:', isCapacitor);
 
+// Function to show notification modal
+function showNotificationModal() {
+    console.log('Attempting to show notification modal...');
+    var modalElement = document.getElementById('notificationPermissionModal');
+    if (modalElement) {
+        var notificationModal = new bootstrap.Modal(modalElement);
+        notificationModal.show();
+        console.log('Notification permission modal shown');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Show modal after delay for both web and mobile
-    setTimeout(function() {
-        var modalElement = document.getElementById('notificationPermissionModal');
-        if (modalElement) {
-            var notificationModal = new bootstrap.Modal(modalElement);
-            notificationModal.show();
-            console.log('Notification permission modal shown');
-        }
-    }, 1000); // 1 second delay
+    // Check if agreement modal is also being shown
+    const showAgreementModal = <?= json_encode($show_agreement_modal ?? false) ?>;
+    
+    if (!showAgreementModal) {
+        // No agreement modal, show notification modal after delay as usual
+        setTimeout(showNotificationModal, 1000); // 1 second delay
+    }
+    // If agreement modal is shown, the notification modal will be triggered after agreement acceptance
+    // (handled in the agreement acceptance success callback above)
 
     // Handle "Enable Notifications" button
     document.getElementById('enableNotificationBtn').addEventListener('click', async function() {
@@ -1069,19 +1088,32 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             if (isCapacitor) {
                 // Mobile app (Capacitor) - Use PushNotifications plugin
+                console.log('Starting Capacitor notification flow for platform:', platform);
                 await handleCapacitorNotifications(btn);
             } else {
                 // Web browser - Use Notification API
+                console.log('Starting web notification flow');
                 await handleWebNotifications(btn);
             }
         } catch (error) {
             console.error('Error enabling notifications:', error);
+            
+            // Show specific error message for iOS vs others
+            let errorTitle = 'Error';
+            let errorText = error.message || 'Failed to enable notifications. Please try again.';
+            
+            if (platform === 'ios' && error.message.includes('timeout')) {
+                errorTitle = 'iOS Setup Required';
+                errorText = 'iOS push notifications require additional setup. Please contact your administrator.';
+            }
+            
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: error.message || 'Failed to enable notifications. Please try again.',
+                title: errorTitle,
+                text: errorText,
                 confirmButtonText: 'OK'
             });
+            
             btn.disabled = false;
             btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
         }
@@ -1104,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Capacitor Mobile App Notification Handler
     async function handleCapacitorNotifications(btn) {
-        console.log('Handling Capacitor notifications...');
+        console.log('Handling Capacitor notifications...', 'Platform:', platform);
         
         // Check if PushNotifications is available
         if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.PushNotifications) {
@@ -1114,53 +1146,347 @@ document.addEventListener('DOMContentLoaded', function() {
         const PushNotifications = window.Capacitor.Plugins.PushNotifications;
 
         try {
+            // Add timeout for iOS registration
+            const REGISTRATION_TIMEOUT = 15000; // 15 seconds
+            let registrationTimer = null;
+            let isRegistrationComplete = false;
+
+            // Set up error timeout for iOS
+            registrationTimer = setTimeout(() => {
+                if (!isRegistrationComplete) {
+                    console.error('Registration timeout - no response after', REGISTRATION_TIMEOUT, 'ms');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+                    
+                    // Collect debug information
+                    const debugInfo = {
+                        platform: platform,
+                        isCapacitor: isCapacitor,
+                        userAgent: navigator.userAgent,
+                        timestamp: new Date().toISOString(),
+                        capacitorVersion: window.Capacitor?.version || 'unknown',
+                        pluginAvailable: !!(window.Capacitor?.Plugins?.PushNotifications),
+                        permissions: 'timeout-before-check'
+                    };
+                    
+                    if (platform === 'ios') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'iOS Registration Timeout',
+                            html: `
+                                <div style="text-align: left;">
+                                    <p><strong>Push notification registration timed out after ${REGISTRATION_TIMEOUT/1000} seconds.</strong></p>
+                                    
+                                    <details style="margin: 10px 0;">
+                                        <summary style="cursor: pointer; font-weight: bold; color: #1976d2;">🐛 Debug Information (Tap to expand)</summary>
+                                        <div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                                            <strong>Platform:</strong> ${debugInfo.platform}<br>
+                                            <strong>Capacitor:</strong> ${debugInfo.isCapacitor} (v${debugInfo.capacitorVersion})<br>
+                                            <strong>Plugin Available:</strong> ${debugInfo.pluginAvailable}<br>
+                                            <strong>Time:</strong> ${debugInfo.timestamp}<br>
+                                            <strong>User Agent:</strong> ${debugInfo.userAgent.substring(0, 100)}...
+                                        </div>
+                                    </details>
+                                    
+                                    <p><strong>Possible causes:</strong></p>
+                                    <ul style="margin: 10px 0;">
+                                        <li>Missing Apple Push Notification certificates in Firebase</li>
+                                        <li>Network connectivity issues</li>
+                                        <li>iOS app not properly configured in Firebase</li>
+                                        <li>Missing entitlements in iOS app</li>
+                                        <li>Apple Developer account issues</li>
+                                    </ul>
+                                    
+                                    <p><strong>Next steps:</strong></p>
+                                    <ul style="margin: 10px 0;">
+                                        <li>Check Firebase Console for iOS setup</li>
+                                        <li>Verify APNS certificates</li>
+                                        <li>Try on different network (WiFi/Mobile)</li>
+                                        <li>Contact administrator with debug info</li>
+                                    </ul>
+                                </div>
+                            `,
+                            width: '90%',
+                            confirmButtonText: 'Copy Debug Info',
+                            showCancelButton: true,
+                            cancelButtonText: 'Close'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Copy debug info to clipboard
+                                const debugText = `iOS Push Notification Debug Info:\n${JSON.stringify(debugInfo, null, 2)}`;
+                                if (navigator.clipboard) {
+                                    navigator.clipboard.writeText(debugText);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Copied!',
+                                        text: 'Debug information copied to clipboard',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Timeout',
+                            html: `
+                                <div style="text-align: left;">
+                                    <p>Push notification registration timed out.</p>
+                                    <details style="margin: 10px 0;">
+                                        <summary style="cursor: pointer; font-weight: bold;">Debug Info</summary>
+                                        <pre style="background: #f5f5f5; padding: 10px; font-size: 12px;">${JSON.stringify(debugInfo, null, 2)}</pre>
+                                    </details>
+                                </div>
+                            `,
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }
+            }, REGISTRATION_TIMEOUT);
+
             // Request permission
             console.log('Requesting push notification permission...');
             let permStatus = await PushNotifications.checkPermissions();
             console.log('Current permission status:', permStatus);
 
             if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+                console.log('Requesting permissions...');
                 permStatus = await PushNotifications.requestPermissions();
                 console.log('Permission after request:', permStatus);
             }
 
             if (permStatus.receive !== 'granted') {
+                clearTimeout(registrationTimer);
+                
+                // Show detailed permission error
+                const permissionInfo = {
+                    platform: platform,
+                    permissionStatus: permStatus,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent
+                };
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Permission Denied',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>Push notification permission was denied or unavailable.</strong></p>
+                            <p>Current status: <code>${permStatus.receive}</code></p>
+                            
+                            <details style="margin: 15px 0;">
+                                <summary style="cursor: pointer; font-weight: bold; color: #ff9800;">📱 Permission Details (Tap to expand)</summary>
+                                <div style="background: #fffbf0; padding: 10px; margin: 5px 0; border-radius: 4px;">
+                                    <pre style="font-family: monospace; font-size: 11px; margin: 0;">${JSON.stringify(permissionInfo, null, 2)}</pre>
+                                </div>
+                            </details>
+                            
+                            <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                                <strong>To enable notifications:</strong>
+                                <ol style="margin: 5px 0;">
+                                    <li>Go to device Settings</li>
+                                    <li>Find this app in the app list</li>
+                                    <li>Tap on Notifications</li>
+                                    <li>Turn on "Allow Notifications"</li>
+                                    <li>Return to this app and try again</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `,
+                    width: '90%',
+                    confirmButtonText: 'Copy Permission Info',
+                    showCancelButton: true,
+                    cancelButtonText: 'Open Settings',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(JSON.stringify(permissionInfo, null, 2));
+                        }
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        // Try to open app settings (may not work on all platforms)
+                        if (window.Capacitor?.Plugins?.App?.openSettings) {
+                            window.Capacitor.Plugins.App.openSettings();
+                        }
+                    }
+                });
+                
                 throw new Error('Push notification permission was denied. Please enable it in your device settings.');
             }
 
-            // Register for push notifications
-            console.log('Registering for push notifications...');
-            await PushNotifications.register();
-
-            // Listen for registration success (one-time listener)
+            // Listen for registration success (set up before register call)
             const registrationListener = await PushNotifications.addListener('registration', async (token) => {
                 console.log('Push registration success, token:', token.value);
+                isRegistrationComplete = true;
+                clearTimeout(registrationTimer);
                 
-                // Save token to backend
-                await saveTokenToBackend(token.value, platform, btn);
-                
-                // Remove the listener after successful registration
-                registrationListener.remove();
+                try {
+                    // Save token to backend
+                    await saveTokenToBackend(token.value, platform, btn);
+                } catch (error) {
+                    console.error('Error saving token:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
+                } finally {
+                    // Remove the listener after processing
+                    registrationListener.remove();
+                }
             });
 
-            // Listen for registration error (one-time listener)
+            // Listen for registration error (set up before register call)
             const errorListener = await PushNotifications.addListener('registrationError', (error) => {
                 console.error('Push registration error:', error);
+                isRegistrationComplete = true;
+                clearTimeout(registrationTimer);
                 errorListener.remove();
+                
+                // Collect detailed error information
+                const errorInfo = {
+                    platform: platform,
+                    error: error,
+                    errorMessage: error.error || 'Unknown error',
+                    timestamp: new Date().toISOString(),
+                    capacitorVersion: window.Capacitor?.version || 'unknown',
+                    userAgent: navigator.userAgent
+                };
+                
+                console.log('Detailed error info:', errorInfo);
+                
+                let errorMessage = 'Failed to register for push notifications';
+                if (platform === 'ios') {
+                    errorMessage = 'iOS push notification registration failed';
+                }
                 
                 Swal.fire({
                     icon: 'error',
                     title: 'Registration Failed',
-                    text: 'Failed to register for push notifications: ' + (error.error || 'Unknown error'),
-                    confirmButtonText: 'OK'
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>${errorMessage}</strong></p>
+                            <p>Error: ${errorInfo.errorMessage}</p>
+                            
+                            <details style="margin: 15px 0;">
+                                <summary style="cursor: pointer; font-weight: bold; color: #d32f2f;">🔍 Technical Details (Tap to expand)</summary>
+                                <div style="background: #ffebee; padding: 10px; margin: 5px 0; border-radius: 4px; border-left: 4px solid #f44336;">
+                                    <pre style="font-family: monospace; font-size: 11px; margin: 0; white-space: pre-wrap;">${JSON.stringify(errorInfo, null, 2)}</pre>
+                                </div>
+                            </details>
+                            
+                            ${platform === 'ios' ? `
+                                <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 10px 0;">
+                                    <strong>iOS-specific issues:</strong>
+                                    <ul style="margin: 5px 0 0 0;">
+                                        <li>Missing APNS certificates in Firebase</li>
+                                        <li>Incorrect Bundle ID configuration</li>
+                                        <li>Missing aps-environment entitlement</li>
+                                        <li>Development vs Production certificate mismatch</li>
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `,
+                    width: '90%',
+                    confirmButtonText: 'Copy Error Details',
+                    showCancelButton: true,
+                    cancelButtonText: 'Close'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const errorText = `Push Notification Error Details:\n${JSON.stringify(errorInfo, null, 2)}`;
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(errorText);
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Copied!',
+                                text: 'Error details copied to clipboard. Share this with your administrator.',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        }
+                    }
                 });
                 
                 btn.disabled = false;
                 btn.innerHTML = '<i class="ki-duotone ki-notification-on fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Enable Notifications';
             });
 
+            // Register for push notifications
+            console.log('Registering for push notifications...');
+            await PushNotifications.register();
+            
+            // For iOS, show additional info
+            if (platform === 'ios') {
+                console.log('iOS registration initiated - waiting for APNS response...');
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting to Apple...';
+            }
+
         } catch (error) {
             console.error('Capacitor notification error:', error);
+            if (registrationTimer) {
+                clearTimeout(registrationTimer);
+            }
+            
+            // Enhanced error information for mobile debugging
+            const generalErrorInfo = {
+                platform: platform,
+                error: error.message || error.toString(),
+                errorType: error.constructor.name,
+                stack: error.stack,
+                timestamp: new Date().toISOString(),
+                capacitorVersion: window.Capacitor?.version || 'unknown',
+                pluginAvailable: !!(window.Capacitor?.Plugins?.PushNotifications),
+                userAgent: navigator.userAgent
+            };
+            
+            console.log('Complete error context:', generalErrorInfo);
+            
+            // Show detailed error popup for mobile
+            Swal.fire({
+                icon: 'error',
+                title: 'Push Notification Error',
+                html: `
+                    <div style="text-align: left;">
+                        <p><strong>An error occurred while setting up push notifications.</strong></p>
+                        <p>Error: ${error.message || 'Unknown error'}</p>
+                        
+                        <details style="margin: 15px 0;">
+                            <summary style="cursor: pointer; font-weight: bold; color: #d32f2f;">🛠️ Full Error Details (Tap to expand)</summary>
+                            <div style="background: #ffebee; padding: 10px; margin: 5px 0; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+                                <pre style="font-family: monospace; font-size: 10px; margin: 0; white-space: pre-wrap;">${JSON.stringify(generalErrorInfo, null, 2)}</pre>
+                            </div>
+                        </details>
+                        
+                        <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                            <strong>💡 Troubleshooting:</strong>
+                            <ul style="margin: 5px 0;">
+                                <li>Check your internet connection</li>
+                                <li>Try closing and reopening the app</li>
+                                <li>Restart your device</li>
+                                <li>Contact support with error details</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                width: '95%',
+                confirmButtonText: 'Copy All Details',
+                showCancelButton: true,
+                cancelButtonText: 'Close'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const fullErrorText = `Push Notification Complete Error Report:\n${JSON.stringify(generalErrorInfo, null, 2)}`;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(fullErrorText);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Copied!',
+                            text: 'Complete error details copied. Please share with technical support.',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    }
+                }
+            });
+            
             throw error;
         }
     }
