@@ -213,15 +213,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                 </div>
                 <div class="col-2">
                     <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createNotificationModal"
-                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
-                        style="min-height: 48px;">
-                        <i class="ki-duotone ki-plus-square fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                        </i>
-                    </button>
+                    <!-- Add Notification button removed -->
                     <?php else: ?>
                     <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
                         style="min-height: 48px;" title="No permission to create notifications">
@@ -339,53 +331,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         </div>
 
                         <!-- Expandable Actions (initially hidden) -->
-                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
-                            <div class="row g-2">
-                                <?php if ($permissions['canView']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-notification-btn"
-                                        data-notification-id="<?= esc($notification['id']) ?>">
-                                        <i class="ki-duotone ki-eye fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                        </i>
-                                        View
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-notification-btn"
-                                        data-notification-id="<?= esc($notification['id']) ?>">
-                                        <i class="ki-duotone ki-pencil fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                        Edit
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canDelete']): ?>
-                                <div class="col-4">
-                                    <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-notification-btn"
-                                        data-notification-id="<?= esc($notification['id']) ?>">
-                                        <i class="ki-duotone ki-trash fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                            <span class="path5"></span>
-                                        </i>
-                                        Delete
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                        <!-- Mobile actions removed -->
                     </div>
                 </div>
             </div>
@@ -495,12 +441,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 <!--end::Bulk Send-->
                                 
                                 <!--begin::Add notification-->
-                                <?php if ($permissions['canCreate']): ?>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createNotificationModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Notification
-                                </button>
-                                <?php endif; ?>
+                                <!-- Add Notification button removed -->
                                 <!--end::Add notification-->
                             </div>
                             <!--end::Toolbar-->
@@ -533,7 +474,6 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <th class="min-w-100px">URL</th>
                                         <th class="min-w-80px">Status</th>
                                         <th class="min-w-120px">Created At</th>
-                                        <th class="text-end min-w-100px">Actions</th>
                                     </tr>
                                     <!--end::Table row-->
                                 </thead>
@@ -644,43 +584,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--end::Created At-->
 
                                         <!--begin::Action-->
-                                        <td class="text-end">
-                                            <a href="#"
-                                                class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
-                                                data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                                Actions
-                                                <i class="ki-duotone ki-down fs-5 ms-1"></i>
-                                            </a>
-                                            <!--begin::Menu-->
-                                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
-                                                data-kt-menu="true">
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canView']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-notification-btn"
-                                                        data-notification-id="<?= esc($notification['id']) ?>">View</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canEdit']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-notification-btn"
-                                                        data-notification-id="<?= esc($notification['id']) ?>">Edit</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canDelete']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-notification-btn"
-                                                        data-notification-id="<?= esc($notification['id']) ?>">Delete</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                            </div>
-                                            <!--end::Menu-->
-                                        </td>
+                                        <!-- Actions removed -->
                                         <!--end::Action-->
                                     </tr>
                                     <!--end::Table row-->
@@ -688,7 +592,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <?php else: ?>
                                     <!--begin::No results-->
                                     <tr>
-                                        <td colspan="9" class="text-center py-10">
+                                        <td colspan="8" class="text-center py-10">
                                             <div class="d-flex flex-column align-items-center">
                                                 <i class="ki-duotone ki-notification-status fs-5x text-gray-500 mb-3">
                                                     <span class="path1"></span>
@@ -738,7 +642,6 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 <!--end::Main-->
 
 <!-- Include Modals -->
-<?= $this->include('notifications/create_modal') ?>
 <?= $this->include('notifications/edit_modal') ?>
 <?= $this->include('notifications/view_modal') ?>
 <?= $this->include('notifications/bulk_send_modal') ?>
@@ -1041,60 +944,10 @@ function createNotificationCard(notification, index) {
         </div>
     ` : '';
 
-    // Create action buttons based on permissions
-    let actionButtons = '';
-    <?php if ($permissions['canView']): ?>
-    actionButtons += `
-        <div class="col-4">
-            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-notification-btn" data-notification-id="${notification.id}">
-                <i class="ki-duotone ki-eye fs-1 me-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                    <span class="path3"></span>
-                </i>
-                View
-            </button>
-        </div>
-    `;
-    <?php endif; ?>
-    <?php if ($permissions['canEdit']): ?>
-    actionButtons += `
-        <div class="col-4">
-            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-notification-btn" data-notification-id="${notification.id}">
-                <i class="ki-duotone ki-pencil fs-1 me-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>
-                Edit
-            </button>
-        </div>
-    `;
-    <?php endif; ?>
-    <?php if ($permissions['canDelete']): ?>
-    actionButtons += `
-        <div class="col-4">
-            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-notification-btn" data-notification-id="${notification.id}">
-                <i class="ki-duotone ki-trash fs-1 me-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                    <span class="path3"></span>
-                    <span class="path4"></span>
-                    <span class="path5"></span>
-                </i>
-                Delete
-            </button>
-        </div>
-    `;
-    <?php endif; ?>
+    // Action buttons removed
 
-    // Only show actions section if user has any permissions
-    const actionsSection = actionButtons ? `
-        <div class="mobile-actions mt-3 pt-3 border-top d-none">
-            <div class="row g-2">
-                ${actionButtons}
-            </div>
-        </div>
-    ` : '';
+    // Actions section removed
+    const actionsSection = '';
 
     const createdAt = new Date(notification.created_at).toLocaleDateString('en-US', {
         month: 'short',

@@ -20,7 +20,10 @@ class NotificationModel extends Model
         'body', 
         'url', 
         'status_id', 
-        'created_at'
+        'created_at',
+        'scheduled_at',
+        'sent_at',
+        'error_message'
     ];
 
     protected $useTimestamps = false;

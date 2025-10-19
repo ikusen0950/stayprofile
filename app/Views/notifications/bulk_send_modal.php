@@ -99,34 +99,15 @@
                                 <!--end::Label-->
                                 <!--begin::Input-->
                                 <input type="text" name="url" id="bulkNotificationUrl" class="form-control form-control-solid mb-3 mb-lg-0" 
-                                       placeholder="Enter URL to open when notification is tapped (optional)" />
-                                <div class="form-text">Optional URL to redirect when notification is clicked</div>
+                                       placeholder="e.g., /requests, /profile, /notifications (optional)" />
+                                <div class="form-text">Optional path to redirect when notification is clicked. Use relative paths like /requests, /notifications, etc.</div>
                                 <!--end::Input-->
                             </div>
                             <!--end::Input group-->
 
-                            <!--begin::Schedule Options-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Delivery Options</label>
-                                <!--end::Label-->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="delivery_type" value="immediate" id="immediate" checked>
-                                    <label class="form-check-label" for="immediate">
-                                        Send Immediately
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="delivery_type" value="scheduled" id="scheduled">
-                                    <label class="form-check-label" for="scheduled">
-                                        Schedule for Later
-                                    </label>
-                                </div>
-                                <div id="scheduleOptions" class="mt-3" style="display: none;">
-                                    <input type="datetime-local" name="scheduled_at" class="form-control form-control-solid" />
-                                </div>
-                            </div>
-                            <!--end::Schedule Options-->
+                            <!--begin::Hidden delivery type (always immediate)-->
+                            <input type="hidden" name="delivery_type" value="immediate" />
+                            <!--end::Hidden delivery type-->
 
                         </form>
                         <!--end::Form-->
@@ -288,7 +269,7 @@
     align-items: flex-start;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     transition: all 0.3s ease;
-    border-left: 4px solid #3b82f6;
+    /* border-left: 4px solid #3b82f6; */
 }
 
 .notification-preview.sample {
@@ -431,11 +412,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const titleCharCount = document.getElementById('titleCharCount');
     const bodyCharCount = document.getElementById('bodyCharCount');
     
-    // Schedule options
-    const scheduleRadio = document.getElementById('scheduled');
-    const immediateRadio = document.getElementById('immediate');
-    const scheduleOptions = document.getElementById('scheduleOptions');
-    
     // Load recipient statistics
     loadRecipientStats();
     
@@ -493,21 +469,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add animation effect
             notificationPreview.classList.add('fresh');
             setTimeout(() => notificationPreview.classList.remove('fresh'), 500);
-        });
-    }
-    
-    // Schedule options toggle
-    if (scheduleRadio && immediateRadio) {
-        scheduleRadio.addEventListener('change', function() {
-            if (this.checked) {
-                scheduleOptions.style.display = 'block';
-            }
-        });
-        
-        immediateRadio.addEventListener('change', function() {
-            if (this.checked) {
-                scheduleOptions.style.display = 'none';
-            }
         });
     }
     
@@ -687,7 +648,6 @@ document.addEventListener('DOMContentLoaded', function() {
         bulkModal.addEventListener('hidden.bs.modal', function () {
             bulkForm.reset();
             resetPreview();
-            scheduleOptions.style.display = 'none';
         });
     }
     

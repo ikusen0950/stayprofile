@@ -578,9 +578,14 @@ class NotificationsController extends BaseController
                         'title' => $title,
                         'body' => $body,
                         'url' => $url,
-                        'status_id' => 1, // Active
+                        'status_id' => ($deliveryType === 'scheduled') ? 27 : 1, // 27 for scheduled, 1 for active
                         'created_at' => date('Y-m-d H:i:s')
                     ];
+                    
+                    // Add scheduled_at field if it's a scheduled notification
+                    if ($deliveryType === 'scheduled' && !empty($scheduledAt)) {
+                        $notificationData['scheduled_at'] = $scheduledAt;
+                    }
 
                     // Insert notification record
                     $notificationId = $this->notificationModel->insert($notificationData);
