@@ -3,17 +3,38 @@
 namespace App\Controllers;
 
 use App\Models\NotificationModel;
+use App\Models\LogModel;
+use Myth\Auth\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class NotificationsController extends BaseController
 {
     protected $notificationModel;
+    protected $userModel;
     protected $logModel;
 
     public function __construct()
     {
         $this->notificationModel = new NotificationModel();
-        $this->logModel = new \App\Models\LogModel();
+        $this->userModel = new UserModel();
+        $this->logModel = new LogModel();
+        
+        // Load FCM helper for push notifications
+        helper('fcm');
+    }
+
+    /**
+     * Get user display name with fallback handling
+     */
+    private function getUserDisplayName(array $user): string
+    {
+        if (!empty($user['full_name'])) {
+            return $user['full_name'];
+        } elseif (!empty($user['islander_no'])) {
+            return $user['islander_no'];
+        } else {
+            return 'Unknown User';
+        }
     }
 
     /**
@@ -444,6 +465,227 @@ class NotificationsController extends BaseController
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Failed to delete notification. Please try again.'
+            ]);
+        }
+    }
+
+    /**
+     * Get recipient statistics for bulk notifications
+     */
+    public function recipientStats()
+    {
+        // Check if user has permission to send notifications
+        if (!has_permission('notifications.send')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to access recipient statistics.'
+            ]);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        try {
+            $stats = $this->notificationModel->getRecipientStats();
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'total_users' => $stats['total_users'],
+                'users_with_tokens' => $stats['users_with_tokens'],
+                'delivery_rate' => $stats['delivery_rate']
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error getting recipient stats: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Failed to load recipient statistics.'
+            ]);
+        }
+    }
+
+    /**
+     * Send bulk notification to all active users with device tokens
+     */
+    public function sendBulk()
+    {
+        // Check if user has permission to send notifications
+        if (!has_permission('notifications.send')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'You do not have permission to send bulk notifications.'
+            ]);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        $startTime = microtime(true);
+
+        // Validate input
+        $rules = [
+            'title' => 'required|min_length[1]|max_length[100]',
+            'body' => 'required|min_length[1]|max_length[500]',
+            'url' => 'permit_empty|valid_url',
+            'delivery_type' => 'required|in_list[immediate,scheduled]',
+            'scheduled_at' => 'permit_empty|valid_date'
+        ];
+
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => $this->validator->getErrors(),
+                'message' => 'Validation failed.'
+            ]);
+        }
+
+        $title = trim(strip_tags($this->request->getPost('title')));
+        $body = trim(strip_tags($this->request->getPost('body')));
+        $url = trim(strip_tags($this->request->getPost('url') ?? ''));
+        $deliveryType = $this->request->getPost('delivery_type');
+        $scheduledAt = $this->request->getPost('scheduled_at');
+
+        try {
+            // Get all active users with device tokens
+            $users = $this->notificationModel->getActiveUsersWithTokens();
+            
+            if (empty($users)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'No active users with device tokens found.'
+                ]);
+            }
+
+            $sentCount = 0;
+            $failedCount = 0;
+            $results = [];
+
+            // Load Firebase helper
+            helper('firebase');
+
+            foreach ($users as $user) {
+                try {
+                    // Create notification record for each user
+                    $notificationData = [
+                        'user_id' => $user['id'],
+                        'title' => $title,
+                        'body' => $body,
+                        'url' => $url,
+                        'status_id' => 1, // Active
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+
+                    // Insert notification record
+                    $notificationId = $this->notificationModel->insert($notificationData);
+
+                    if ($deliveryType === 'immediate') {
+                        // Send FCM notification immediately
+                        $fcmResult = send_fcm_push(
+                            $user['device_token'],
+                            $title,
+                            $body,
+                            $url ?? null,
+                            $user['id'],
+                            $notificationId
+                        );
+
+                        if ($fcmResult['status'] === 'success') {
+                            $sentCount++;
+                            $userName = $this->getUserDisplayName($user);
+                            $results[] = [
+                                'user_id' => $user['id'],
+                                'user_name' => $userName,
+                                'status' => 'sent',
+                                'notification_id' => $notificationId
+                            ];
+
+                            // Log successful send
+                            $this->logNotificationOperation('sent', [
+                                'id' => $notificationId,
+                                'user_name' => $userName,
+                                'title' => $title,
+                                'body' => $body
+                            ], $notificationId);
+                        } else {
+                            $failedCount++;
+                            $userName = $this->getUserDisplayName($user);
+                            $results[] = [
+                                'user_id' => $user['id'],
+                                'user_name' => $userName,
+                                'status' => 'failed',
+                                'error' => $fcmResult['message'] ?? 'Unknown error',
+                                'notification_id' => $notificationId
+                            ];
+
+                            log_message('error', 'Failed to send FCM to user ' . $user['id'] . ': ' . ($fcmResult['message'] ?? 'Unknown error'));
+                        }
+                    } else {
+                        // Schedule for later (for now we'll just create the record)
+                        $sentCount++;
+                        $userName = $this->getUserDisplayName($user);
+                        $results[] = [
+                            'user_id' => $user['id'],
+                            'user_name' => $userName,
+                            'status' => 'scheduled',
+                            'scheduled_at' => $scheduledAt,
+                            'notification_id' => $notificationId
+                        ];
+
+                        // Log scheduled notification
+                        $this->logNotificationOperation('scheduled', [
+                            'id' => $notificationId,
+                            'user_name' => $userName,
+                            'title' => $title,
+                            'body' => $body
+                        ], $notificationId);
+                    }
+
+                } catch (\Exception $e) {
+                    $failedCount++;
+                    $userName = $this->getUserDisplayName($user);
+                    $results[] = [
+                        'user_id' => $user['id'],
+                        'user_name' => $userName,
+                        'status' => 'error',
+                        'error' => $e->getMessage()
+                    ];
+                    log_message('error', 'Error processing notification for user ' . $user['id'] . ': ' . $e->getMessage());
+                }
+            }
+
+            $endTime = microtime(true);
+            $processingTime = round(($endTime - $startTime), 2) . 's';
+
+            // Log bulk operation summary
+            $this->logNotificationOperation('bulk_sent', [
+                'id' => 0,
+                'user_name' => 'System',
+                'title' => $title,
+                'body' => "Bulk notification sent to {$sentCount} users, {$failedCount} failed. Processing time: {$processingTime}"
+            ]);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Bulk notification processed successfully!",
+                'sent_count' => $sentCount,
+                'failed_count' => $failedCount,
+                'total_users' => count($users),
+                'processing_time' => $processingTime,
+                'results' => $results
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error in bulk notification send: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Failed to process bulk notification: ' . $e->getMessage()
             ]);
         }
     }

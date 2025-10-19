@@ -86,14 +86,17 @@ class NotificationModel extends Model
     }
 
     /**
-     * Get all active users for dropdown
+     * Get all active islanders for dropdown
      */
     public function getActiveUsers()
     {
-        $userModel = new \App\Models\UserModel();
-        return $userModel->select('id, CONCAT(islander_no, " - ", full_name) as display_name')
-                        ->where('status_id', 1)
-                        ->findAll();
+        $builder = $this->db->table('users');
+        return $builder->select('id, islander_no, full_name, email')
+                      ->where('status_id', 7)
+                      ->where('type', 1)
+                      ->orderBy('full_name', 'ASC')
+                      ->get()
+                      ->getResultArray();
     }
 
     /**
@@ -133,6 +136,7 @@ class NotificationModel extends Model
         // Join with users and status tables
         $builder->select('n.*, 
                          CONCAT(u.islander_no, " - ", u.full_name) as user_name,
+                         u.email as user_email,
                          s.name as status_name,
                          s.color as status_color')
                 ->join('users u', 'u.id = n.user_id', 'left')
@@ -227,5 +231,50 @@ class NotificationModel extends Model
         return $this->where('status_id', $statusId)
                    ->orderBy('created_at', 'DESC')
                    ->findAll();
+    }
+
+    /**
+     * Get recipient statistics for bulk notifications
+     */
+    public function getRecipientStats()
+    {
+        $builder = $this->db->table('users');
+        
+        // Get total active islanders (status_id 7 is Active, type 1 is Islander)
+        $totalUsers = $builder->where('status_id', 7)
+                             ->where('type', 1)
+                             ->countAllResults();
+        
+        // Reset builder and get islanders with device tokens
+        $builder = $this->db->table('users');
+        $usersWithTokens = $builder->where('status_id', 7)
+                                  ->where('type', 1)
+                                  ->where('device_token IS NOT NULL')
+                                  ->where('device_token !=', '')
+                                  ->countAllResults();
+        
+        // Calculate delivery rate
+        $deliveryRate = $totalUsers > 0 ? round(($usersWithTokens / $totalUsers) * 100, 1) : 0;
+        
+        return [
+            'total_users' => $totalUsers,
+            'users_with_tokens' => $usersWithTokens,
+            'delivery_rate' => $deliveryRate
+        ];
+    }    /**
+     * Get all active islanders with device tokens for bulk notifications
+     */
+    public function getActiveUsersWithTokens()
+    {
+        $builder = $this->db->table('users');
+        
+        return $builder->select('id, islander_no, full_name, email, device_token')
+                      ->where('status_id', 7)
+                      ->where('type', 1)
+                      ->where('device_token IS NOT NULL')
+                      ->where('device_token !=', '')
+                      ->orderBy('full_name', 'ASC')
+                      ->get()
+                      ->getResultArray();
     }
 }

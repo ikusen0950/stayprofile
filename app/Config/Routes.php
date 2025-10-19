@@ -94,6 +94,10 @@ $routes->group('notifications', ['filter' => 'login'], function($routes) {
     $routes->post('update/(:num)', 'NotificationsController::update/$1');
     $routes->post('(:num)/delete', 'NotificationsController::delete/$1');
     $routes->post('delete/(:num)', 'NotificationsController::delete/$1');
+    
+    // Bulk notification routes
+    $routes->get('recipient-stats', 'NotificationsController::recipientStats');
+    $routes->post('send-bulk', 'NotificationsController::sendBulk');
 });
 
 // Authorization Rules CRUD routes

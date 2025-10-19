@@ -37,7 +37,17 @@
                                 <option></option>
                                 <?php if (!empty($users)): ?>
                                     <?php foreach ($users as $user): ?>
-                                        <option value="<?= esc($user['id']) ?>"><?= esc($user['firstname'] . ' ' . $user['lastname']) ?> (<?= esc($user['email']) ?>)</option>
+                                        <?php 
+                                        $displayName = '';
+                                        if (!empty($user['full_name'])) {
+                                            $displayName = $user['full_name'];
+                                        } elseif (!empty($user['islander_no'])) {
+                                            $displayName = $user['islander_no'];
+                                        } else {
+                                            $displayName = 'Unknown User';
+                                        }
+                                        ?>
+                                        <option value="<?= esc($user['id']) ?>"><?= esc($displayName) ?> (<?= esc($user['email']) ?>)</option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>

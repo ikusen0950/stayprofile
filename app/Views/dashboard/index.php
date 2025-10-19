@@ -1061,9 +1061,9 @@ document.getElementById('acceptAgreementBtn').addEventListener('click', function
                         <span class="path1"></span>
                         <span class="path2"></span>
                     </i>
-                    Maybe Later
+                    Later
                 </button>
-                <button type="button" class="btn btn-primary" id="enableNotificationBtn">
+                <button type="button" class="btn btn-primary" id="enableNotificationBtn" onclick="registerFCMToken()">
                     <i class="ki-duotone ki-notification-on fs-2 me-1">
                         <span class="path1"></span>
                         <span class="path2"></span>

@@ -180,7 +180,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                 <h1 class="text-dark fw-bold ms-2">Notifications</h1>
             </div>
             <div class="row align-items-stretch">
-                <div class="col-10">
+                <div class="col-8">
                     <div class="position-relative h-100">
                         <i
                             class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
@@ -190,6 +190,26 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
                             placeholder="Search notifications..." value="<?= esc($search) ?>" />
                     </div>
+                </div>
+                <div class="col-2">
+                    <?php if (has_permission('notifications.send')): ?>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#sendBulkNotificationModal"
+                        class="btn btn-warning w-100 h-100 d-flex align-items-center justify-content-center"
+                        style="min-height: 48px;" title="Send to All Users">
+                        <i class="ki-duotone ki-send fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                    <?php else: ?>
+                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
+                        style="min-height: 48px;" title="No permission to send bulk notifications">
+                        <i class="ki-duotone ki-lock fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <div class="col-2">
                     <?php if ($permissions['canCreate']): ?>
@@ -462,6 +482,18 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         <div class="card-toolbar">
                             <!--begin::Toolbar-->
                             <div class="d-flex justify-content-end" data-kt-notification-table-toolbar="base">
+                                <!--begin::Bulk Send-->
+                                <?php if (has_permission('notifications.send')): ?>
+                                <button type="button" class="btn btn-warning me-3" data-bs-toggle="modal"
+                                    data-bs-target="#sendBulkNotificationModal">
+                                    <i class="ki-duotone ki-send fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>Send to All
+                                </button>
+                                <?php endif; ?>
+                                <!--end::Bulk Send-->
+                                
                                 <!--begin::Add notification-->
                                 <?php if ($permissions['canCreate']): ?>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
@@ -535,7 +567,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             <div class="d-flex align-items-center">
                                                 <div class="d-flex flex-column">
                                                     <span class="text-dark fw-bold"><?= esc($notification['user_name']) ?></span>
-                                                    <small class="text-muted"><?= esc($notification['user_email']) ?></small>
+                                                    <small class="text-muted"><?= esc($notification['user_email'] ?? 'No email') ?></small>
                                                 </div>
                                             </div>
                                         </td>
@@ -709,6 +741,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 <?= $this->include('notifications/create_modal') ?>
 <?= $this->include('notifications/edit_modal') ?>
 <?= $this->include('notifications/view_modal') ?>
+<?= $this->include('notifications/bulk_send_modal') ?>
 
 <script>
 // Global variables

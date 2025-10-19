@@ -66,6 +66,15 @@ class Notification extends BaseController
                 'message' => 'Unauthorized'
             ] )->setStatusCode( 401 );
         }
+        
+        // Check if user has permission to manage notification tokens
+        // For FCM token registration, we allow users to manage their own tokens
+        // Admin permission allows managing all tokens
+        if (!has_permission('notifications.manage') && !has_permission('notifications.admin')) {
+            // Allow users to save their own tokens even without explicit permission
+            // This is for basic FCM functionality - users should be able to register for notifications
+            log_message('debug', 'User ' . $user . ' saving token without explicit manage permission (allowed for own token)');
+        }
 
         // Read raw body
         $body = $this->request->getBody();
@@ -134,6 +143,14 @@ class Notification extends BaseController
 
     public function testPush()
     {
+        // Check if user has permission to send notifications
+        if (!has_permission('notifications.send')) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'You do not have permission to send notifications.'
+            ])->setStatusCode(403);
+        }
+        
         helper('fcm');
 
         $userObj = user();
@@ -164,6 +181,14 @@ class Notification extends BaseController
 
     public function testPushSimple()
     {
+        // Check if user has permission to send notifications (for admin testing)
+        if (!has_permission('notifications.admin')) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'You do not have permission to test notifications.'
+            ])->setStatusCode(403);
+        }
+        
         helper('fcm');
 
         // Test with a dummy token (replace with actual token for real testing)
