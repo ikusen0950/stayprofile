@@ -105,10 +105,10 @@ class RequestModel extends Model
         ],
         'type' => [
             'label'  => 'Request Type',
-            'rules'  => 'required|min_length[3]|max_length[100]',
+            'rules'  => 'required|min_length[1]|max_length[100]',
             'errors' => [
                 'required'    => 'Request type is required.',
-                'min_length'  => 'Request type must be at least 3 characters long.',
+                'min_length'  => 'Request type must be at least 1 characters long.',
                 'max_length'  => 'Request type cannot exceed 100 characters.'
             ]
         ],
@@ -268,15 +268,22 @@ class RequestModel extends Model
     {
         $builder = $this->db->table('requests r');
         
-        // Join with status and users tables
+        // Join with status, users, departments, and positions tables
         $builder->select('r.*, 
                          s.name as status_name,
                          s.color as status_color,
                          CONCAT(u.islander_no, " - ", u.full_name) as user_name,
+                         u.full_name as user_full_name,
+                         u.islander_no as user_islander_no,
+                         u.image as user_image,
+                         d.name as user_department_name,
+                         p.name as user_position_name,
                          CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                          CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
                 ->join('status s', 's.id = r.status_id', 'left')
                 ->join('users u', 'u.id = r.user_id', 'left')
+                ->join('departments d', 'd.id = u.department_id', 'left')
+                ->join('positions p', 'p.id = u.position_id', 'left')
                 ->join('users cu', 'cu.id = r.created_by', 'left')
                 ->join('users uu', 'uu.id = r.updated_by', 'left');
         
@@ -288,6 +295,8 @@ class RequestModel extends Model
                     ->orLike('s.name', $search)
                     ->orLike('u.full_name', $search)
                     ->orLike('u.islander_no', $search)
+                    ->orLike('d.name', $search)
+                    ->orLike('p.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
                     ->groupEnd();
@@ -306,9 +315,11 @@ class RequestModel extends Model
     {
         $builder = $this->db->table('requests r');
         
-        // Join with status and users tables for consistent search results
+        // Join with status, users, departments, and positions tables for consistent search results
         $builder->join('status s', 's.id = r.status_id', 'left')
                 ->join('users u', 'u.id = r.user_id', 'left')
+                ->join('departments d', 'd.id = u.department_id', 'left')
+                ->join('positions p', 'p.id = u.position_id', 'left')
                 ->join('users cu', 'cu.id = r.created_by', 'left')
                 ->join('users uu', 'uu.id = r.updated_by', 'left');
         
@@ -320,6 +331,8 @@ class RequestModel extends Model
                     ->orLike('s.name', $search)
                     ->orLike('u.full_name', $search)
                     ->orLike('u.islander_no', $search)
+                    ->orLike('d.name', $search)
+                    ->orLike('p.name', $search)
                     ->orLike('cu.full_name', $search)
                     ->orLike('cu.islander_no', $search)
                     ->groupEnd();

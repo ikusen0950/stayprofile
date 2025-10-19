@@ -18,6 +18,9 @@ class RequestController extends BaseController
         $this->logModel = new \App\Models\LogModel();
         $this->db = \Config\Database::connect();
         $this->auth = service('authentication');
+        
+        // Load FCM helper for push notifications
+        helper('fcm');
     }
 
     /**
@@ -229,6 +232,9 @@ class RequestController extends BaseController
         $row = $query->getRowArray();
         $nextRequestId = isset($row['Auto_increment']) ? $row['Auto_increment'] : null;
 
+        // Check if user can create past date requests
+        $canCreatePastDate = has_permission('requests.create_past_date');
+
         $data = [
             'title' => 'Add New Request',
             'nextRequestId' => $nextRequestId,
@@ -239,7 +245,8 @@ class RequestController extends BaseController
             'positions' => [],
             'leave_reasons' => [],
             'islanders' => [],
-            'visitors' => []
+            'visitors' => [],
+            'canCreatePastDate' => $canCreatePastDate
         ];
 
         // Load additional data if we have the models available
@@ -350,6 +357,26 @@ class RequestController extends BaseController
     }
 
     /**
+     * Check if user can create requests based on authorization_rules
+     */
+    private function canUserCreateRequest($userId)
+    {
+        try {
+            $authorizationModel = new \App\Models\AuthorizationRuleModel();
+            $rule = $authorizationModel->where('user_id', $userId)
+                                     ->where('can_request', 1) // Check if user is blocked
+                                     ->where('is_active', 1)
+                                     ->first();
+            
+            // If rule exists with can_request = 1, user is BLOCKED from creating requests
+            return $rule === null;
+        } catch (\Exception $e) {
+            log_message('error', "Failed to check user request permission: " . $e->getMessage());
+            return true; // Allow request creation if check fails
+        }
+    }
+
+    /**
      * Store a newly created request in database
      */
     public function store()
@@ -383,6 +410,45 @@ class RequestController extends BaseController
         $rawData = $this->request->getPost();
         $data = $this->sanitizeRequestInput($rawData);
 
+        // Check if user is blocked from creating requests (can_request = 1 blocks, can_request = 0 allows)
+        if (isset($rawData['user_id'])) {
+            if (!$this->canUserCreateRequest($rawData['user_id'])) {
+                if ($this->request->isAJAX()) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'The selected user is blocked from creating requests.'
+                    ]);
+                }
+                return redirect()->back()
+                               ->withInput()
+                               ->with('error', 'The selected user is blocked from creating requests.');
+            }
+        }
+
+        // Check for existing exit pass requests and determine status_id for exit pass requests
+        if (isset($rawData['type']) && $rawData['type'] === '1' && isset($rawData['user_id'])) {
+            // Check if user already has an active exit pass request
+            $existingRequest = $this->checkExistingExitPassRequest($rawData['user_id']);
+            if ($existingRequest) {
+                if ($this->request->isAJAX()) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'User already has an active exit pass request.',
+                        'existing_request' => $existingRequest
+                    ]);
+                }
+                return redirect()->back()
+                               ->withInput()
+                               ->with('error', 'User already has an active exit pass request.');
+            }
+
+            // Determine status_id based on user role
+            $statusId = $this->determineStatusByUserRole($rawData['user_id'], $rawData['user_type'] ?? null);
+            if ($statusId) {
+                $data['status_id'] = $statusId;
+            }
+        }
+
         // Insert the request
         if ($requestId = $this->requestModel->insert($data)) {
             // Get the full request data for logging
@@ -390,6 +456,14 @@ class RequestController extends BaseController
             
             // Log the create operation
             $this->logRequestOperation('create', $requestData, $requestId);
+            
+            // Send FCM notification for pending requests (status 13 and 14)
+            if (isset($requestData['status_id']) && (
+                $requestData['status_id'] == STATUS_MANAGER_NOTIFICATION_FCM || 
+                $requestData['status_id'] == 14
+            )) {
+                $this->sendRequestNotification($requestData, $requestData['status_id']);
+            }
             
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
@@ -530,6 +604,14 @@ class RequestController extends BaseController
                 
                 // Log the update operation
                 $this->logRequestOperation('update', $updatedRequest, $id);
+                
+                // Send FCM notification for status changes (approved/rejected)
+                if (isset($updatedRequest['status_id'])) {
+                    $statusId = $updatedRequest['status_id'];
+                    if ($statusId == STATUS_APPROVE_FCM || $statusId == STATUS_REJECT_FCM) {
+                        $this->sendRequestNotification($updatedRequest, $statusId);
+                    }
+                }
                 
                 if ($this->request->isAJAX()) {
                     return $this->response->setJSON([
@@ -704,6 +786,36 @@ class RequestController extends BaseController
     }
 
     /**
+     * Check if user has existing exit pass request (AJAX)
+     */
+    public function checkExistingExitPass()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        $userId = $this->request->getPost('user_id');
+        
+        if (!$userId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User ID is required'
+            ]);
+        }
+
+        $existingRequest = $this->checkExistingExitPassRequest((int)$userId);
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'has_existing' => !empty($existingRequest),
+            'existing_request' => $existingRequest
+        ]);
+    }
+
+    /**
      * Get authorized islanders based on logged-in user's authorization rules
      */
     private function getAuthorizedIslanders()
@@ -834,5 +946,190 @@ class RequestController extends BaseController
         }
         
         return $result;
+    }
+
+    /**
+     * Determine status_id based on user's role/group
+     * 
+     * Status mapping for exit pass requests:
+     * 1. If logged-in user is ADMINISTRATOR, EXCOM, or MANAGER: status_id = 14 (regardless of selected islander/visitor)
+     * 2. Otherwise, check selected user's role:
+     *    - ADMINISTRATOR, EXCOM, MANAGER: status_id = 14 (higher approval level)
+     *    - ASSISTANT MANAGER, SUPERVISOR, COORDINATOR, ISLANDER, VISITOR: status_id = 13 (standard approval level)
+     * 
+     * @param int $userId The user ID to check role for (selected islander/visitor)
+     * @param string|null $userType Whether it's islander (1) or visitor (2)
+     * @return int|null The status ID or null if can't determine
+     */
+    private function determineStatusByUserRole(int $userId, ?string $userType = null): ?int
+    {
+        try {
+            // First check the logged-in user's role
+            $currentUser = $this->auth->user();
+            $currentUserId = $currentUser ? $currentUser->id : null;
+            
+            if ($currentUserId) {
+                $groupModel = new \Myth\Auth\Models\GroupModel();
+                $currentUserGroups = $groupModel->getGroupsForUser($currentUserId);
+                
+                if (!empty($currentUserGroups)) {
+                    $currentUserGroup = strtoupper($currentUserGroups[0]['name']);
+                    
+                    // If logged-in user is high-level, always assign status 14
+                    if (in_array($currentUserGroup, ['ADMINISTRATOR', 'EXCOM', 'MANAGER'])) {
+                        log_message('info', "Exit pass request by high-level user {$currentUserId} (group: {$currentUserGroup}): assigned status 14");
+                        return 14;
+                    }
+                }
+            }
+
+            // For visitors, always return status 13 (if logged-in user is not high-level)
+            if ($userType === '2') {
+                log_message('info', "Exit pass request for visitor user {$userId}: assigned status 13");
+                return 13;
+            }
+
+            // For islanders, get their role/group (if logged-in user is not high-level)
+            $groupModel = new \Myth\Auth\Models\GroupModel();
+            $userGroups = $groupModel->getGroupsForUser($userId);
+            
+            if (empty($userGroups)) {
+                // No group assigned, default to status 13 (basic approval)
+                log_message('info', "Exit pass request for user {$userId} with no group: assigned status 13");
+                return 13;
+            }
+            
+            // Get the first group (assuming user has one primary role)
+            $primaryGroup = $userGroups[0];
+            $groupName = strtoupper($primaryGroup['name']);
+            
+            // Map group names to status IDs according to requirements
+            $statusId = null;
+            switch ($groupName) {
+                case 'ADMINISTRATOR':
+                case 'EXCOM':
+                case 'MANAGER':
+                    $statusId = 14;
+                    break;
+                case 'ASSISTANT MANAGER':
+                case 'SUPERVISOR':
+                case 'COORDINATOR':
+                case 'ISLANDER':
+                case 'VISITOR':
+                    $statusId = 13;
+                    break;
+                default:
+                    // Unknown group, default to status 13
+                    log_message('warning', "Unknown group '{$groupName}' for user {$userId}, defaulting to status 13");
+                    $statusId = 13;
+                    break;
+            }
+            
+            log_message('info', "Exit pass request for user {$userId} with group '{$groupName}': assigned status {$statusId}");
+            return $statusId;
+            
+        } catch (\Exception $e) {
+            log_message('error', "Failed to determine status by user role for user {$userId}: " . $e->getMessage());
+            // Default to status 13 if there's an error
+            return 13;
+        }
+    }
+
+    /**
+     * Check if user already has an active exit pass request
+     * 
+     * @param int $userId The user ID to check for existing requests
+     * @return array|null Returns existing request data if found, null otherwise
+     */
+    private function checkExistingExitPassRequest(int $userId): ?array
+    {
+        try {
+            $builder = $this->db->table('requests');
+            $existingRequest = $builder->select('id, type, type_description, status_id, created_at')
+                                      ->where('user_id', $userId)
+                                      ->where('type', '1') // Exit Pass type
+                                      ->whereIn('status_id', [13, 14, 16, 18]) // Block if: PENDING(13), APPROVED(14), DEPARTED(16), NO_SHOW(18)
+                                      // Allow: REJECTED(15), ARRIVED(17), EXPIRED(19), CANCELED(20)
+                                      ->orderBy('created_at', 'DESC')
+                                      ->get()
+                                      ->getRowArray();
+
+            if ($existingRequest) {
+                // Get status name for better error message
+                $statusBuilder = $this->db->table('status');
+                $status = $statusBuilder->select('name')
+                                       ->where('id', $existingRequest['status_id'])
+                                       ->get()
+                                       ->getRowArray();
+                
+                $existingRequest['status_name'] = $status['name'] ?? 'Unknown';
+                
+                log_message('info', "Existing exit pass request found for user {$userId}: Request ID {$existingRequest['id']}, Status: {$existingRequest['status_name']}");
+                
+                return $existingRequest;
+            }
+
+            return null;
+            
+        } catch (\Exception $e) {
+            log_message('error', "Failed to check existing exit pass request for user {$userId}: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Send FCM notification for request status changes
+     */
+    private function sendRequestNotification($requestData, $status)
+    {
+        try {
+            // Get user information to determine division, department, section
+            $userModel = new \App\Models\UserModel();
+            $user = $userModel->find($requestData['user_id']);
+            
+            if (!$user) {
+                log_message('error', "User not found for notification: {$requestData['user_id']}");
+                return false;
+            }
+
+            // Get user's organizational structure (using object property access)
+            $divisionId = $user->division_id ?? null;
+            $departmentId = $user->department_id ?? null;
+            $sectionId = $user->section_id ?? null;
+            $userId = $requestData['user_id'];
+            $requestUid = $requestData['id']; // Use request ID as UID
+
+            // Determine request type and send appropriate notification
+            $requestType = $requestData['type'] ?? '1'; // Default to exit pass
+            
+            if ($requestType === '1') {
+                // Exit Pass Request
+                fcmNotificationExitPass(
+                    $divisionId,
+                    $departmentId, 
+                    $sectionId,
+                    $status,
+                    $userId,
+                    $requestUid
+                );
+            } else {
+                // Transfer Request (assuming type '2' or other)
+                fcmNotificationTransfer(
+                    $divisionId,
+                    $departmentId,
+                    $sectionId, 
+                    $status,
+                    $userId,
+                    $requestUid
+                );
+            }
+
+            log_message('info', "FCM notification sent for request {$requestUid}, status: {$status}, user: {$userId}");
+            return true;
+
+        } catch (\Exception $e) {
+            log_message('error', "Failed to send FCM notification: " . $e->getMessage());
+            return false;
+        }
     }
 }

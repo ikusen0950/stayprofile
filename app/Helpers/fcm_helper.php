@@ -5,10 +5,10 @@ use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 
 // Define constants for statuses
-define( 'STATUS_APPROVE_FCM', '11' );
-define( 'STATUS_REJECT_FCM', '12' );
-define( 'STATUS_BOOKED_FCM', '18' );
-define( 'STATUS_MANAGER_NOTIFICATION_FCM', '10' );
+define( 'STATUS_APPROVE_FCM', '14' );
+define( 'STATUS_REJECT_FCM', '15' );
+define( 'STATUS_BOOKED_FCM', '22' );
+define( 'STATUS_MANAGER_NOTIFICATION_FCM', '13' );
 define( 'USER_STATUS_ACTIVE_FCM', 7 );
 // Define constant for Assistant Manager Role ID if available
 define( 'ROLE_ASSISTANT_MANAGER_ID_FCM', 5 );
@@ -139,12 +139,12 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
         return false;
     }
 
-    $requestModel = new \App\Models\request_model();
-    $usersModel = new \App\Models\users_model();
-    $roleModel = new \App\Models\role_model();
-    $authorizationModel = new \App\Models\authorizations_sequence_model();
+    $requestModel = new \App\Models\RequestModel();
+    $usersModel = new \App\Models\UserModel();
+    $roleModel = new \App\Models\RoleModel();
+    $authorizationModel = new \App\Models\AuthorizationRuleModel();
 
-    $request = $requestModel->where( 'uid', $request_uid )->first();
+    $request = $requestModel->where( 'id', $request_uid )->first();
     if ( !$request ) return false;
 
     $islander = $usersModel->where( 'id', $user )
@@ -152,9 +152,9 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
     ->first();
     if ( !$islander ) return false;
 
-    $user_id = $islander[ 'id' ] ?? null;
-    $islanderFullName = $islander[ 'full_name' ];
-    $fcmToken = $islander[ 'device_token' ] ?? null;
+    $user_id = $islander->id ?? null;
+    $islanderFullName = $islander->full_name;
+    $fcmToken = $islander->device_token ?? null;
     $clickUrl = 'requests' ;
 
     if ( !$fcmToken ) {
@@ -169,7 +169,7 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
         // send_fcm_push( $fcmToken, $title, $body, $clickUrl );
 
         // ✅ Save to database for each manager
-        $notificationModel = new \App\Models\notifications_model();
+        $notificationModel = new \App\Models\NotificationModel();
         $notification_id = $notificationModel->insert( [
             'user_id'    => $user_id,
             'title'      => $title,
@@ -191,7 +191,7 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
         // send_fcm_push( $fcmToken, $title, $body, $clickUrl );
 
         // ✅ Save to database for each manager
-        $notificationModel = new \App\Models\notifications_model();
+        $notificationModel = new \App\Models\NotificationModel();
         $notification_id = $notificationModel->insert( [
             'user_id'    => $user_id,
             'title'      => $title,
@@ -206,16 +206,18 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
     }
 
     // Notify Managers
-    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM ) {
-        $userRole = $roleModel->find( $islander[ 'role_id' ] );
+    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM || $status == 14 ) {
+        $userRole = $roleModel->find( $islander->role_id );
         $isAssistantManager = strcasecmp( $userRole[ 'name' ] ?? '', 'Assistant Manager' ) === 0;
 
+        // Get managers who can approve requests for the requester's department/division/section
         $managers = $authorizationModel->groupStart()
-        ->where( 'type', 'division' )->where( 'area', $division_id )
-        ->orGroupStart()->where( 'type', 'department' )->where( 'area', $department_id )->groupEnd()
-        ->orGroupStart()->where( 'type', 'section' )->where( 'area', $section_id )->groupEnd()
+        ->like( 'division_ids', $division_id )
+        ->orLike( 'department_ids', $department_id )
+        ->orLike( 'section_ids', $section_id )
         ->groupEnd()
-        ->where( 'authorization_role', 1 ) // Assuming 1 is the role for managers
+        ->where( 'can_request', 0 ) // Only managers (can_request = 0 means they are managers)
+        ->where( 'is_active', 1 ) // Only active rules
         ->findAll();
 
         // foreach ( $managers as $manager ) {
@@ -246,7 +248,7 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
             // send_fcm_push( $managerToken, $title, $body, $clickUrl );
 
             // ✅ Save to database for each manager
-            $notificationModel = new \App\Models\notifications_model();
+            $notificationModel = new \App\Models\NotificationModel();
             $notification_id = $notificationModel->insert( [
                 'user_id'    => $manager[ 'user_id' ],
                 'title'      => $title,
@@ -264,7 +266,7 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
 
     // ✅ Save to database
     // if ( $user ) {
-    //     $notificationModel = new \App\Models\notifications_model();
+    //     $notificationModel = new \App\Models\NotificationModel();
     //     $notificationModel->insert( [
     //         'user_id' => $user,
     //         'title'   => $title,
@@ -285,12 +287,12 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
         return false;
     }
 
-    $requestModel = new \App\Models\request_model();
-    $usersModel = new \App\Models\users_model();
-    $roleModel = new \App\Models\role_model();
-    $authorizationModel = new \App\Models\authorizations_sequence_model();
+    $requestModel = new \App\Models\RequestModel();
+    $usersModel = new \App\Models\UserModel();
+    $roleModel = new \App\Models\RoleModel();
+    $authorizationModel = new \App\Models\AuthorizationRuleModel();
 
-    $request = $requestModel->where( 'uid', $request_uid )->first();
+    $request = $requestModel->where( 'id', $request_uid )->first();
     if ( !$request ) return false;
 
     $islander = $usersModel->where( 'id', $user )
@@ -298,9 +300,9 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
     ->first();
     if ( !$islander ) return false;
 
-    $user_id = $islander[ 'id' ] ?? null;
-    $islanderFullName = $islander[ 'full_name' ];
-    $fcmToken = $islander[ 'device_token' ] ?? null;
+    $user_id = $islander->id ?? null;
+    $islanderFullName = $islander->full_name;
+    $fcmToken = $islander->device_token ?? null;
     $clickUrl = 'requests';
 
     if ( !$fcmToken ) {
@@ -313,7 +315,7 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
         $title = '✅ Transfer Request Approved';
         $body  = "Dear $islanderFullName, your transfer request (#$request_uid) has been approved.";
         // send_fcm_push( $fcmToken, $title, $body, $clickUrl, $user );
-        $notificationModel = new \App\Models\notifications_model();
+        $notificationModel = new \App\Models\NotificationModel();
         $notification_id = $notificationModel->insert( [
             'user_id'    => $user_id,
             'title'      => $title,
@@ -332,7 +334,7 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
         $title = '❌ Transfer Request Rejected';
         $body  = "Dear $islanderFullName, your transfer request (#$request_uid) has been rejected. Please contact your department.";
         // send_fcm_push( $fcmToken, $title, $body, $clickUrl, $user );
-        $notificationModel = new \App\Models\notifications_model();
+        $notificationModel = new \App\Models\NotificationModel();
         $notification_id = $notificationModel->insert( [
             'user_id'    => $user_id,
             'title'      => $title,
@@ -346,18 +348,20 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
         send_fcm_push( $fcmToken, $title, $body, "notification/read/{$notification_id}", $user_id, $notification_id );
     }
 
-    // Manager Notification
-    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM ) {
-        $userRole = $roleModel->find( $islander[ 'role_id' ] );
+    // Notify Managers
+    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM || $status == 14 ) {
+        $userRole = $roleModel->find( $islander->role_id );
         $isAssistantManager = strcasecmp( $userRole[ 'name' ] ?? '', 'Assistant Manager' ) === 0;
 
+        // Find managers who have authorization for the REQUESTER's department/division/section
+        // Example: User 25 (dept 17, section 2) → Find managers with dept 17 OR section 2 authorization
         $managers = $authorizationModel->groupStart()
-        ->where( 'type', 'division' )->where( 'area', $division_id )
-        ->where( 'authorization_role', 1 )
-        ->orGroupStart()->where( 'type', 'department' )->where( 'area', $department_id )->groupEnd()
-        ->orGroupStart()->where( 'type', 'section' )->where( 'area', $section_id )->groupEnd()
+        ->like( 'division_ids', $division_id )
+        ->orLike( 'department_ids', $department_id )
+        ->orLike( 'section_ids', $section_id )
         ->groupEnd()
-        ->where( 'authorization_role', 1 ) // Assuming 1 is the role for managers
+        ->where( 'can_request', 0 ) // Only managers (can_request = 0 means they are managers)
+        ->where( 'is_active', 1 ) // Only active rules
         ->findAll();
 
         // foreach ( $managers as $manager ) {
@@ -389,7 +393,7 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
             // send_fcm_push( $managerToken, $title, $body, $clickUrl );
 
             // ✅ Save to database for each manager
-            $notificationModel = new \App\Models\notifications_model();
+            $notificationModel = new \App\Models\NotificationModel();
             $notification_id = $notificationModel->insert( [
                 'user_id'    => $manager[ 'user_id' ],
                 'title'      => $title,

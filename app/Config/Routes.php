@@ -152,6 +152,7 @@ $routes->group('requests', ['filter' => 'login'], function($routes) {
     $routes->get('api', 'RequestController::api');
     $routes->get('statuses', 'RequestController::getStatuses');
     $routes->get('users', 'RequestController::getUsers');
+    $routes->post('check-existing-exit-pass', 'RequestController::checkExistingExitPass');
 });
 
 // Sessions CRUD routes

@@ -235,21 +235,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
         </div>
         <?php endif; ?>
 
-        <!-- Scrollable Card List -->
+        <!-- Scrollable Card List - Mobile View Temporarily Disabled Due to Position Template Issues -->
         <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($positions)): ?>
-            <?php foreach ($positions as $index => $position): ?>
-            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-position-card" data-position-id="<?= esc($position['id']) ?>">
-                    <div class="card-body p-4">
-                        <!-- Position Header -->
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase">#<?= esc($position['id']) ?></small>
-                            </div>
-                            <div class="ms-3 d-flex gap-2">
-                                <?php if (!empty($position['status_name'])): ?>
-                                    <?php 
+            <?php if (!empty($requests)): ?>
+        <?php foreach ($requests as $index => $request): ?>
+        <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
+            <div class="card mobile-request-card" data-request-id="<?= esc($request['id']) ?>">
+                <div class="card-body p-4">
+                    <!-- Position Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <small class="text-muted text-uppercase">#<?= esc($request['id']) ?></small>
+                        </div>
+                        <div class="ms-3 d-flex gap-2">
+                            <?php if (!empty($position['status_name'])): ?>
+                            <?php 
                                     // Use custom color if available for mobile cards
                                     if (!empty($position['status_color'])) {
                                         // Convert hex color to RGB for light background
@@ -264,121 +264,122 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         $mobileBadgeStyle = "";
                                     }
                                     ?>
-                                    <?php if (!empty($position['status_color'])): ?>
-                                    <span class="badge fw-bold fs-8" style="<?= $mobileBadgeStyle ?>">
-                                        <?= strtoupper(esc($position['status_name'])) ?>
-                                    </span>
-                                    <?php else: ?>
-                                    <span class="badge badge-light-success fw-bold fs-8">
-                                        <?= strtoupper(esc($position['status_name'])) ?>
-                                    </span>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                                <span class="badge badge-light-primary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                    <?= strtoupper(esc($position['name'])) ?>
-                                </span>
-                            </div>
+                            <?php if (!empty($position['status_color'])): ?>
+                            <span class="badge fw-bold fs-8" style="<?= $mobileBadgeStyle ?>">
+                                <?= strtoupper(esc($position['status_name'])) ?>
+                            </span>
+                            <?php else: ?>
+                            <span class="badge badge-light-success fw-bold fs-8">
+                                <?= strtoupper(esc($position['status_name'])) ?>
+                            </span>
+                            <?php endif; ?>
+                            <?php endif; ?>
+                            <span class="badge badge-light-primary fw-bold"
+                                style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                <?= strtoupper(esc($request['type'] ?? 'Unknown')) ?>
+                            </span>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
-                            <div class="flex-grow-1">
-                                <strong class="me-5 text-uppercase text-truncate"><?= esc($position['name']) ?></strong>
-                                <?php if (!empty($position['section_name'])): ?>
-                                <br>
-                                <small class="text-primary fw-bold"><?= esc($position['section_name']) ?></small>
-                                <?php endif; ?>
-                            </div>
+                    <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                        <div class="flex-grow-1">
+                            <strong
+                                class="me-5 text-uppercase text-truncate"><?= esc($request['user_name'] ?? 'Unknown User') ?></strong>
+                            <br>
+                            <small
+                                class="text-primary fw-bold"><?= esc($request['type_description'] ?? 'No description') ?></small>
                         </div>
+                    </div>
 
-                        <!-- Position Footer -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="d-flex flex-column">
-                                <small class="text-muted">
-                                    <?= !empty($position['created_by_name']) ? esc($position['created_by_name']) : 'System' ?>
-                                </small>
-                            </div>
-                            <small class="text-muted"><?= date('M d, Y', strtotime($position['created_at'])) ?></small>
+                    <!-- Request Footer -->
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="d-flex flex-column">
+                            <small class="text-muted">
+                                Created: <?= date('M d, Y', strtotime($request['created_at'])) ?>
+                            </small>
                         </div>
+                        <small class="text-muted">Status: <?= esc($request['status_name'] ?? 'Unknown') ?></small>
+                    </div>
 
-                        <!-- Expandable Actions (initially hidden) -->
-                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
-                            <div class="row g-2">
-                                <?php if ($permissions['canView']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-position-btn"
-                                        data-position-id="<?= esc($position['id']) ?>">
-                                        <i class="ki-duotone ki-eye fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                        </i>
-                                        View
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-position-btn"
-                                        data-position-id="<?= esc($position['id']) ?>">
-                                        <i class="ki-duotone ki-pencil fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                        Edit
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canDelete']): ?>
-                                <div class="col-4">
-                                    <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-position-btn"
-                                        data-position-id="<?= esc($position['id']) ?>">
-                                        <i class="ki-duotone ki-trash fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                            <span class="path5"></span>
-                                        </i>
-                                        Delete
-                                    </button>
-                                </div>
-                                <?php endif; ?>
+                    <!-- Expandable Actions (initially hidden) -->
+                    <div class="mobile-actions mt-3 pt-3 border-top d-none">
+                        <div class="row g-2">
+                            <?php if ($permissions['canView']): ?>
+                            <div class="col-4">
+                                <button type="button"
+                                    class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-request-btn"
+                                    data-request-id="<?= esc($request['id']) ?>">
+                                    <i class="ki-duotone ki-eye fs-1 me-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    View
+                                </button>
                             </div>
+                            <?php endif; ?>
+                            <?php if ($permissions['canEdit']): ?>
+                            <div class="col-4">
+                                <button type="button"
+                                    class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-request-btn"
+                                    data-request-id="<?= esc($request['id']) ?>">
+                                    <i class="ki-duotone ki-pencil fs-1 me-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    Edit
+                                </button>
+                            </div>
+                            <?php endif; ?>
+                            <?php if ($permissions['canDelete']): ?>
+                            <div class="col-4">
+                                <button
+                                    class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-request-btn"
+                                    data-request-id="<?= esc($request['id']) ?>">
+                                    <i class="ki-duotone ki-trash fs-1 me-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                        <span class="path5"></span>
+                                    </i>
+                                    Delete
+                                </button>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
-            <?php endforeach; ?>
-            <?php else: ?>
-            <div class="col-12">
-                <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                    <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <h6 class="fw-bold text-gray-700 mb-2">No positions found</h6>
-                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first position entry</p>
-                </div>
+        </div>
+        <?php endforeach; ?>
+        <?php else: ?>
+        <div class="col-12">
+            <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <h6 class="fw-bold text-gray-700 mb-2">No positions found</h6>
+                <p class="fs-7 text-gray-500 mb-4">Start by creating your first position entry</p>
             </div>
-            <?php endif; ?>
         </div>
-
-        <!-- Loading indicator for infinite scroll -->
-        <div id="loading-indicator" class="text-center py-4 d-none">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Loading more positions...</p>
-        </div>
-
-        <!-- No more data indicator -->
-        <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more positions to load</p>
-        </div>
+        <?php endif; ?>
     </div>
+
+    <!-- Loading indicator for infinite scroll -->
+    <div id="loading-indicator" class="text-center py-4 d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading more positions...</p>
+    </div>
+
+    <!-- No more data indicator -->
+    <div id="no-more-data" class="text-center py-4 d-none">
+        <p class="text-muted">No more positions to load</p>
+    </div>
+</div>
 </div>
 <!--end::Mobile UI-->
 
@@ -431,8 +432,8 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <span class="path2"></span>
                                 </i>
                                 <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search positions..."
-                                    value="<?= esc($search) ?>" />
+                                    class="form-control form-control-solid w-250px ps-13"
+                                    placeholder="Search positions..." value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
                         </div>
@@ -443,12 +444,6 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <!--begin::Toolbar-->
                             <div class="d-flex justify-content-end" data-kt-position-table-toolbar="base">
                                 <!--begin::Add position-->
-                                <?php if ($permissions['canCreate']): ?>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createPositionModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Position
-                                </button>
-                                <?php endif; ?>
                                 <!--end::Add position-->
                             </div>
                             <!--end::Toolbar-->
@@ -470,15 +465,13 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             <div
                                                 class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                                 <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_position_table .form-check-input"
+                                                    data-kt-check-target="#kt_request_table .form-check-input"
                                                     value="1" />
                                             </div>
                                         </th>
                                         <th class="min-w-20px">#</th>
-                                        <th class="min-w-120px">Position</th>
-                                        <th class="min-w-100px">Section</th>
-                                        <th class="min-w-200px">Description</th>
-                                        <th class="min-w-100px">Status</th>
+                                        <th class="min-w-120px">Type/Status</th>
+                                        <th class="min-w-150px">Islander</th>
                                         <th class="min-w-120px">Created By</th>
                                         <th class="min-w-120px">Updated By</th>
                                         <th class="text-end min-w-100px">Actions</th>
@@ -489,15 +482,15 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 
                                 <!--begin::Table body-->
                                 <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($positions)): ?>
-                                    <?php foreach ($positions as $position): ?>
+                                    <?php if (!empty($requests)): ?>
+                                    <?php foreach ($requests as $request): ?>
                                     <!--begin::Table row-->
                                     <tr>
                                         <!--begin::Checkbox-->
                                         <td>
                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                                 <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($position['id']) ?>" />
+                                                    value="<?= esc($request['id']) ?>" />
                                             </div>
                                         </td>
                                         <!--end::Checkbox-->
@@ -505,92 +498,141 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::ID-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($position['id']) ?></small>
+                                                <span class="text-gray-800 fw-bold">#<?= esc($request['id']) ?></span>
                                             </div>
                                         </td>
                                         <!--end::ID-->
-                                     
-                                        <!--begin::Section-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span class="badge badge-light-primary fw-bold"
-                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                                    <?= strtoupper(esc($position['name'])) ?>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <!--end::Section-->
 
-                                        <!--begin::Position-->
+                                        <!--begin::Type/Status-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="fw-bold text-dark"><?= esc($position['section_name']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::Position-->
-
-                                        <!--begin::Description-->
-                                        <td>
-                                            <div class="text-gray-600">
-                                                <?= esc($position['description']) ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Description-->
-
-                                        <!--begin::Status-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php if (!empty($position['status_name'])): ?>
+                                                <span class="badge badge-light-info fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
                                                     <?php 
-                                                    // Use custom color if available, otherwise fallback to status-based colors
-                                                    if (!empty($position['status_color'])) {
-                                                        // Convert hex color to RGB for light background
-                                                        $hex = ltrim($position['status_color'], '#');
-                                                        $r = hexdec(substr($hex, 0, 2));
-                                                        $g = hexdec(substr($hex, 2, 2));
-                                                        $b = hexdec(substr($hex, 4, 2));
-                                                        $lightBg = "rgba($r, $g, $b, 0.1)";
-                                                        $textColor = $position['status_color'];
-                                                        $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                                    } else {
-                                                        // Fallback to default styling
-                                                        $badgeStyle = "padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                    $type = $request['type'] ?? '1';
+                                                    switch($type) {
+                                                        case '1':
+                                                            echo 'Exit Pass';
+                                                            break;
+                                                        case '2':
+                                                            echo 'Transfer';
+                                                            break;
+                                                        case '3':
+                                                            echo 'Leave';
+                                                            break;
+                                                        default:
+                                                            echo 'Unknown';
                                                     }
                                                     ?>
-                                                    <?php if (!empty($position['status_color'])): ?>
+                                                </span>
+                                                <div>
+                                                    <?php if (!empty($request['status_name'])): ?>
+                                                    <?php 
+                                                        // Use custom color if available, otherwise fallback to status-based colors
+                                                        if (!empty($request['status_color'])) {
+                                                            // Convert hex color to RGB for light background
+                                                            $hex = ltrim($request['status_color'], '#');
+                                                            $r = hexdec(substr($hex, 0, 2));
+                                                            $g = hexdec(substr($hex, 2, 2));
+                                                            $b = hexdec(substr($hex, 4, 2));
+                                                            $lightBg = "rgba($r, $g, $b, 0.1)";
+                                                            $textColor = $request['status_color'];
+                                                            $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                        } else {
+                                                            // Fallback to default styling
+                                                            $badgeStyle = "padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                        }
+                                                        ?>
+                                                    <?php if (!empty($request['status_color'])): ?>
                                                     <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                        <?= strtoupper(esc($position['status_name'])) ?>
+                                                        <?= esc($request['status_name']) ?>
                                                     </span>
                                                     <?php else: ?>
-                                                    <span class="badge badge-light-success fw-bold" style="<?= $badgeStyle ?>">
-                                                        <?= strtoupper(esc($position['status_name'])) ?>
+                                                    <span class="badge badge-light-success fw-bold"
+                                                        style="<?= $badgeStyle ?>">
+                                                        <?= esc($request['status_name']) ?>
                                                     </span>
                                                     <?php endif; ?>
-                                                <?php else: ?>
-                                                <span class="badge badge-light-secondary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">N/A</span>
-                                                <?php endif; ?>
+                                                    <?php else: ?>
+                                                    <span class="badge badge-light-secondary fw-bold"
+                                                        style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">N/A</span>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
                                         </td>
-                                        <!--end::Status-->
+                                        <!--end::Type/Status-->
+
+                                        <!--begin::Islander-->
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <?php 
+                                                $userName = $request['user_full_name'] ?? 'Unknown User';
+                                                $userIslanderNo = $request['user_islander_no'] ?? '';
+                                                $userDepartment = $request['user_department_name'] ?? 'Service';
+                                                $userPosition = $request['user_position_name'] ?? 'Captain';
+                                                $userImage = $request['user_image'] ?? '';
+                                                
+                                                // Generate image URL
+                                                $imageUrl = !empty($userImage) ? 
+                                                    base_url() . '/assets/media/users/' . $userImage : 
+                                                    'https://ui-avatars.com/api/?name=' . urlencode($userName) . '&background=f4f4f4&color=9ba1b6&font-size=0.5';
+                                                ?>
+                                                <img src="<?= esc($imageUrl) ?>" class="me-2 rounded align-self-start"
+                                                    width="80" height="80"
+                                                    style="max-width: 80px; max-height: 80px; object-fit: cover;"
+                                                    alt="<?= esc($userName) ?>">
+                                                <div>
+                                                    <div class="fw-bold text-gray-800">
+                                                        <?= esc($userName) ?>
+                                                    </div>
+                                                    <?php if (!empty($userIslanderNo)): ?>
+                                                    <small class="text-muted">
+                                                        <i class="ki-duotone ki-badge"><span class="path1"></span><span
+                                                                class="path2"></span><span class="path3"></span><span
+                                                                class="path4"></span><span
+                                                                class="path5"></span></i>&nbsp;<?= esc($userIslanderNo) ?>
+                                                    </small><br>
+                                                    <?php endif; ?>
+                                                    <small class="text-muted">
+                                                        <i class="ki-duotone ki-setting-3"><span
+                                                                class="path1"></span><span class="path2"></span><span
+                                                                class="path3"></span><span class="path4"></span><span
+                                                                class="path5"></span></i>&nbsp;<?= esc($userDepartment) ?>
+                                                    </small><br>
+                                                    <small class="text-muted">
+                                                        <i class="ki-duotone ki-more-2"><span class="path1"></span><span
+                                                                class="path2"></span><span class="path3"></span><span
+                                                                class="path4"></span></i>&nbsp;<?= esc($userPosition) ?>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <!--end::Islander-->
 
                                         <!--begin::Created By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($position['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($position['created_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($position['created_at'])) ?></small>
-                                                <?php endif; ?>
+                                                <span class="text-gray-800 mb-1">
+                                                    <?= esc($request['created_by_name'] ?? 'System') ?>
+                                                </span>
+                                                <small class="text-muted">
+                                                    <?= date('M d, Y H:i', strtotime($request['created_at'])) ?>
+                                                </small>
                                             </div>
                                         </td>
                                         <!--end::Created By-->
+
                                         <!--begin::Updated By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($position['updated_by_name']) && !empty($position['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($position['updated_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($position['updated_at'])) ?></small>
+                                                <?php if (!empty($request['updated_by_name']) && !empty($request['updated_at'])): ?>
+                                                <span class="text-gray-800 mb-1">
+                                                    <?= esc($request['updated_by_name']) ?>
+                                                </span>
+                                                <small class="text-muted">
+                                                    <?= date('M d, Y H:i', strtotime($request['updated_at'])) ?>
+                                                </small>
+                                                <?php else: ?>
+                                                <span class="text-muted">-</span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -610,24 +652,24 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canView']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-position-btn"
-                                                        data-position-id="<?= esc($position['id']) ?>">View</a>
+                                                    <a class="menu-link px-3 view-request-btn"
+                                                        data-request-id="<?= esc($request['id']) ?>">View</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canEdit']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-position-btn"
-                                                        data-position-id="<?= esc($position['id']) ?>">Edit</a>
+                                                    <a class="menu-link px-3 edit-request-btn"
+                                                        data-request-id="<?= esc($request['id']) ?>">Edit</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canDelete']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-position-btn"
-                                                        data-position-id="<?= esc($position['id']) ?>">Delete</a>
+                                                    <a class="menu-link px-3 delete-request-btn"
+                                                        data-request-id="<?= esc($request['id']) ?>">Delete</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -641,14 +683,14 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                     <?php else: ?>
                                     <!--begin::No results-->
                                     <tr>
-                                        <td colspan="8" class="text-center py-10">
+                                        <td colspan="9" class="text-center py-10">
                                             <div class="d-flex flex-column align-items-center">
-                                                <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
+                                                <i class="ki-duotone ki-document fs-5x text-gray-500 mb-3">
                                                     <span class="path1"></span>
                                                     <span class="path2"></span>
                                                 </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No sections found</div>
-                                                <div class="text-gray-500">Start by creating your first department entry
+                                                <div class="fw-bold text-gray-700 mb-2">No requests found</div>
+                                                <div class="text-gray-500">Start by creating your first request
                                                 </div>
                                             </div>
                                         </td>
@@ -660,7 +702,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             </table>
                         </div>
                         <!--end::Table-->
-                        
+
                         <?php
                         // Include table footer with pagination
                         $footerData = [
@@ -852,7 +894,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (e.target.closest('.delete-position-btn')) {
             e.preventDefault();
-            const positionId = e.target.closest('.delete-position-btn').getAttribute('data-position-id');
+            const positionId = e.target.closest('.delete-position-btn').getAttribute(
+            'data-position-id');
             deletePosition(positionId);
         }
     });
@@ -1259,11 +1302,11 @@ function populateViewModal(position) {
     // Basic position info
     document.getElementById('view_position_name').textContent = position.name;
     document.getElementById('view_section_name').textContent = position.section_name || 'N/A';
-    
+
     // Description
     const description = document.getElementById('view_description');
     const descriptionSection = document.getElementById('view_description_section');
-    
+
     if (position.description && position.description.trim() !== '') {
         description.textContent = position.description;
         descriptionSection.style.display = 'block';
@@ -1271,42 +1314,43 @@ function populateViewModal(position) {
         description.textContent = 'No description provided';
         descriptionSection.style.display = 'block';
     }
-    
+
     // Audit info
     document.getElementById('view_created_by').textContent = position.created_by_name || 'System';
-    document.getElementById('view_created_at').textContent = position.created_at ? 
-        new Date(position.created_at).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
+    document.getElementById('view_created_at').textContent = position.created_at ?
+        new Date(position.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
         }) : '-';
-    
+
     // Updated info (show/hide based on availability)
     const updatedBySection = document.getElementById('view_updated_by_section');
     const updatedAtSection = document.getElementById('view_updated_at_section');
-    
+
     if (position.updated_by_name) {
         document.getElementById('view_updated_by').textContent = position.updated_by_name;
         updatedBySection.style.display = 'block';
     } else {
         updatedBySection.style.display = 'none';
     }
-    
+
     if (position.updated_at) {
-        document.getElementById('view_updated_at').textContent = new Date(position.updated_at).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        document.getElementById('view_updated_at').textContent = new Date(position.updated_at).toLocaleDateString(
+            'en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         updatedAtSection.style.display = 'block';
     } else {
         updatedAtSection.style.display = 'none';
     }
-    
+
     // Set position ID for edit button if it exists
     const editBtn = document.getElementById('view_edit_btn');
     if (editBtn) {

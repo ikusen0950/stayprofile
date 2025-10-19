@@ -223,12 +223,72 @@
     border-color: #f1416c !important;
     box-shadow: 0 0 0 0.1rem rgba(241, 65, 108, 0.25) !important;
 }
+
+/* Custom SweetAlert2 styling for existing request popup */
+.swal2-popup-large {
+    width: 650px !important;
+    max-width: 90vw !important;
+}
+
+.swal2-popup-large .swal2-html-container {
+    text-align: left !important;
+    font-size: 14px !important;
+}
+
+.swal2-popup-large .badge {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+}
+
+.swal2-popup-large .alert {
+    border-radius: 0.475rem !important;
+    border: 0 !important;
+}
+
+.swal2-popup-large .separator {
+    border-bottom: 1px solid #e4e6ea !important;
+}
+
+.swal2-popup-large .d-flex {
+    display: flex !important;
+}
+
+.swal2-popup-large .align-items-center {
+    align-items: center !important;
+}
+
+.swal2-popup-large .gap-3 {
+    gap: 1rem !important;
+}
+
+.swal2-popup-large .flex-column {
+    flex-direction: column !important;
+}
 </style>
 
 <script>
 
 // Dynamic dropdown switching for Islander/Visitor
 document.addEventListener('DOMContentLoaded', function() {
+    // Set date restrictions based on user permissions
+    const canCreatePastDate = <?= json_encode($canCreatePastDate ?? false) ?>;
+    
+    if (!canCreatePastDate) {
+        // Restrict to today and future dates only
+        const today = new Date().toISOString().split('T')[0];
+        
+        const departureDateInput = document.querySelector('[name="departure_date"]');
+        const arrivalDateInput = document.querySelector('[name="arrival_date"]');
+        
+        if (departureDateInput) {
+            departureDateInput.setAttribute('min', today);
+        }
+        
+        if (arrivalDateInput) {
+            arrivalDateInput.setAttribute('min', today);
+        }
+    }
+    
     var userTypeSelect = document.getElementById('user_type_select');
     var islanderSection = document.getElementById('islander_dropdown_section');
     var visitorSection = document.getElementById('visitor_dropdown_section');
@@ -462,6 +522,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let isValid = true;
         clearAllValidationErrors();
 
+        // Get user's permission to create past date requests
+        const canCreatePastDate = <?= json_encode($canCreatePastDate ?? false) ?>;
+
         // 1. Validate User Type
         const userType = document.querySelector('[name="user_type"]').value;
         if (!userType) {
@@ -508,15 +571,19 @@ document.addEventListener('DOMContentLoaded', function() {
             showValidationError('departure_date', 'Please select departure date');
             isValid = false;
         } else {
-            // Check if departure date is not in the past
-            const today = new Date();
-            const selectedDate = new Date(departureDate);
-            today.setHours(0, 0, 0, 0);
-            selectedDate.setHours(0, 0, 0, 0);
-            
-            if (selectedDate < today) {
-                showValidationError('departure_date', 'Departure date cannot be in the past');
-                isValid = false;
+            // Check if departure date is not in the past (unless user has permission)
+            if (!canCreatePastDate) {
+                const today = new Date();
+                const selectedDate = new Date(departureDate);
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    showValidationError('departure_date', 'Departure date cannot be in the past');
+                    isValid = false;
+                } else {
+                    hideValidationError('departure_date');
+                }
             } else {
                 hideValidationError('departure_date');
             }
@@ -537,12 +604,30 @@ document.addEventListener('DOMContentLoaded', function() {
             showValidationError('arrival_date', 'Please select arrival date');
             isValid = false;
         } else {
-            // Check if arrival date is not before departure date
-            if (departureDate && arrivalDate < departureDate) {
-                showValidationError('arrival_date', 'Arrival date cannot be before departure date');
-                isValid = false;
+            // Check if arrival date is not in the past (unless user has permission)
+            if (!canCreatePastDate) {
+                const today = new Date();
+                const selectedDate = new Date(arrivalDate);
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    showValidationError('arrival_date', 'Arrival date cannot be in the past');
+                    isValid = false;
+                } else if (departureDate && arrivalDate < departureDate) {
+                    showValidationError('arrival_date', 'Arrival date cannot be before departure date');
+                    isValid = false;
+                } else {
+                    hideValidationError('arrival_date');
+                }
             } else {
-                hideValidationError('arrival_date');
+                // Even with permission, arrival cannot be before departure
+                if (departureDate && arrivalDate < departureDate) {
+                    showValidationError('arrival_date', 'Arrival date cannot be before departure date');
+                    isValid = false;
+                } else {
+                    hideValidationError('arrival_date');
+                }
             }
         }
 
@@ -584,6 +669,8 @@ document.addEventListener('DOMContentLoaded', function() {
             islanderSelect.addEventListener('change', function() {
                 if (this.value) {
                     hideValidationError('user_selection');
+                    // Check for existing exit pass request
+                    checkExistingExitPassRequest(this.value, 'islander');
                 }
             });
         }
@@ -592,6 +679,8 @@ document.addEventListener('DOMContentLoaded', function() {
             visitorSelect.addEventListener('change', function() {
                 if (this.value) {
                     hideValidationError('user_selection');
+                    // Check for existing exit pass request
+                    checkExistingExitPassRequest(this.value, 'visitor');
                 }
             });
         }
@@ -643,6 +732,132 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+
+        // Dynamic arrival date minimum based on departure date
+        if (departureDate && arrivalDate) {
+            departureDate.addEventListener('change', function() {
+                const departureValue = this.value;
+                if (departureValue) {
+                    // Set arrival date minimum to departure date (can't arrive before departure)
+                    arrivalDate.setAttribute('min', departureValue);
+                    
+                    // Clear arrival date if it's now before departure date
+                    if (arrivalDate.value && arrivalDate.value < departureValue) {
+                        arrivalDate.value = '';
+                        hideValidationError('arrival_date');
+                    }
+                }
+            });
+        }
+    }
+
+    // Function to check for existing exit pass requests
+    function checkExistingExitPassRequest(userId, userType) {
+        if (!userId) return;
+        
+        // Show loading indicator (optional)
+        console.log(`Checking existing exit pass for ${userType} user ID: ${userId}`);
+        
+        secureFetch('/requests/check-existing-exit-pass', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                user_id: userId
+            })
+        })
+        .then(response => {
+            if (response.status === 401 || response.status === 403) {
+                handleSessionExpired();
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.has_existing) {
+                const existingRequest = data.existing_request;
+                const createdDate = new Date(existingRequest.created_at).toLocaleDateString();
+                
+                // Show warning popup immediately
+                Swal.fire({
+                    title: 'Existing Exit Pass Request Found',
+                    html: `
+                        <div class="text-start">
+                            <div class="alert alert-warning d-flex align-items-center p-4 mb-4">
+                                <i class="ki-duotone ki-warning-2 fs-2hx text-warning me-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div>
+                                    <h5 class="mb-1">Cannot Create New Request</h5>
+                                    <div>The selected user already has an active exit pass request.</div>
+                                </div>
+                            </div>
+                            <div class="separator my-4"></div>
+                            <div class="d-flex flex-column gap-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="ki-duotone ki-information fs-2 text-primary me-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    <div>
+                                        <strong>Request ID:</strong> #${existingRequest.id}
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="ki-duotone ki-calendar fs-2 text-info me-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <div>
+                                        <strong>Created:</strong> ${createdDate}
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="ki-duotone ki-status fs-2 text-warning me-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <div>
+                                        <strong>Status:</strong> 
+                                        <span class="badge badge-light-primary ms-2">${existingRequest.status_name}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="separator my-4"></div>
+                            <div class="text-muted">
+                                <i class="ki-duotone ki-information-5 fs-3 text-muted me-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                The user cannot create a new exit pass while having an active request (Pending, Approved, Departed, or No Show status).
+                            </div>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#f1c40f',
+                    customClass: {
+                        popup: 'swal2-popup-large'
+                    }
+                }).then(() => {
+                    // Clear the selection after user acknowledges
+                    if (userType === 'islander' && islanderSelect) {
+                        $(islanderSelect).val(null).trigger('change');
+                    } else if (userType === 'visitor' && visitorSelect) {
+                        $(visitorSelect).val(null).trigger('change');
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error checking existing exit pass request:', error);
+        });
     }
 
     // Initialize real-time validation
@@ -697,8 +912,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Map form fields to request structure
             formData.set('user_id', selectedUserId); // Use selected islander/visitor as user_id
             formData.set('leave_id', formData.get('leave_reason')); // Use leave reason as leave_id
-            formData.set('type', 'Exit Pass');
-            formData.set('type_description', 'Exit pass request');
+            formData.set('type', '1');
+            formData.set('type_description', 'Exit Pass');
+            formData.set('type_color', '#5ec653');
+            formData.set('user_type', userType); // Pass user type for status determination
             
             // Combine departure date and time
             const departureDate = formData.get('departure_date');
@@ -751,8 +968,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Reset form
                     exitPassForm.reset();
                 } else {
-                    // Show validation errors
-                    if (data.errors) {
+                    // Check if it's an existing request error
+                    if (data.existing_request) {
+                        const existingRequest = data.existing_request;
+                        const createdDate = new Date(existingRequest.created_at).toLocaleDateString();
+                        
+                        Swal.fire({
+                            title: 'Existing Exit Pass Request',
+                            html: `
+                                <div class="text-start">
+                                    <p><strong>The selected user already has an active exit pass request:</strong></p>
+                                    <hr>
+                                    <p><i class="ki-duotone ki-information fs-2 text-primary me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i><strong>Request ID:</strong> #${existingRequest.id}</p>
+                                    <p><i class="ki-duotone ki-calendar fs-2 text-info me-2"><span class="path1"></span><span class="path2"></span></i><strong>Created:</strong> ${createdDate}</p>
+                                    <p><i class="ki-duotone ki-status fs-2 text-warning me-2"><span class="path1"></span><span class="path2"></span></i><strong>Status:</strong> <span class="badge badge-light-primary">${existingRequest.status_name}</span></p>
+                                    <hr>
+                                    <p class="text-muted">Please wait for the existing request to be completed before creating a new one.</p>
+                                </div>
+                            `,
+                            icon: 'warning',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3085d6',
+                            customClass: {
+                                popup: 'swal2-popup-large'
+                            }
+                        });
+                    } else if (data.errors) {
+                        // Show validation errors
                         let errorMessage = '';
                         Object.values(data.errors).forEach(function(msg) {
                             errorMessage += msg + '<br>';
