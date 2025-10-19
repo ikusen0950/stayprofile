@@ -668,7 +668,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             'currentPage' => $currentPage,
                             'totalPages' => $totalPages,
                             'limit' => $limit,
-                            'totalRecords' => $totalPositions,
+                            'totalRecords' => $totalRequests,
                             'search' => $search,
                             'tableId' => 'kt_position_table_length',
                             'jsFunction' => 'changePositionTableLimit'
@@ -946,9 +946,9 @@ function rendersections(sections) {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
-    sections.forEach((department, index) => {
+    sections.forEach((section, index) => {
         const sectionCard = createSectionCard(section, (currentPage - 1) * 10 + index);
-        container.appendChild(departmentCard);
+        container.appendChild(sectionCard);
     });
 
     // Reinitialize mobile cards after adding new ones
@@ -962,13 +962,13 @@ function createSectionCard(section, index) {
     col.setAttribute('data-aos-delay', (index * 100).toString());
     col.setAttribute('data-aos-duration', '600');
 
-    const description = position.description ?
-        `<p class="text-muted mb-0 mt-3">${position.description}</p>` : '';
+    const description = section.description ?
+        `<p class="text-muted mb-0 mt-3">${section.description}</p>` : '';
 
-    const createdByName = position.created_by_name || 'System';
-    const sectionName = position.section_name || 'No Section';
+    const createdByName = section.created_by_name || 'System';
+    const sectionName = section.section_name || 'No Section';
 
-    const createdAt = new Date(position.created_at).toLocaleDateString('en-US', {
+    const createdAt = new Date(section.created_at).toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
         year: 'numeric'
@@ -979,7 +979,7 @@ function createSectionCard(section, index) {
     <?php if ($permissions['canView']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-position-btn" data-position-id="${position.id}">
+            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-position-btn" data-position-id="${section.id}">
                 <i class="ki-duotone ki-eye fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -993,7 +993,7 @@ function createSectionCard(section, index) {
     <?php if ($permissions['canEdit']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-position-btn" data-position-id="${position.id}">
+            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-position-btn" data-position-id="${section.id}">
                 <i class="ki-duotone ki-pencil fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1006,7 +1006,7 @@ function createSectionCard(section, index) {
     <?php if ($permissions['canDelete']): ?>
     actionButtons += `
         <div class="col-4">
-            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-position-btn" data-position-id="${position.id}">
+            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-position-btn" data-position-id="${section.id}">
                 <i class="ki-duotone ki-trash fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1031,27 +1031,27 @@ function createSectionCard(section, index) {
     ` : '';
 
     col.innerHTML = `
-        <div class="card mobile-position-card" data-position-id="${position.id}">
+        <div class="card mobile-position-card" data-position-id="${section.id}">
             <div class="card-body p-4">
                 <!-- Position Header -->
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div class="flex-grow-1">
-                        <small class="text-muted text-uppercase">#${position.id}</small>
+                        <small class="text-muted text-uppercase">#${section.id}</small>
                     </div>
                     <div class="ms-3 d-flex gap-2">
-                        ${position.status_name ? `
-                            ${position.status_color ? 
-                                `<span class="badge fw-bold fs-8" style="background-color: ${position.status_color}1a; color: ${position.status_color};">${position.status_name.toUpperCase()}</span>` :
-                                `<span class="badge badge-light-success fw-bold fs-8">${position.status_name.toUpperCase()}</span>`
+                        ${section.status_name ? `
+                            ${section.status_color ? 
+                                `<span class="badge fw-bold fs-8" style="background-color: ${section.status_color}1a; color: ${section.status_color};">${section.status_name.toUpperCase()}</span>` :
+                                `<span class="badge badge-light-success fw-bold fs-8">${section.status_name.toUpperCase()}</span>`
                             }
                         ` : ''}
-                        <span class="badge badge-light-primary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${position.name.toUpperCase()}</span>
+                        <span class="badge badge-light-primary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${section.name.toUpperCase()}</span>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
                     <div class="flex-grow-1">
-                        <strong class="me-5 text-uppercase text-truncate">${position.name}</strong>
+                        <strong class="me-5 text-uppercase text-truncate">${section.name}</strong>
                         <br>
                         <small class="text-primary fw-bold">${sectionName}</small>
                     </div>

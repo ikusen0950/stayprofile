@@ -43,7 +43,7 @@
                                         <option value="2">Visitor</option>
                                     </select>
                                     <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="user_type"></div>
+                                        <div class="fv-help-block" data-field="user_type" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -84,7 +84,7 @@
                                 </div>
                                 
                                 <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="user_selection"></div>
+                                    <div class="fv-help-block" data-field="user_selection" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                 </div>
                             </div>
                             <!--end::Input group-->
@@ -106,7 +106,7 @@
                                     <?php endif; ?>
                                 </select>
                                 <div class="fv-plugins-message-container invalid-feedback">
-                                    <div class="fv-help-block" data-field="full_name"></div>
+                                    <div class="fv-help-block" data-field="leave_reason" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                 </div>
                             </div>
                             <!--end::Input group-->
@@ -123,7 +123,7 @@
                                         class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Enter date"
                                         value="" required />
                                     <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="departure_date"></div>
+                                        <div class="fv-help-block" data-field="departure_date" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -131,7 +131,7 @@
                                     <input type="time" name="departure_time" class="form-control form-control-solid"
                                         placeholder="Enter time" value="" required />
                                     <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="departure_time"></div>
+                                        <div class="fv-help-block" data-field="departure_time" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                     </div>
                                 </div>
                             </div>
