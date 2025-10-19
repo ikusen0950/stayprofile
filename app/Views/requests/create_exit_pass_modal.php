@@ -149,7 +149,7 @@
                                         class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Enter date"
                                         value="" required />
                                     <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="arrival_date"></div>
+                                        <div class="fv-help-block" data-field="arrival_date" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -157,7 +157,7 @@
                                     <input type="time" name="arrival_time" class="form-control form-control-solid"
                                         placeholder="Enter time" value="" required />
                                     <div class="fv-plugins-message-container invalid-feedback">
-                                        <div class="fv-help-block" data-field="arrival_time"></div>
+                                        <div class="fv-help-block" data-field="arrival_time" style="color: #f1416c; font-size: 0.875rem; margin-top: 0.25rem;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -194,6 +194,36 @@
 
 </div>
 <!--end::Scroll-->
+
+<style>
+/* Validation error styling */
+.is-invalid {
+    border-color: #f1416c !important;
+    box-shadow: 0 0 0 0.1rem rgba(241, 65, 108, 0.25) !important;
+}
+
+.fv-help-block {
+    display: none;
+    color: #f1416c;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.fv-help-block:not(:empty) {
+    display: block;
+}
+
+/* Select2 error styling */
+.select2-container--default .select2-selection--single.is-invalid {
+    border-color: #f1416c !important;
+}
+
+.select2-container--default .select2-selection--single.is-invalid:focus {
+    border-color: #f1416c !important;
+    box-shadow: 0 0 0 0.1rem rgba(241, 65, 108, 0.25) !important;
+}
+</style>
 
 <script>
 
@@ -351,9 +381,286 @@ document.addEventListener('DOMContentLoaded', function() {
     const exitPassSubmitBtn = document.getElementById('exitPassModal_submit');
     const exitPassModal = document.getElementById('exitPassModal');
 
+    // Validation functions
+    function showValidationError(fieldName, message) {
+        const errorElement = document.querySelector(`[data-field="${fieldName}"]`);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // Add error styling to the input
+        let inputElement = document.querySelector(`[name="${fieldName}"]`);
+        if (!inputElement && fieldName === 'user_type') {
+            inputElement = document.querySelector('#user_type_select');
+        }
+        if (!inputElement && fieldName === 'user_selection') {
+            const userType = document.querySelector('[name="user_type"]').value;
+            if (userType === '1') {
+                inputElement = document.querySelector('#islander_select');
+            } else if (userType === '2') {
+                inputElement = document.querySelector('#visitor_select');
+            }
+        }
+        
+        if (inputElement) {
+            inputElement.classList.add('is-invalid');
+            // For Select2 elements, also add class to the rendered element
+            const select2Element = inputElement.nextElementSibling;
+            if (select2Element && select2Element.classList.contains('select2-container')) {
+                select2Element.querySelector('.select2-selection').classList.add('is-invalid');
+            }
+        }
+    }
+
+    function hideValidationError(fieldName) {
+        const errorElement = document.querySelector(`[data-field="${fieldName}"]`);
+        if (errorElement) {
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+        }
+        
+        // Remove error styling from the input
+        let inputElement = document.querySelector(`[name="${fieldName}"]`);
+        if (!inputElement && fieldName === 'user_type') {
+            inputElement = document.querySelector('#user_type_select');
+        }
+        if (!inputElement && fieldName === 'user_selection') {
+            const userType = document.querySelector('[name="user_type"]').value;
+            if (userType === '1') {
+                inputElement = document.querySelector('#islander_select');
+            } else if (userType === '2') {
+                inputElement = document.querySelector('#visitor_select');
+            }
+        }
+        
+        if (inputElement) {
+            inputElement.classList.remove('is-invalid');
+            // For Select2 elements, also remove class from the rendered element
+            const select2Element = inputElement.nextElementSibling;
+            if (select2Element && select2Element.classList.contains('select2-container')) {
+                select2Element.querySelector('.select2-selection').classList.remove('is-invalid');
+            }
+        }
+    }
+
+    function clearAllValidationErrors() {
+        const errorElements = document.querySelectorAll('[data-field]');
+        errorElements.forEach(element => {
+            element.textContent = '';
+            element.style.display = 'none';
+        });
+        
+        // Remove error styling from all inputs
+        const inputElements = document.querySelectorAll('.is-invalid');
+        inputElements.forEach(element => {
+            element.classList.remove('is-invalid');
+        });
+    }
+
+    function validateExitPassForm() {
+        let isValid = true;
+        clearAllValidationErrors();
+
+        // 1. Validate User Type
+        const userType = document.querySelector('[name="user_type"]').value;
+        if (!userType) {
+            showValidationError('user_type', 'Please select a user type');
+            isValid = false;
+        } else {
+            hideValidationError('user_type');
+        }
+
+        // 2. Validate Islander/Visitor Selection
+        let selectedUserId = '';
+        if (userType === '1') {
+            // Islander selected
+            selectedUserId = document.querySelector('[name="islander_id"]').value;
+            if (!selectedUserId) {
+                showValidationError('user_selection', 'Please select an Islander');
+                isValid = false;
+            } else {
+                hideValidationError('user_selection');
+            }
+        } else if (userType === '2') {
+            // Visitor selected
+            selectedUserId = document.querySelector('[name="visitor_id"]').value;
+            if (!selectedUserId) {
+                showValidationError('user_selection', 'Please select a Visitor');
+                isValid = false;
+            } else {
+                hideValidationError('user_selection');
+            }
+        }
+
+        // 3. Validate Leave Reason
+        const leaveReason = document.querySelector('[name="leave_reason"]').value;
+        if (!leaveReason) {
+            showValidationError('leave_reason', 'Please select a leave reason');
+            isValid = false;
+        } else {
+            hideValidationError('leave_reason');
+        }
+
+        // 4. Validate Departure Date
+        const departureDate = document.querySelector('[name="departure_date"]').value;
+        if (!departureDate) {
+            showValidationError('departure_date', 'Please select departure date');
+            isValid = false;
+        } else {
+            // Check if departure date is not in the past
+            const today = new Date();
+            const selectedDate = new Date(departureDate);
+            today.setHours(0, 0, 0, 0);
+            selectedDate.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                showValidationError('departure_date', 'Departure date cannot be in the past');
+                isValid = false;
+            } else {
+                hideValidationError('departure_date');
+            }
+        }
+
+        // 5. Validate Departure Time
+        const departureTime = document.querySelector('[name="departure_time"]').value;
+        if (!departureTime) {
+            showValidationError('departure_time', 'Please select departure time');
+            isValid = false;
+        } else {
+            hideValidationError('departure_time');
+        }
+
+        // 6. Validate Arrival Date
+        const arrivalDate = document.querySelector('[name="arrival_date"]').value;
+        if (!arrivalDate) {
+            showValidationError('arrival_date', 'Please select arrival date');
+            isValid = false;
+        } else {
+            // Check if arrival date is not before departure date
+            if (departureDate && arrivalDate < departureDate) {
+                showValidationError('arrival_date', 'Arrival date cannot be before departure date');
+                isValid = false;
+            } else {
+                hideValidationError('arrival_date');
+            }
+        }
+
+        // 7. Validate Arrival Time
+        const arrivalTime = document.querySelector('[name="arrival_time"]').value;
+        if (!arrivalTime) {
+            showValidationError('arrival_time', 'Please select arrival time');
+            isValid = false;
+        } else {
+            // If departure and arrival are on the same date, check times
+            if (departureDate && arrivalDate && departureDate === arrivalDate && departureTime && arrivalTime <= departureTime) {
+                showValidationError('arrival_time', 'Arrival time must be after departure time on the same date');
+                isValid = false;
+            } else {
+                hideValidationError('arrival_time');
+            }
+        }
+
+        return isValid;
+    }
+
+    // Add real-time validation clearing
+    function addRealtimeValidation() {
+        // User type validation clearing
+        const userTypeSelect = document.querySelector('[name="user_type"]');
+        if (userTypeSelect) {
+            userTypeSelect.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('user_type');
+                }
+            });
+        }
+
+        // Islander/Visitor selection validation clearing
+        const islanderSelect = document.querySelector('[name="islander_id"]');
+        const visitorSelect = document.querySelector('[name="visitor_id"]');
+        
+        if (islanderSelect) {
+            islanderSelect.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('user_selection');
+                }
+            });
+        }
+        
+        if (visitorSelect) {
+            visitorSelect.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('user_selection');
+                }
+            });
+        }
+
+        // Leave reason validation clearing
+        const leaveReasonSelect = document.querySelector('[name="leave_reason"]');
+        if (leaveReasonSelect) {
+            leaveReasonSelect.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('leave_reason');
+                }
+            });
+        }
+
+        // Date and time validation clearing
+        const departureDate = document.querySelector('[name="departure_date"]');
+        const departureTime = document.querySelector('[name="departure_time"]');
+        const arrivalDate = document.querySelector('[name="arrival_date"]');
+        const arrivalTime = document.querySelector('[name="arrival_time"]');
+
+        if (departureDate) {
+            departureDate.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('departure_date');
+                }
+            });
+        }
+
+        if (departureTime) {
+            departureTime.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('departure_time');
+                }
+            });
+        }
+
+        if (arrivalDate) {
+            arrivalDate.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('arrival_date');
+                }
+            });
+        }
+
+        if (arrivalTime) {
+            arrivalTime.addEventListener('change', function() {
+                if (this.value) {
+                    hideValidationError('arrival_time');
+                }
+            });
+        }
+    }
+
+    // Initialize real-time validation
+    addRealtimeValidation();
+
     if (exitPassSubmitBtn && exitPassForm) {
         exitPassSubmitBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Clear previous validation errors and validate form
+            if (!validateExitPassForm()) {
+                // Scroll to first error
+                const firstError = document.querySelector('[data-field]:not(:empty)');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
             
             // Show loading state
             exitPassSubmitBtn.querySelector('.indicator-label').style.display = 'none';
@@ -375,14 +682,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedUserId = formData.get('visitor_id');
             }
             
-            // Validate that a user was selected
+            // This validation should not be needed anymore since we validate in validateExitPassForm()
+            // But keeping as double-check
             if (!selectedUserId) {
                 // Reset loading state
                 exitPassSubmitBtn.querySelector('.indicator-label').style.display = 'inline';
                 exitPassSubmitBtn.querySelector('.indicator-progress').style.display = 'none';
                 exitPassSubmitBtn.disabled = false;
                 
-                Swal.fire('Validation Error', 'Please select a user (Islander or Visitor)', 'error');
+                showValidationError('user_selection', 'Please select a user (Islander or Visitor)');
                 return;
             }
             
