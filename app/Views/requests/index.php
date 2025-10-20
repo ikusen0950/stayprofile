@@ -166,7 +166,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
     <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 55px !important;">
         <div class="container-fluid">
             <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Positions</h1>
+                <h1 class="text-dark fw-bold ms-2">Requests</h1>
             </div>
             <div class="row align-items-stretch">
                 <div class="col-10">
@@ -177,23 +177,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             <span class="path2"></span>
                         </i>
                         <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search positions..." value="<?= esc($search) ?>" />
+                            placeholder="Search requests..." value="<?= esc($search) ?>" />
                     </div>
                 </div>
                 <div class="col-2">
                     <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createPositionModal"
-                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
-                        style="min-height: 48px;">
+                    <a href="/requests/add" class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center" style="min-height: 48px;">
                         <i class="ki-duotone ki-plus-square fs-3x">
                             <span class="path1"></span>
                             <span class="path2"></span>
                             <span class="path3"></span>
                         </i>
-                    </button>
+                    </a>
                     <?php else: ?>
                     <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create positions">
+                        style="min-height: 48px;" title="No permission to create requests">
                         <i class="ki-duotone ki-lock fs-3x">
                             <span class="path1"></span>
                             <span class="path2"></span>
@@ -235,149 +233,193 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
         </div>
         <?php endif; ?>
 
-        <!-- Scrollable Card List - Mobile View Temporarily Disabled Due to Position Template Issues -->
+        <!-- Mobile Request Cards -->
         <div class="row mt-2" id="mobile-cards-container">
             <?php if (!empty($requests)): ?>
-        <?php foreach ($requests as $index => $request): ?>
-        <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-            <div class="card mobile-request-card" data-request-id="<?= esc($request['id']) ?>">
-                <div class="card-body p-4">
-                    <!-- Position Header -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="flex-grow-1">
-                            <small class="text-muted text-uppercase">#<?= esc($request['id']) ?></small>
-                        </div>
-                        <div class="ms-3 d-flex gap-2">
-                            <?php if (!empty($position['status_name'])): ?>
-                            <?php 
+            <?php foreach ($requests as $index => $request): ?>
+            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
+                <div class="card mobile-request-card" data-request-id="<?= esc($request['id']) ?>">
+                    <div class="card-body p-4">
+                        <!-- Request Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <small class="text-muted text-uppercase">#<?= esc($request['id']) ?></small>
+                            </div>
+                            <div class="ms-3 d-flex gap-2">
+                                <?php if (!empty($request['status_name'])): ?>
+                                <?php 
                                     // Use custom color if available for mobile cards
-                                    if (!empty($position['status_color'])) {
+                                    if (!empty($request['status_color'])) {
                                         // Convert hex color to RGB for light background
-                                        $hex = ltrim($position['status_color'], '#');
+                                        $hex = ltrim($request['status_color'], '#');
                                         $r = hexdec(substr($hex, 0, 2));
                                         $g = hexdec(substr($hex, 2, 2));
                                         $b = hexdec(substr($hex, 4, 2));
                                         $lightBg = "rgba($r, $g, $b, 0.1)";
-                                        $textColor = $position['status_color'];
+                                        $textColor = $request['status_color'];
                                         $mobileBadgeStyle = "background-color: $lightBg; color: $textColor;";
                                     } else {
                                         $mobileBadgeStyle = "";
                                     }
+                                ?>
+                                <?php if (!empty($request['status_color'])): ?>
+                                <span class="badge fw-bold fs-8" style="<?= $mobileBadgeStyle ?>">
+                                    <?= strtoupper(esc($request['status_name'])) ?>
+                                </span>
+                                <?php else: ?>
+                                <span class="badge badge-light-success fw-bold fs-8">
+                                    <?= strtoupper(esc($request['status_name'])) ?>
+                                </span>
+                                <?php endif; ?>
+                                <?php endif; ?>
+                                <span class="badge badge-light-info fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                    <?php 
+                                    $type = $request['type'] ?? '1';
+                                    switch($type) {
+                                        case '1':
+                                            echo 'EXIT PASS';
+                                            break;
+                                        case '2':
+                                            echo 'TRANSFER';
+                                            break;
+                                        case '3':
+                                            echo 'LEAVE';
+                                            break;
+                                        default:
+                                            echo 'UNKNOWN';
+                                    }
                                     ?>
-                            <?php if (!empty($position['status_color'])): ?>
-                            <span class="badge fw-bold fs-8" style="<?= $mobileBadgeStyle ?>">
-                                <?= strtoupper(esc($position['status_name'])) ?>
-                            </span>
-                            <?php else: ?>
-                            <span class="badge badge-light-success fw-bold fs-8">
-                                <?= strtoupper(esc($position['status_name'])) ?>
-                            </span>
-                            <?php endif; ?>
-                            <?php endif; ?>
-                            <span class="badge badge-light-primary fw-bold"
-                                style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                <?= strtoupper(esc($request['type'] ?? 'Unknown')) ?>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
-                        <div class="flex-grow-1">
-                            <strong
-                                class="me-5 text-uppercase text-truncate"><?= esc($request['user_name'] ?? 'Unknown User') ?></strong>
-                            <br>
-                            <small
-                                class="text-primary fw-bold"><?= esc($request['type_description'] ?? 'No description') ?></small>
-                        </div>
-                    </div>
-
-                    <!-- Request Footer -->
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div class="d-flex flex-column">
-                            <small class="text-muted">
-                                Created: <?= date('M d, Y', strtotime($request['created_at'])) ?>
-                            </small>
-                        </div>
-                        <small class="text-muted">Status: <?= esc($request['status_name'] ?? 'Unknown') ?></small>
-                    </div>
-
-                    <!-- Expandable Actions (initially hidden) -->
-                    <div class="mobile-actions mt-3 pt-3 border-top d-none">
-                        <div class="row g-2">
-                            <?php if ($permissions['canView']): ?>
-                            <div class="col-4">
-                                <button type="button"
-                                    class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-request-btn"
-                                    data-request-id="<?= esc($request['id']) ?>">
-                                    <i class="ki-duotone ki-eye fs-1 me-2">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
-                                    </i>
-                                    View
-                                </button>
+                                </span>
                             </div>
-                            <?php endif; ?>
-                            <?php if ($permissions['canEdit']): ?>
-                            <div class="col-4">
-                                <button type="button"
-                                    class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-request-btn"
-                                    data-request-id="<?= esc($request['id']) ?>">
-                                    <i class="ki-duotone ki-pencil fs-1 me-2">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                    </i>
-                                    Edit
-                                </button>
+                        </div>
+
+                        <!-- Islander Info -->
+                        <div class="d-flex align-items-center mb-4 mt-4">
+                            <?php 
+                            $userName = $request['user_full_name'] ?? 'Unknown User';
+                            $userIslanderNo = $request['user_islander_no'] ?? '';
+                            $userDepartment = $request['user_department_name'] ?? 'Service';
+                            $userPosition = $request['user_position_name'] ?? 'Captain';
+                            $userImage = $request['user_image'] ?? '';
+                            
+                            // Generate image URL
+                            $imageUrl = !empty($userImage) ? 
+                                base_url() . '/assets/media/users/' . $userImage : 
+                                'https://ui-avatars.com/api/?name=' . urlencode($userName) . '&background=f4f4f4&color=9ba1b6&font-size=0.5';
+                            ?>
+                            <img src="<?= esc($imageUrl) ?>" class="me-3 rounded" width="60" height="60" 
+                                 style="max-width: 60px; max-height: 60px; object-fit: cover;" alt="<?= esc($userName) ?>">
+                            <div class="flex-grow-1">
+                                <strong class="text-gray-800 d-block"><?= esc($userName) ?></strong>
+                                <?php if (!empty($userIslanderNo)): ?>
+                                <small class="text-muted d-block"># <?= esc($userIslanderNo) ?></small>
+                                <?php endif; ?>
+                                <small class="text-primary"><?= esc($userDepartment) ?> • <?= esc($userPosition) ?></small>
                             </div>
-                            <?php endif; ?>
-                            <?php if ($permissions['canDelete']): ?>
-                            <div class="col-4">
-                                <button
-                                    class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-request-btn"
-                                    data-request-id="<?= esc($request['id']) ?>">
-                                    <i class="ki-duotone ki-trash fs-1 me-2">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
-                                        <span class="path4"></span>
-                                        <span class="path5"></span>
-                                    </i>
-                                    Delete
-                                </button>
+                        </div>
+
+                        <!-- Request Info -->
+                        <?php if (!empty($request['type_description'])): ?>
+                        <div class="mb-3">
+                            <small class="text-muted fw-bold">Description:</small>
+                            <p class="text-gray-700 mb-0 mt-1" style="font-size: 13px;">
+                                <?= esc(substr($request['type_description'], 0, 100)) ?>
+                                <?= strlen($request['type_description']) > 100 ? '...' : '' ?>
+                            </p>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Request Footer -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="d-flex flex-column">
+                                <small class="text-muted">
+                                    Created: <?= date('M d, Y', strtotime($request['created_at'])) ?>
+                                </small>
+                                <?php if (!empty($request['created_by_name'])): ?>
+                                <small class="text-muted">
+                                    By: <?= esc($request['created_by_name']) ?>
+                                </small>
+                                <?php endif; ?>
                             </div>
-                            <?php endif; ?>
+                        </div>
+
+                        <!-- Expandable Actions (initially hidden) -->
+                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
+                            <div class="row g-2">
+                                <?php if ($permissions['canView']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-request-btn"
+                                        data-request-id="<?= esc($request['id']) ?>">
+                                        <i class="ki-duotone ki-eye fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                        View
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canEdit']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-request-btn"
+                                        data-request-id="<?= esc($request['id']) ?>">
+                                        <i class="ki-duotone ki-pencil fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        Edit
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canDelete']): ?>
+                                <div class="col-4">
+                                    <button
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-request-btn"
+                                        data-request-id="<?= esc($request['id']) ?>">
+                                        <i class="ki-duotone ki-trash fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                            <span class="path4"></span>
+                                            <span class="path5"></span>
+                                        </i>
+                                        Delete
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <?php endforeach; ?>
-        <?php else: ?>
-        <div class="col-12">
-            <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>
-                <h6 class="fw-bold text-gray-700 mb-2">No positions found</h6>
-                <p class="fs-7 text-gray-500 mb-4">Start by creating your first position entry</p>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <div class="col-12">
+                <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                    <i class="ki-duotone ki-document fs-5x text-gray-500 mb-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <h6 class="fw-bold text-gray-700 mb-2">No requests found</h6>
+                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first request</p>
+                </div>
             </div>
+            <?php endif; ?>
         </div>
-        <?php endif; ?>
-    </div>
 
     <!-- Loading indicator for infinite scroll -->
     <div id="loading-indicator" class="text-center py-4 d-none">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2 text-muted">Loading more positions...</p>
+        <p class="mt-2 text-muted">Loading more requests...</p>
     </div>
 
     <!-- No more data indicator -->
     <div id="no-more-data" class="text-center py-4 d-none">
-        <p class="text-muted">No more positions to load</p>
+        <p class="text-muted">No more requests to load</p>
     </div>
 </div>
 </div>
@@ -433,7 +475,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                 </i>
                                 <input type="text" id="kt_filter_search"
                                     class="form-control form-control-solid w-250px ps-13"
-                                    placeholder="Search positions..." value="<?= esc($search) ?>" />
+                                    placeholder="Search requests..." value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
                         </div>
@@ -730,10 +772,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 </div>
 <!--end::Main-->
 
-<!-- Include Modals -->
-<?= $this->include('positions/create_modal') ?>
-<?= $this->include('positions/edit_modal') ?>
-<?= $this->include('positions/view_modal') ?>
+<!-- No modals needed for requests - using dedicated pages -->
 
 <script>
 // Global variables
@@ -820,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (container && window.innerWidth < 992) {
                 // Mobile view - use AJAX
                 container.innerHTML = '';
-                loadpositions(true, query);
+                loadRequests(true, query);
             } else {
                 // Desktop view - reload page with search
                 const url = new URL(window.location);
@@ -846,13 +885,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load initial sections for mobile
+    // Load initial requests for mobile
     const mobileContainer = document.getElementById('mobile-cards-container');
     if (mobileContainer) {
         // Only load initial data if container is empty (no server-rendered content)
-        const existingCards = mobileContainer.querySelectorAll('.mobile-position-card');
+        const existingCards = mobileContainer.querySelectorAll('.mobile-request-card');
         if (existingCards.length === 0) {
-            loadpositions(false);
+            loadRequests(false);
         }
 
         // Infinite scroll for mobile
@@ -865,44 +904,44 @@ document.addEventListener('DOMContentLoaded', function() {
                     const documentHeight = document.documentElement.offsetHeight;
 
                     if (scrollPosition >= documentHeight - 1000) {
-                        loadpositions(false, mobileSearch?.value || '');
+                        loadRequests(false, mobileSearch?.value || '');
                     }
                 }
             }, 100);
         });
     }
 
-    // Handle view position
+    // Handle view request
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.view-position-btn')) {
+        if (e.target.closest('.view-request-btn')) {
             e.preventDefault();
-            const positionId = e.target.closest('.view-position-btn').getAttribute('data-position-id');
-            viewPosition(positionId);
+            const requestId = e.target.closest('.view-request-btn').getAttribute('data-request-id');
+            viewRequest(requestId);
         }
     });
 
-    // Handle edit position
+    // Handle edit request
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-position-btn')) {
+        if (e.target.closest('.edit-request-btn')) {
             e.preventDefault();
-            const positionId = e.target.closest('.edit-position-btn').getAttribute('data-position-id');
-            editPosition(positionId);
+            const requestId = e.target.closest('.edit-request-btn').getAttribute('data-request-id');
+            editRequest(requestId);
         }
     });
 
-    // Handle delete position
+    // Handle delete request
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-position-btn')) {
+        if (e.target.closest('.delete-request-btn')) {
             e.preventDefault();
-            const positionId = e.target.closest('.delete-position-btn').getAttribute(
-            'data-position-id');
-            deletePosition(positionId);
+            const requestId = e.target.closest('.delete-request-btn').getAttribute(
+            'data-request-id');
+            deleteRequest(requestId);
         }
     });
 
 });
 
-function loadpositions(reset = false, search = '') {
+function loadRequests(reset = false, search = '') {
     if (isLoading) return;
 
     if (reset) {
@@ -928,7 +967,7 @@ function loadpositions(reset = false, search = '') {
         showSkeletonLoading();
     }
 
-    const url = `/positions/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
+    const url = `/requests/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
 
     secureFetch(url)
         .then(response => {
@@ -950,7 +989,7 @@ function loadpositions(reset = false, search = '') {
                 removeSkeletonLoading();
 
                 if (data.data && data.data.length > 0) {
-                    rendersections(data.data);
+                    renderRequests(data.data);
                     currentPage++;
                     hasMoreData = data.hasMore;
 
@@ -961,7 +1000,7 @@ function loadpositions(reset = false, search = '') {
                 } else {
                     hasMoreData = false;
                     if (currentPage === 1) {
-                        showNosectionsMessage();
+                        showNoRequestsMessage();
                     }
                 }
 
@@ -985,44 +1024,58 @@ function loadpositions(reset = false, search = '') {
         });
 }
 
-function rendersections(sections) {
+function renderRequests(requests) {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
-    sections.forEach((section, index) => {
-        const sectionCard = createSectionCard(section, (currentPage - 1) * 10 + index);
-        container.appendChild(sectionCard);
+    requests.forEach((request, index) => {
+        const requestCard = createRequestCard(request, (currentPage - 1) * 10 + index);
+        container.appendChild(requestCard);
     });
 
     // Reinitialize mobile cards after adding new ones
     initMobileCards();
 }
 
-function createSectionCard(section, index) {
+function createRequestCard(request, index) {
     const col = document.createElement('div');
     col.className = 'col-12 mb-3';
     col.setAttribute('data-aos', 'fade-up');
     col.setAttribute('data-aos-delay', (index * 100).toString());
     col.setAttribute('data-aos-duration', '600');
 
-    const description = section.description ?
-        `<p class="text-muted mb-0 mt-3">${section.description}</p>` : '';
+    const userName = request.user_full_name || 'Unknown User';
+    const userIslanderNo = request.user_islander_no || '';
+    const userDepartment = request.user_department_name || 'Service';
+    const userPosition = request.user_position_name || 'Captain';
+    const userImage = request.user_image || '';
+    const createdByName = request.created_by_name || 'System';
 
-    const createdByName = section.created_by_name || 'System';
-    const sectionName = section.section_name || 'No Section';
+    // Generate image URL
+    const imageUrl = userImage ? 
+        `http://localhost:8080/assets/media/users/${userImage}` : 
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f4f4f4&color=9ba1b6&font-size=0.5`;
 
-    const createdAt = new Date(section.created_at).toLocaleDateString('en-US', {
+    const createdAt = new Date(request.created_at).toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
         year: 'numeric'
     });
+
+    // Get request type display
+    let requestType = 'UNKNOWN';
+    switch(request.type) {
+        case '1': requestType = 'EXIT PASS'; break;
+        case '2': requestType = 'TRANSFER'; break;  
+        case '3': requestType = 'LEAVE'; break;
+    }
 
     // Create action buttons based on permissions
     let actionButtons = '';
     <?php if ($permissions['canView']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-position-btn" data-position-id="${section.id}">
+            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-request-btn" data-request-id="${request.id}">
                 <i class="ki-duotone ki-eye fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1036,7 +1089,7 @@ function createSectionCard(section, index) {
     <?php if ($permissions['canEdit']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-position-btn" data-position-id="${section.id}">
+            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-request-btn" data-request-id="${request.id}">
                 <i class="ki-duotone ki-pencil fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1049,7 +1102,7 @@ function createSectionCard(section, index) {
     <?php if ($permissions['canDelete']): ?>
     actionButtons += `
         <div class="col-4">
-            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-position-btn" data-position-id="${section.id}">
+            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-request-btn" data-request-id="${request.id}">
                 <i class="ki-duotone ki-trash fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -1074,38 +1127,51 @@ function createSectionCard(section, index) {
     ` : '';
 
     col.innerHTML = `
-        <div class="card mobile-position-card" data-position-id="${section.id}">
+        <div class="card mobile-request-card" data-request-id="${request.id}">
             <div class="card-body p-4">
-                <!-- Position Header -->
+                <!-- Request Header -->
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div class="flex-grow-1">
-                        <small class="text-muted text-uppercase">#${section.id}</small>
+                        <small class="text-muted text-uppercase">#${request.id}</small>
                     </div>
                     <div class="ms-3 d-flex gap-2">
-                        ${section.status_name ? `
-                            ${section.status_color ? 
-                                `<span class="badge fw-bold fs-8" style="background-color: ${section.status_color}1a; color: ${section.status_color};">${section.status_name.toUpperCase()}</span>` :
-                                `<span class="badge badge-light-success fw-bold fs-8">${section.status_name.toUpperCase()}</span>`
+                        ${request.status_name ? `
+                            ${request.status_color ? 
+                                `<span class="badge fw-bold fs-8" style="background-color: ${request.status_color}1a; color: ${request.status_color};">${request.status_name.toUpperCase()}</span>` :
+                                `<span class="badge badge-light-success fw-bold fs-8">${request.status_name.toUpperCase()}</span>`
                             }
                         ` : ''}
-                        <span class="badge badge-light-primary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${section.name.toUpperCase()}</span>
+                        <span class="badge badge-light-info fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">${requestType}</span>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                <!-- Islander Info -->
+                <div class="d-flex align-items-center mb-4 mt-4">
+                    <img src="${imageUrl}" class="me-3 rounded" width="60" height="60" 
+                         style="max-width: 60px; max-height: 60px; object-fit: cover;" alt="${userName}">
                     <div class="flex-grow-1">
-                        <strong class="me-5 text-uppercase text-truncate">${section.name}</strong>
-                        <br>
-                        <small class="text-primary fw-bold">${sectionName}</small>
+                        <strong class="text-gray-800 d-block">${userName}</strong>
+                        ${userIslanderNo ? `<small class="text-muted d-block"># ${userIslanderNo}</small>` : ''}
+                        <small class="text-primary">${userDepartment} • ${userPosition}</small>
                     </div>
                 </div>
 
-                <!-- Section Footer -->
+                <!-- Request Info -->
+                ${request.type_description ? `
+                <div class="mb-3">
+                    <small class="text-muted fw-bold">Description:</small>
+                    <p class="text-gray-700 mb-0 mt-1" style="font-size: 13px;">
+                        ${request.type_description.length > 100 ? request.type_description.substring(0, 100) + '...' : request.type_description}
+                    </p>
+                </div>
+                ` : ''}
+
+                <!-- Request Footer -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="d-flex flex-column">
-                        <small class="text-muted">${createdByName}</small>
+                        <small class="text-muted">Created: ${createdAt}</small>
+                        <small class="text-muted">By: ${createdByName}</small>
                     </div>
-                    <small class="text-muted">${createdAt}</small>
                 </div>
 
                 ${actionsSection}
@@ -1151,7 +1217,7 @@ function removeSkeletonLoading() {
     skeletonCards.forEach(card => card.remove());
 }
 
-function showNosectionsMessage() {
+function showNoRequestsMessage() {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
@@ -1159,71 +1225,27 @@ function showNosectionsMessage() {
     noDataDiv.className = 'col-12';
     noDataDiv.innerHTML = `
         <div class="d-flex flex-column align-items-center justify-content-center py-10">
-            <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
+            <i class="ki-duotone ki-document fs-5x text-gray-500 mb-3">
                 <span class="path1"></span>
                 <span class="path2"></span>
             </i>
-            <h6 class="fw-bold text-gray-700 mb-2">No sections found</h6>
-            <p class="fs-7 text-gray-500 mb-4">Start by creating your first department entry</p>
+            <h6 class="fw-bold text-gray-700 mb-2">No requests found</h6>
+            <p class="fs-7 text-gray-500 mb-4">Start by creating your first request</p>
         </div>
     `;
     container.appendChild(noDataDiv);
 }
 
-// Department CRUD functions
-function viewPosition(positionId) {
-    secureFetch(`/positions/show/${positionId}`)
-        .then(response => {
-            if (response.status === 401 || response.status === 403) {
-                handleSessionExpired();
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Populate view modal
-                populateViewModal(data.data);
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('viewPositionModal'));
-                modal.show();
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load department details', 'error');
-        });
+// Request CRUD functions
+function viewRequest(requestId) {
+    window.location.href = `/requests/view/${requestId}`;
 }
 
-function editPosition(positionId) {
-    secureFetch(`/positions/show/${positionId}`)
-        .then(response => {
-            if (response.status === 401 || response.status === 403) {
-                handleSessionExpired();
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Populate edit modal
-                populateEditModal(data.data);
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('editPositionModal'));
-                modal.show();
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load section details', 'error');
-        });
+function editRequest(requestId) {
+    window.location.href = `/requests/edit/${requestId}`;
 }
 
-function deletePosition(positionId) {
+function deleteRequest(requestId) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -1234,7 +1256,7 @@ function deletePosition(positionId) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            secureFetch(`/positions/delete/${positionId}`, {
+            secureFetch(`/requests/delete/${requestId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1258,7 +1280,7 @@ function deletePosition(positionId) {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    Swal.fire('Error', 'Failed to delete section', 'error');
+                    Swal.fire('Error', 'Failed to delete request', 'error');
                 });
         }
     });
@@ -1267,11 +1289,11 @@ function deletePosition(positionId) {
 // Mobile card click functionality (matching modules UI)
 function initMobileCards() {
     // Remove existing listeners to prevent duplicates
-    document.querySelectorAll('.mobile-position-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-request-card').forEach(function(card) {
         card.replaceWith(card.cloneNode(true));
     });
 
-    document.querySelectorAll('.mobile-position-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-request-card').forEach(function(card) {
         card.addEventListener('click', function(e) {
             if (e.target.closest('.mobile-actions') || e.target.closest('button') || e.target.closest(
                     'a')) {
@@ -1297,92 +1319,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initMobileCards();
 });
 
-// Modal population functions
-function populateViewModal(position) {
-    // Basic position info
-    document.getElementById('view_position_name').textContent = position.name;
-    document.getElementById('view_section_name').textContent = position.section_name || 'N/A';
-
-    // Description
-    const description = document.getElementById('view_description');
-    const descriptionSection = document.getElementById('view_description_section');
-
-    if (position.description && position.description.trim() !== '') {
-        description.textContent = position.description;
-        descriptionSection.style.display = 'block';
-    } else {
-        description.textContent = 'No description provided';
-        descriptionSection.style.display = 'block';
-    }
-
-    // Audit info
-    document.getElementById('view_created_by').textContent = position.created_by_name || 'System';
-    document.getElementById('view_created_at').textContent = position.created_at ?
-        new Date(position.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }) : '-';
-
-    // Updated info (show/hide based on availability)
-    const updatedBySection = document.getElementById('view_updated_by_section');
-    const updatedAtSection = document.getElementById('view_updated_at_section');
-
-    if (position.updated_by_name) {
-        document.getElementById('view_updated_by').textContent = position.updated_by_name;
-        updatedBySection.style.display = 'block';
-    } else {
-        updatedBySection.style.display = 'none';
-    }
-
-    if (position.updated_at) {
-        document.getElementById('view_updated_at').textContent = new Date(position.updated_at).toLocaleDateString(
-            'en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        updatedAtSection.style.display = 'block';
-    } else {
-        updatedAtSection.style.display = 'none';
-    }
-
-    // Set position ID for edit button if it exists
-    const editBtn = document.getElementById('view_edit_btn');
-    if (editBtn) {
-        editBtn.setAttribute('data-position-id', position.id);
-    }
-}
-
-function populateEditModal(position) {
-    document.getElementById('edit_position_id').value = position.id;
-    document.querySelector('#editPositionForm input[name="name"]').value = position.name;
-    document.querySelector('#editPositionForm select[name="section_id"]').value = position.section_id;
-    document.querySelector('#editPositionForm textarea[name="description"]').value = position.description || '';
-
-    // Set status dropdown
-    const statusSelect = document.querySelector('#editPositionForm select[name="status_id"]');
-    if (statusSelect && position.status_id) {
-        statusSelect.value = position.status_id;
-        // Trigger Select2 update if it's initialized
-        if (typeof $(statusSelect).select2 === 'function') {
-            $(statusSelect).trigger('change');
-        }
-    }
-
-    // Trigger Select2 update if it's initialized
-    const sectionSelect = document.querySelector('#editPositionForm select[name="section_id"]');
-    if (sectionSelect && typeof $(sectionSelect).select2 === 'function') {
-        $(sectionSelect).trigger('change');
-    }
-}
-
 // Change table limit (records per page)
-function changePositionTableLimit(newLimit) {
+function changeRequestTableLimit(newLimit) {
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('limit', newLimit);
     currentUrl.searchParams.set('page', '1'); // Reset to first page
