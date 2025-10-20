@@ -234,7 +234,9 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
         // }
 
         foreach ( $managers as $manager ) {
-            if ( $isAssistantManager && $manager[ 'user_id' ] == $user ) continue;
+            // Skip if this manager is the same person who created the request
+            // Assistant managers cannot approve their own requests - must be done by administrator, executive committee, or manager
+            if ( $manager[ 'user_id' ] == $user ) continue;
 
             $managerDetails = $usersModel->find( $manager[ 'user_id' ] );
             if ( !$managerDetails || empty( $managerDetails->device_token ) ) continue;
@@ -379,7 +381,9 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
         // }
 
         foreach ( $managers as $manager ) {
-            if ( $isAssistantManager && $manager[ 'user_id' ] == $user ) continue;
+            // Skip if this manager is the same person who created the request
+            // Assistant managers cannot approve their own requests - must be done by administrator, executive committee, or manager
+            if ( $manager[ 'user_id' ] == $user ) continue;
 
             $managerDetails = $usersModel->find( $manager[ 'user_id' ] );
             if ( !$managerDetails || empty( $managerDetails->device_token ) ) continue;

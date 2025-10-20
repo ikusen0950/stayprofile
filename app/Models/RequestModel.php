@@ -249,7 +249,7 @@ class RequestModel extends Model
                                u.image as user_image,
                                d.name as user_department_name,
                                p.name as user_position_name,
-                               l.reason as leave_reason_name,
+                               l.name as leave_reason_name,
                                l.description as leave_reason_description,
                                CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                                CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name,
