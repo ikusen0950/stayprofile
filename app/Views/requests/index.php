@@ -548,24 +548,40 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <!--begin::Type/Status-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <span class="badge badge-light-info fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                                <div class="mb-1">
+                                                    <?php if (!empty($request['type_description'])): ?>
                                                     <?php 
-                                                    $type = $request['type'] ?? '1';
-                                                    switch($type) {
-                                                        case '1':
-                                                            echo 'Exit Pass';
-                                                            break;
-                                                        case '2':
-                                                            echo 'Transfer';
-                                                            break;
-                                                        case '3':
-                                                            echo 'Leave';
-                                                            break;
-                                                        default:
-                                                            echo 'Unknown';
-                                                    }
-                                                    ?>
-                                                </span>
+                                                        // Use custom color if available, otherwise fallback to status-based colors
+                                                        if (!empty($request['type_color'])) {
+                                                            // Convert hex color to RGB for light background
+                                                            $hex = ltrim($request['type_color'], '#');
+                                                            $r = hexdec(substr($hex, 0, 2));
+                                                            $g = hexdec(substr($hex, 2, 2));
+                                                            $b = hexdec(substr($hex, 4, 2));
+                                                            $lightBg = "rgba($r, $g, $b, 0.1)";
+                                                            $textColor = $request['type_color'];
+                                                            $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                        } else {
+                                                            // Fallback to default styling
+                                                            $badgeStyle = "padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                        }
+                                                        ?>
+                                                    <?php if (!empty($request['type_color'])): ?>
+                                                    <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                                        <?= esc($request['type_description']) ?>
+                                                    </span>
+                                                    <?php else: ?>
+                                                    <span class="badge badge-light-success fw-bold"
+                                                        style="<?= $badgeStyle ?>">
+                                                        <?= esc($request['type_description']) ?>
+                                                    </span>
+                                                    <?php endif; ?>
+                                                    <?php else: ?>
+                                                    <span class="badge badge-light-secondary fw-bold"
+                                                        style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">N/A</span>
+                                                    <?php endif; ?>
+                                                </div>
+
                                                 <div>
                                                     <?php if (!empty($request['status_name'])): ?>
                                                     <?php 
