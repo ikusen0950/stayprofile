@@ -292,11 +292,21 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2 mt-4">
                             <div class="flex-grow-1">
                                 <strong class="me-5 text-uppercase text-truncate"><?= esc($FlightRoute['name']) ?></strong>
                             </div>
                         </div>
+
+                        <!-- Flight Route Details -->
+                        <?php if (!empty($FlightRoute['description'])): ?>
+                        <p class="text-muted mb-2 mt-2"><?= esc($FlightRoute['description']) ?></p>
+                        <?php endif; ?>
+                        <?php if (!empty($FlightRoute['type'])): ?>
+                        <div class="mb-2">
+                            <span class="badge badge-light-info">Type: <?= esc($FlightRoute['type']) ?></span>
+                        </div>
+                        <?php endif; ?>
 
                         <!-- Flight Route Footer -->
                         <div class="d-flex justify-content-between align-items-center mt-4">
@@ -485,6 +495,7 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                         <th class="min-w-20px">#</th>
                                         <th class="min-w-150px">Flight Route Name</th>
                                         <th class="min-w-200px">Description</th>
+                                        <th class="min-w-100px">Type</th>
                                         <th class="min-w-100px">Status</th>
                                         <th class="min-w-120px">Created By</th>
                                         <th class="min-w-120px">Updated By</th>
@@ -535,6 +546,14 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                             </div>
                                         </td>
                                         <!--end::Description-->
+
+                                        <!--begin::Type-->
+                                        <td>
+                                            <div class="text-gray-600">
+                                                <?= !empty($FlightRoute['type']) ? esc($FlightRoute['type']) : '-' ?>
+                                            </div>
+                                        </td>
+                                        <!--end::Type-->
 
                                         <!--begin::Status-->
                                         <td>
@@ -1032,11 +1051,15 @@ function createFlightRouteCard(FlightRoute, index) {
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                <div class="d-flex justify-content-between align-items-start mb-2 mt-4">
                     <div class="flex-grow-1">
                         <strong class="me-5 text-uppercase text-truncate">${FlightRoute.name}</strong>
                     </div>
                 </div>
+
+                <!-- Flight Route Details -->
+                ${FlightRoute.description ? `<p class="text-muted mb-2 mt-2">${FlightRoute.description}</p>` : ''}
+                ${FlightRoute.type ? `<div class="mb-2"><span class="badge badge-light-info">Type: ${FlightRoute.type}</span></div>` : ''}
 
                 <!-- FlightRoute Footer -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
@@ -1252,6 +1275,18 @@ function populateViewModal(FlightRoute) {
         descriptionSection.style.display = 'block';
     }
     
+    // Type
+    const type = document.getElementById('view_type');
+    const typeSection = document.getElementById('view_type_section');
+    
+    if (FlightRoute.type && FlightRoute.type.trim() !== '') {
+        type.textContent = FlightRoute.type;
+        typeSection.style.display = 'block';
+    } else {
+        type.textContent = 'No type specified';
+        typeSection.style.display = 'block';
+    }
+    
     // Audit info
     document.getElementById('view_created_by').textContent = FlightRoute.created_by_name || 'System';
     document.getElementById('view_created_at').textContent = FlightRoute.created_at ? 
@@ -1298,6 +1333,12 @@ function populateEditModal(FlightRoute) {
     document.getElementById('edit_flight_route_id').value = FlightRoute.id;
     document.querySelector('#editFlightRouteForm input[name="name"]').value = FlightRoute.name;
     document.querySelector('#editFlightRouteForm textarea[name="description"]').value = FlightRoute.description || '';
+    
+    // Set type dropdown
+    const typeSelect = document.querySelector('#editFlightRouteForm select[name="type"]');
+    if (typeSelect && FlightRoute.type) {
+        typeSelect.value = FlightRoute.type;
+    }
     
     // Set status dropdown
     const statusSelect = document.querySelector('#editFlightRouteForm select[name="status_id"]');

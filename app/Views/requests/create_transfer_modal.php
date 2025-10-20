@@ -190,8 +190,20 @@
                             <div class="row mb-7">
                                 <div class="col-md-6">
                                     <label class="required fs-6 fw-semibold mb-2">Departure Route</label>
-                                    <input type="text" name="departure_route" class="form-control form-control-solid"
-                                        placeholder="Enter departure location/route" />
+                                    <select name="departure_route" class="form-select form-select-solid"
+                                        data-placeholder="Select departure route">
+                                        <option value="">Select departure route</option>
+                                        <?php if (isset($departure_routes) && !empty($departure_routes)): ?>
+                                        <?php foreach ($departure_routes as $route): ?>
+                                        <option value="<?= esc($route['name'] ?? '') ?>">
+                                            <?= esc($route['name'] ?? '') ?>
+                                            <?php if (!empty($route['description'])): ?>
+                                            - <?= esc($route['description']) ?>
+                                            <?php endif; ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
                                     <div class="fv-help-block" data-field="departure_route"></div>
                                 </div>
                                 <div class="col-md-6">
@@ -211,8 +223,20 @@
                             <div class="row mb-7">
                                 <div class="col-md-6">
                                     <label class="required fs-6 fw-semibold mb-2">Arrival Route</label>
-                                    <input type="text" name="arrival_route" class="form-control form-control-solid"
-                                        placeholder="Enter arrival location/route" />
+                                    <select name="arrival_route" class="form-select form-select-solid"
+                                        data-placeholder="Select arrival route">
+                                        <option value="">Select arrival route</option>
+                                        <?php if (isset($arrival_routes) && !empty($arrival_routes)): ?>
+                                        <?php foreach ($arrival_routes as $route): ?>
+                                        <option value="<?= esc($route['name'] ?? '') ?>">
+                                            <?= esc($route['name'] ?? '') ?>
+                                            <?php if (!empty($route['description'])): ?>
+                                            - <?= esc($route['description']) ?>
+                                            <?php endif; ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
                                     <div class="fv-help-block" data-field="arrival_route"></div>
                                 </div>
                                 <div class="col-md-6">
@@ -521,6 +545,23 @@ document.addEventListener('DOMContentLoaded', function() {
             $('select[name="mode_of_transport"]').select2({
                 dropdownParent: $('#transferModal'),
                 placeholder: 'Select mode of transport',
+                allowClear: true,
+                dropdownAutoWidth: true,
+                selectOnClose: false
+            });
+
+            // Initialize Route Select2 dropdowns
+            $('select[name="departure_route"]').select2({
+                dropdownParent: $('#transferModal'),
+                placeholder: 'Select departure route',
+                allowClear: true,
+                dropdownAutoWidth: true,
+                selectOnClose: false
+            });
+
+            $('select[name="arrival_route"]').select2({
+                dropdownParent: $('#transferModal'),
+                placeholder: 'Select arrival route',
                 allowClear: true,
                 dropdownAutoWidth: true,
                 selectOnClose: false

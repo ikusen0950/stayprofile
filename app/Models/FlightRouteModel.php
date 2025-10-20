@@ -16,7 +16,8 @@ class FlightRouteModel extends Model
 
     protected $allowedFields = [
         'name', 
-        'description', 
+        'description',
+        'type',
         'status_id',
         'created_by', 
         'updated_by',
@@ -50,6 +51,13 @@ class FlightRouteModel extends Model
             'rules'  => 'permit_empty|max_length[1000]',
             'errors' => [
                 'max_length' => 'Description cannot exceed 1000 characters.'
+            ]
+        ],
+        'type' => [
+            'label'  => 'Type',
+            'rules'  => 'permit_empty|in_list[Departure,Arrival]',
+            'errors' => [
+                'in_list' => 'Type must be either Departure or Arrival.'
             ]
         ]
     ];

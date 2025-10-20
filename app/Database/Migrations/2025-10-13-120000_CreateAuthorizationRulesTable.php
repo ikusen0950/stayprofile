@@ -8,6 +8,11 @@ class CreateAuthorizationRulesTable extends Migration
 {
     public function up()
     {
+        // If the table already exists, skip creating it to make migration safe to re-run
+        if ($this->db->tableExists('authorization_rules')) {
+            return;
+        }
+
         $this->forge->addField([
             'id' => [
                 'type'           => 'INT',

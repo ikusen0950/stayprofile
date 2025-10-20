@@ -23,9 +23,10 @@ class FlightRoutesController extends BaseController
     {
         $sanitized = [
             'name' => isset($data['name']) ? trim(strip_tags($data['name'])) : '',
-            'status_id' => isset($data['status_id']) ? (int)$data['status_id'] : 1,
             'description' => isset($data['description']) ? 
                 trim(strip_tags($data['description'], '<p><br><strong><em><ul><ol><li>')) : '',
+            'type' => isset($data['type']) ? trim(strip_tags($data['type'])) : null,
+            'status_id' => isset($data['status_id']) ? (int)$data['status_id'] : 1,
         ];
 
         // Add audit fields if present (these don't need sanitization as they're system-generated)
@@ -90,7 +91,7 @@ class FlightRoutesController extends BaseController
 
             $logData = [
                 'status_id' => $logStatusId, // Use mapped status ID based on action
-                'module_id' => 9, // Status module ID (from modules table)
+                'module_id' => 20, // Status module ID (from modules table)
                 'action' => $actionDescription, // Structured action text with details
             ];
 
@@ -117,7 +118,7 @@ class FlightRoutesController extends BaseController
     public function index()
     {
         // Check if user has permission to view flight routes
-        if (!has_permission('flight_routes.view')) {
+        if (!has_permission('flight-routes.view')) {
             return redirect()->to('/')->with('error', 'You do not have permission to view flight routes.');
         }
 
@@ -136,10 +137,10 @@ class FlightRoutesController extends BaseController
 
         // Check user permissions for buttons
         $permissions = [
-            'canCreate' => has_permission('flight_routes.create'),
-            'canEdit' => has_permission('flight_routes.edit'),
-            'canView' => has_permission('flight_routes.view'),
-            'canDelete' => has_permission('flight_routes.delete')
+            'canCreate' => has_permission('flight-routes.create'),
+            'canEdit' => has_permission('flight-routes.edit'),
+            'canView' => has_permission('flight-routes.view'),
+            'canDelete' => has_permission('flight-routes.delete')
         ];
 
         $data = [
@@ -163,7 +164,7 @@ class FlightRoutesController extends BaseController
     public function store()
     {
         // Check if user has permission to create Flight Routes
-        if (!has_permission('flight_routes.create')) {
+        if (!has_permission('flight-routes.create')) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -194,8 +195,9 @@ class FlightRoutesController extends BaseController
         // Prepare data for insertion with sanitization
         $rawData = [
             'name' => $this->request->getPost('name'),
-            'status_id' => $this->request->getPost('status_id'),
-            'description' => $this->request->getPost('description')
+            'description' => $this->request->getPost('description'),
+            'type' => $this->request->getPost('type'),
+            'status_id' => $this->request->getPost('status_id')
         ];
         $data = $this->sanitizeFlightRouteInput($rawData);
 
@@ -234,7 +236,7 @@ class FlightRoutesController extends BaseController
     public function show($id = null)
     {
         // Check if user has permission to view Flight Routes
-        if (!has_permission('flight_routes.view')) {
+        if (!has_permission('flight-routes.view')) {
             return $this->response->setStatusCode(403)->setJSON([
                 'success' => false,
                 'message' => 'You do not have permission to view Flight Routes.'
@@ -277,7 +279,7 @@ class FlightRoutesController extends BaseController
     public function update($id = null)
     {
         // Check if user has permission to edit Flight Routes
-        if (!has_permission('flight_routes.edit')) {
+        if (!has_permission('flight-routes.edit')) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -318,8 +320,9 @@ class FlightRoutesController extends BaseController
         // Sanitize and validate the input using model's custom validation for updates
         $rawData = [
             'name' => $this->request->getPost('name'),
-            'status_id' => $this->request->getPost('status_id'),
-            'description' => $this->request->getPost('description')
+            'description' => $this->request->getPost('description'),
+            'type' => $this->request->getPost('type'),
+            'status_id' => $this->request->getPost('status_id')
         ];
         $inputData = $this->sanitizeFlightRouteInput($rawData);
         
@@ -397,7 +400,7 @@ class FlightRoutesController extends BaseController
     public function delete($id = null)
     {
         // Check if user has permission to delete Flight Routes
-        if (!has_permission('flight_routes.delete')) {
+        if (!has_permission('flight-routes.delete')) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'You do not have permission to delete Flight Routes.'

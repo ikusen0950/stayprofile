@@ -60,6 +60,24 @@
                         <!--begin::Input group-->
                         <div class="fv-row mb-7">
                             <!--begin::Label-->
+                            <label class="fs-6 fw-semibold mb-2">Type</label>
+                            <!--end::Label-->
+                            <!--begin::Select-->
+                            <select class="form-select form-select-solid" name="type" id="edit_flight_route_type">
+                                <option value="">Select flight route type...</option>
+                                <option value="Departure">Departure</option>
+                                <option value="Arrival">Arrival</option>
+                            </select>
+                            <!--end::Select-->
+                            <!--begin::Error message container-->
+                            <div class="text-danger mt-2 d-none" id="edit_type_error"></div>
+                            <!--end::Error message container-->
+                        </div>
+                        <!--end::Input group-->
+
+                        <!--begin::Input group-->
+                        <div class="fv-row mb-7">
+                            <!--begin::Label-->
                             <label class="fs-6 fw-semibold mb-2 required">Status</label>
                             <!--end::Label-->
                             <!--begin::Select-->

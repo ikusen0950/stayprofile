@@ -345,6 +345,7 @@ class RequestController extends BaseController
                 $leaveModel = new \App\Models\LeaveModel();
                 $islanderModel = new \App\Models\IslanderModel();
                 $visitorModel = new \App\Models\VisitorModel();
+                $flightRouteModel = new \App\Models\FlightRouteModel();
                 
                 // Load active leaves for leave reason dropdown
                 $data['leaves'] = $leaveModel->getActiveLeavesWithStatus();
@@ -353,6 +354,10 @@ class RequestController extends BaseController
                 // Load islanders and visitors for request forms
                 $data['islanders'] = $this->getAuthorizedIslanders();
                 $data['visitors'] = $visitorModel->getActiveVisitors();
+                
+                // Load flight routes for transfer modal
+                $data['departure_routes'] = $flightRouteModel->getActiveRoutesByType('Departure');
+                $data['arrival_routes'] = $flightRouteModel->getActiveRoutesByType('Arrival');
                 
                 // Check if user can create past date requests
                 $data['canCreatePastDate'] = has_permission('requests.create_past_date');
@@ -364,6 +369,8 @@ class RequestController extends BaseController
                 $data['leave_reasons'] = [];
                 $data['islanders'] = [];
                 $data['visitors'] = [];
+                $data['departure_routes'] = [];
+                $data['arrival_routes'] = [];
                 $data['canCreatePastDate'] = false;
             }
         } else {
@@ -372,6 +379,8 @@ class RequestController extends BaseController
             $data['leave_reasons'] = [];
             $data['islanders'] = [];
             $data['visitors'] = [];
+            $data['departure_routes'] = [];
+            $data['arrival_routes'] = [];
             $data['canCreatePastDate'] = false;
         }
 
@@ -390,6 +399,8 @@ class RequestController extends BaseController
             'leave_reasons' => $data['leave_reasons'] ?? [],
             'islanders' => $data['islanders'] ?? [],
             'visitors' => $data['visitors'] ?? [],
+            'departure_routes' => $data['departure_routes'] ?? [],
+            'arrival_routes' => $data['arrival_routes'] ?? [],
             'canCreatePastDate' => $data['canCreatePastDate'] ?? false
         ];
 

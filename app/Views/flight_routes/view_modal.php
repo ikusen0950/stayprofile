@@ -52,6 +52,17 @@
                                 </div>
                             </div>
                             <!--end::Description-->
+
+                            <!--begin::Type-->
+                            <div class="row mb-4" id="view_type_section">
+                                <div class="col-4">
+                                    <label class="fw-semibold text-gray-600">Type:</label>
+                                </div>
+                                <div class="col-8">
+                                    <span class="text-gray-800" id="view_type">-</span>
+                                </div>
+                            </div>
+                            <!--end::Type-->
                         </div>
                     </div>
                     <!--end::Flight Route Information-->

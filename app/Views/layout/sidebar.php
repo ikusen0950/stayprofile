@@ -368,7 +368,7 @@
                     // Check if user has access to any settings
                     $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
                     
-                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
                     ?>
                     <?php if ($hasAnySettingsAccess): ?>
                     <div data-kt-menu-trigger="click"
@@ -702,7 +702,7 @@
 
                              <!--begin:Menu item-->
                             <?php 
-                            $islanderActive = isMenuActive(['/leave']) && $hasIslanderAccess;
+                            $islanderActive = isMenuActive(['/leave', '/flight-routes']) && $hasIslanderAccess;
                             ?>
                             <?php if ($hasIslanderAccess): ?>
                             <div data-kt-menu-trigger="click"
@@ -731,6 +731,23 @@
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
                                             <span class="menu-title">Leave Reasons</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <?php endif; ?>
+                                    <!--end:Menu item-->
+                                    <!--begin:Menu item-->
+                                    <?php if (has_permission('flight-routes.view') || $hasIslanderAccess): ?>
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <?php $subActive2 = isMenuActive(['/flight-routes']); ?>
+                                        <a class="menu-link <?= $subActive2 ? 'active bg-dark' : '' ?>"
+                                            href="/flight-routes"
+                                            <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+                                            <span class="menu-title">Flight Routes</span>
                                         </a>
                                         <!--end:Menu link-->
                                     </div>

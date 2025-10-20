@@ -8,6 +8,11 @@ class CreateFlightRoutesTable extends Migration
 {
     public function up()
     {
+        // If the table already exists, skip creation to make this migration idempotent
+        if ($this->db->tableExists('flight_routes')) {
+            return;
+        }
+
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',
@@ -57,13 +62,13 @@ class CreateFlightRoutesTable extends Migration
         $this->forge->addKey('created_by');
         $this->forge->addKey('updated_by');
         $this->forge->addKey('status_id');
-        
-        $this->forge->createTable('flight_routes');
-        
-        // Add foreign key constraints
-        $this->forge->addForeignKey('created_by', 'users', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->addForeignKey('updated_by', 'users', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->addForeignKey('status_id', 'status', 'id', 'SET NULL', 'CASCADE');
+    // Add foreign key constraints before creating the table so they are included
+    // in the create statement where supported by the DB driver
+    $this->forge->addForeignKey('created_by', 'users', 'id', 'SET NULL', 'CASCADE');
+    $this->forge->addForeignKey('updated_by', 'users', 'id', 'SET NULL', 'CASCADE');
+    $this->forge->addForeignKey('status_id', 'status', 'id', 'SET NULL', 'CASCADE');
+
+    $this->forge->createTable('flight_routes', true);
     }
 
     public function down()
