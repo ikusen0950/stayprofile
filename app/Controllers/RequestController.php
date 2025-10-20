@@ -115,12 +115,11 @@ class RequestController extends BaseController
     }
 
     /**
-     * Log request operations to the logs table
+     * Log request operations to the logs table with comprehensive details
      */
     private function logRequestOperation(string $action, array $requestData, int $requestId = null): void
     {
         try {
-            
             $requestNumber = $requestId ?? ($requestData['id'] ?? 0);
             
             // Map actions to status IDs for logs
@@ -147,18 +146,158 @@ class RequestController extends BaseController
                     break;
             }
             
-            // Create structured action description in the requested format
+            // Create comprehensive structured action description
             $actionDescription = $actionPrefix . "\n";
             $actionDescription .= "#: " . $requestNumber . "\n";
-            $actionDescription .= "User: " . ($requestData['user_name'] ?? 'Unknown') . "\n";
+            $actionDescription .= "User: " . ($requestData['user_name'] ?? $requestData['user_full_name'] ?? 'Unknown') . "\n";
+            $actionDescription .= "Islander No: " . ($requestData['user_islander_no'] ?? 'N/A') . "\n";
+            $actionDescription .= "Department: " . ($requestData['user_department_name'] ?? 'N/A') . "\n";
+            $actionDescription .= "Position: " . ($requestData['user_position_name'] ?? 'N/A') . "\n";
             $actionDescription .= "Type: " . ($requestData['type'] ?? 'Unknown') . "\n";
-            $actionDescription .= "Description:\n";
-            $actionDescription .= ($requestData['type_description'] ?? 'No description provided');
+            $actionDescription .= "Status: " . ($requestData['status_name'] ?? 'Unknown') . "\n";
+            
+            // Add exit pass specific fields if this is an exit pass request (type = 1)
+            if (isset($requestData['type']) && $requestData['type'] == '1') {
+                $actionDescription .= "\n--- Exit Pass Details ---\n";
+                $leaveReason = 'N/A';
+                if (!empty($requestData['leave_reason_name'])) {
+                    $leaveReason = $requestData['leave_reason_name'];
+                    if (!empty($requestData['leave_reason_description'])) {
+                        $leaveReason .= ' (' . $requestData['leave_reason_description'] . ')';
+                    }
+                } elseif (!empty($requestData['leave_id'])) {
+                    $leaveReason = 'Leave ID: ' . $requestData['leave_id'];
+                }
+                $actionDescription .= "Leave Reason: " . $leaveReason . "\n";
+                $actionDescription .= "Expected Departure: " . ($requestData['expected_departure_date'] ?? 'N/A');
+                if (!empty($requestData['expected_departure_time'])) {
+                    $actionDescription .= " at " . $requestData['expected_departure_time'];
+                }
+                $actionDescription .= "\n";
+                $actionDescription .= "Expected Arrival: " . ($requestData['expected_arrival_date'] ?? 'N/A');
+                if (!empty($requestData['expected_arrival_time'])) {
+                    $actionDescription .= " at " . $requestData['expected_arrival_time'];
+                }
+                $actionDescription .= "\n";
+                
+                // Add actual departure/arrival if available
+                if (!empty($requestData['departed_date'])) {
+                    $actionDescription .= "Actual Departure: " . $requestData['departed_date'];
+                    if (!empty($requestData['departed_time'])) {
+                        $actionDescription .= " at " . $requestData['departed_time'];
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                if (!empty($requestData['arrived_date'])) {
+                    $actionDescription .= "Actual Arrival: " . $requestData['arrived_date'];
+                    if (!empty($requestData['arrived_time'])) {
+                        $actionDescription .= " at " . $requestData['arrived_time'];
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                // Add security duty status
+                if (!empty($requestData['security_onduty_arrival'])) {
+                    $actionDescription .= "Security On-Duty Arrival: Yes";
+                    if (!empty($requestData['security_onduty_arrival_at'])) {
+                        $actionDescription .= " (" . $requestData['security_onduty_arrival_at'] . ")";
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                if (!empty($requestData['security_onduty_departure'])) {
+                    $actionDescription .= "Security On-Duty Departure: Yes";
+                    if (!empty($requestData['security_onduty_departure_at'])) {
+                        $actionDescription .= " (" . $requestData['security_onduty_departure_at'] . ")";
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                // Add special statuses
+                if (!empty($requestData['security_onduty_no_show'])) {
+                    $actionDescription .= "Security Status: No Show";
+                    if (!empty($requestData['security_onduty_no_show_at'])) {
+                        $actionDescription .= " (" . $requestData['security_onduty_no_show_at'] . ")";
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                if (!empty($requestData['security_onduty_revert_back'])) {
+                    $actionDescription .= "Security Status: Reverted Back";
+                    if (!empty($requestData['security_onduty_revert_back_at'])) {
+                        $actionDescription .= " (" . $requestData['security_onduty_revert_back_at'] . ")";
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                if (!empty($requestData['security_onduty_cancel'])) {
+                    $actionDescription .= "Security Status: Cancelled";
+                    if (!empty($requestData['security_onduty_cancel_at'])) {
+                        $actionDescription .= " (" . $requestData['security_onduty_cancel_at'] . ")";
+                    }
+                    $actionDescription .= "\n";
+                }
+                
+                if (!empty($requestData['security_onduty_expired'])) {
+                    $actionDescription .= "Security Status: Expired";
+                    if (!empty($requestData['security_onduty_expired_at'])) {
+                        $actionDescription .= " (" . $requestData['security_onduty_expired_at'] . ")";
+                    }
+                    $actionDescription .= "\n";
+                }
+            }
+            
+            // Add transfer specific fields if this is a transfer request (type = 2)
+            if (isset($requestData['type']) && $requestData['type'] == '2') {
+                $actionDescription .= "\n--- Transfer Details ---\n";
+                $actionDescription .= "Transfer Type: " . ($requestData['transfer_type'] ?? 'N/A') . "\n";
+                $actionDescription .= "Route Type: " . ($requestData['transfer_route_type'] ?? 'N/A') . "\n";
+                $actionDescription .= "Second Transfer: " . (($requestData['second_transfer'] ?? 0) ? 'Yes' : 'No') . "\n";
+                $actionDescription .= "Mode of Transport: " . ($requestData['mode_of_transport'] ?? 'N/A') . "\n";
+                $actionDescription .= "Luggage Assistance: " . (($requestData['luggage_assistance'] ?? 0) ? 'Yes' : 'No') . "\n";
+            }
+            
+            // Add general fields
+            $actionDescription .= "\n--- General Information ---\n";
+            $actionDescription .= "Description: " . ($requestData['type_description'] ?? 'No description provided') . "\n";
+            if (!empty($requestData['remarks'])) {
+                $actionDescription .= "Remarks: " . $requestData['remarks'] . "\n";
+            }
+            $actionDescription .= "Approval Level: " . ($requestData['approval_level'] ?? '0') . "\n";
+            $actionDescription .= "Created: " . ($requestData['created_at'] ?? 'N/A') . "\n";
+            if (!empty($requestData['updated_at'])) {
+                $actionDescription .= "Last Updated: " . $requestData['updated_at'] . "\n";
+            }
+            
+            // Add approval information if available
+            if (!empty($requestData['approved_by'])) {
+                $actionDescription .= "Approved By: " . ($requestData['approved_by_name'] ?? 'User ID: ' . $requestData['approved_by']) . "\n";
+                if (!empty($requestData['approved_at'])) {
+                    $actionDescription .= "Approved At: " . $requestData['approved_at'] . "\n";
+                }
+            }
+            
+            if (!empty($requestData['rejected_by'])) {
+                $actionDescription .= "Rejected By: " . ($requestData['rejected_by_name'] ?? 'User ID: ' . $requestData['rejected_by']) . "\n";
+                if (!empty($requestData['rejected_at'])) {
+                    $actionDescription .= "Rejected At: " . $requestData['rejected_at'] . "\n";
+                }
+            }
 
+            // Get current logged-in user for logging
+            $currentUserId = null;
+            if ($this->auth->check()) {
+                $currentUser = $this->auth->user();
+                $currentUserId = $currentUser->id ?? null;
+            }
+            
             $logData = [
                 'status_id' => $logStatusId, // Use mapped status ID based on action
                 'module_id' => 14, // Request module ID (adjust as needed)
                 'action' => $actionDescription, // Structured action text with details
+                'user_id' => $currentUserId, // Who performed the action
+                'created_at' => date('Y-m-d H:i:s')
             ];
             
             $result = $this->logModel->insert($logData);
@@ -357,26 +496,6 @@ class RequestController extends BaseController
     }
 
     /**
-     * Check if user can create requests based on authorization_rules
-     */
-    private function canUserCreateRequest($userId)
-    {
-        try {
-            $authorizationModel = new \App\Models\AuthorizationRuleModel();
-            $rule = $authorizationModel->where('user_id', $userId)
-                                     ->where('can_request', 1) // Check if user is blocked
-                                     ->where('is_active', 1)
-                                     ->first();
-            
-            // If rule exists with can_request = 1, user is BLOCKED from creating requests
-            return $rule === null;
-        } catch (\Exception $e) {
-            log_message('error', "Failed to check user request permission: " . $e->getMessage());
-            return true; // Allow request creation if check fails
-        }
-    }
-
-    /**
      * Store a newly created request in database
      */
     public function store()
@@ -409,21 +528,6 @@ class RequestController extends BaseController
         // Prepare data for insertion with sanitization
         $rawData = $this->request->getPost();
         $data = $this->sanitizeRequestInput($rawData);
-
-        // Check if user is blocked from creating requests (can_request = 1 blocks, can_request = 0 allows)
-        if (isset($rawData['user_id'])) {
-            if (!$this->canUserCreateRequest($rawData['user_id'])) {
-                if ($this->request->isAJAX()) {
-                    return $this->response->setJSON([
-                        'success' => false,
-                        'message' => 'The selected user is blocked from creating requests.'
-                    ]);
-                }
-                return redirect()->back()
-                               ->withInput()
-                               ->with('error', 'The selected user is blocked from creating requests.');
-            }
-        }
 
         // Check for existing exit pass requests and determine status_id for exit pass requests
         if (isset($rawData['type']) && $rawData['type'] === '1' && isset($rawData['user_id'])) {

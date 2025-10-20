@@ -244,6 +244,13 @@ class RequestModel extends Model
                                s.name as status_name,
                                s.color as status_color,
                                CONCAT(u.islander_no, " - ", u.full_name) as user_name,
+                               u.full_name as user_full_name,
+                               u.islander_no as user_islander_no,
+                               u.image as user_image,
+                               d.name as user_department_name,
+                               p.name as user_position_name,
+                               l.reason as leave_reason_name,
+                               l.description as leave_reason_description,
                                CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                                CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name,
                                CONCAT(au.islander_no, " - ", au.full_name) as approved_by_name,
@@ -251,6 +258,9 @@ class RequestModel extends Model
                                CONCAT(bu.islander_no, " - ", bu.full_name) as booked_by_name')
                       ->join('status s', 's.id = r.status_id', 'left')
                       ->join('users u', 'u.id = r.user_id', 'left')
+                      ->join('departments d', 'd.id = u.department_id', 'left')
+                      ->join('positions p', 'p.id = u.position_id', 'left')
+                      ->join('leaves l', 'l.id = r.leave_id', 'left')
                       ->join('users cu', 'cu.id = r.created_by', 'left')
                       ->join('users uu', 'uu.id = r.updated_by', 'left')
                       ->join('users au', 'au.id = r.approved_by', 'left')
@@ -288,17 +298,19 @@ class RequestModel extends Model
                 ->join('users uu', 'uu.id = r.updated_by', 'left');
         
         if (!empty($search)) {
+            // Ensure search is a string for like operations
+            $searchString = (string)$search;
             $builder->groupStart()
-                    ->like('r.type', $search)
-                    ->orLike('r.type_description', $search)
-                    ->orLike('r.remarks', $search)
-                    ->orLike('s.name', $search)
-                    ->orLike('u.full_name', $search)
-                    ->orLike('u.islander_no', $search)
-                    ->orLike('d.name', $search)
-                    ->orLike('p.name', $search)
-                    ->orLike('cu.full_name', $search)
-                    ->orLike('cu.islander_no', $search)
+                    ->like('r.type', $searchString)
+                    ->orLike('r.type_description', $searchString)
+                    ->orLike('r.remarks', $searchString)
+                    ->orLike('s.name', $searchString)
+                    ->orLike('u.full_name', $searchString)
+                    ->orLike('u.islander_no', $searchString)
+                    ->orLike('d.name', $searchString)
+                    ->orLike('p.name', $searchString)
+                    ->orLike('cu.full_name', $searchString)
+                    ->orLike('cu.islander_no', $searchString)
                     ->groupEnd();
         }
         
@@ -324,17 +336,19 @@ class RequestModel extends Model
                 ->join('users uu', 'uu.id = r.updated_by', 'left');
         
         if (!empty($search)) {
+            // Ensure search is a string for like operations
+            $searchString = (string)$search;
             $builder->groupStart()
-                    ->like('r.type', $search)
-                    ->orLike('r.type_description', $search)
-                    ->orLike('r.remarks', $search)
-                    ->orLike('s.name', $search)
-                    ->orLike('u.full_name', $search)
-                    ->orLike('u.islander_no', $search)
-                    ->orLike('d.name', $search)
-                    ->orLike('p.name', $search)
-                    ->orLike('cu.full_name', $search)
-                    ->orLike('cu.islander_no', $search)
+                    ->like('r.type', $searchString)
+                    ->orLike('r.type_description', $searchString)
+                    ->orLike('r.remarks', $searchString)
+                    ->orLike('s.name', $searchString)
+                    ->orLike('u.full_name', $searchString)
+                    ->orLike('u.islander_no', $searchString)
+                    ->orLike('d.name', $searchString)
+                    ->orLike('p.name', $searchString)
+                    ->orLike('cu.full_name', $searchString)
+                    ->orLike('cu.islander_no', $searchString)
                     ->groupEnd();
         }
         

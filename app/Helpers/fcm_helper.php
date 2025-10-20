@@ -206,15 +206,15 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
     }
 
     // Notify Managers
-    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM || $status == 14 ) {
+    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM || $status == 13 ) {
         $userRole = $roleModel->find( $islander->role_id );
         $isAssistantManager = strcasecmp( $userRole[ 'name' ] ?? '', 'Assistant Manager' ) === 0;
 
         // Get managers who can approve requests for the requester's department/division/section
         $managers = $authorizationModel->groupStart()
-        ->like( 'division_ids', $division_id )
-        ->orLike( 'department_ids', $department_id )
-        ->orLike( 'section_ids', $section_id )
+        ->like( 'division_ids', (string)$division_id )
+        ->orLike( 'department_ids', (string)$department_id )
+        ->orLike( 'section_ids', (string)$section_id )
         ->groupEnd()
         ->where( 'can_request', 0 ) // Only managers (can_request = 0 means they are managers)
         ->where( 'is_active', 1 ) // Only active rules
@@ -237,9 +237,9 @@ function fcmNotificationExitPass( $division_id, $department_id, $section_id, $st
             if ( $isAssistantManager && $manager[ 'user_id' ] == $user ) continue;
 
             $managerDetails = $usersModel->find( $manager[ 'user_id' ] );
-            if ( !$managerDetails || empty( $managerDetails[ 'device_token' ] ) ) continue;
+            if ( !$managerDetails || empty( $managerDetails->device_token ) ) continue;
 
-            $managerToken = $managerDetails[ 'device_token' ];
+            $managerToken = $managerDetails->device_token;
             $title = '📌 Exit Pass Awaiting for Approval';
             $body = "You have a pending exit pass request ($request_uid) from $islanderFullName awaiting your approval.";
             $clickUrl = 'authorizations';
@@ -349,16 +349,16 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
     }
 
     // Notify Managers
-    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM || $status == 14 ) {
+    if ( $status == STATUS_MANAGER_NOTIFICATION_FCM || $status == 13 ) {
         $userRole = $roleModel->find( $islander->role_id );
         $isAssistantManager = strcasecmp( $userRole[ 'name' ] ?? '', 'Assistant Manager' ) === 0;
 
         // Find managers who have authorization for the REQUESTER's department/division/section
         // Example: User 25 (dept 17, section 2) → Find managers with dept 17 OR section 2 authorization
         $managers = $authorizationModel->groupStart()
-        ->like( 'division_ids', $division_id )
-        ->orLike( 'department_ids', $department_id )
-        ->orLike( 'section_ids', $section_id )
+        ->like( 'division_ids', (string)$division_id )
+        ->orLike( 'department_ids', (string)$department_id )
+        ->orLike( 'section_ids', (string)$section_id )
         ->groupEnd()
         ->where( 'can_request', 0 ) // Only managers (can_request = 0 means they are managers)
         ->where( 'is_active', 1 ) // Only active rules
@@ -382,9 +382,9 @@ function fcmNotificationTransfer( $division_id, $department_id, $section_id, $st
             if ( $isAssistantManager && $manager[ 'user_id' ] == $user ) continue;
 
             $managerDetails = $usersModel->find( $manager[ 'user_id' ] );
-            if ( !$managerDetails || empty( $managerDetails[ 'device_token' ] ) ) continue;
+            if ( !$managerDetails || empty( $managerDetails->device_token ) ) continue;
 
-            $managerToken = $managerDetails[ 'device_token' ];
+            $managerToken = $managerDetails->device_token;
             $title = '📌 Transfer Awaiting for Approval';
             $body  = "You have a pending transfer request ($request_uid) from $islanderFullName awaiting for your approval.";
             $clickUrl = 'authorizations';
