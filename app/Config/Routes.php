@@ -262,6 +262,23 @@ $routes->group('genders', ['filter' => 'login'], function($routes) {
     $routes->get('statuses', 'GendersController::getStatuses');
 });
 
+// Flight Routes CRUD routes
+$routes->group('flight-routes', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'FlightRoutesController::index');
+    $routes->get('create', 'FlightRoutesController::create');
+    $routes->post('store', 'FlightRoutesController::store');
+    $routes->get('show/(:num)', 'FlightRoutesController::show/$1');
+    $routes->get('(:num)', 'FlightRoutesController::show/$1');
+    $routes->get('(:num)/edit', 'FlightRoutesController::edit/$1');
+    $routes->post('(:num)/update', 'FlightRoutesController::update/$1');
+    $routes->post('update/(:num)', 'FlightRoutesController::update/$1');
+    $routes->post('(:num)/delete', 'FlightRoutesController::delete/$1');
+    $routes->post('delete/(:num)', 'FlightRoutesController::delete/$1');
+    $routes->get('api', 'FlightRoutesController::api');
+    $routes->get('flight-routes', 'FlightRoutesController::getFlightRoutes');
+    $routes->get('statuses', 'FlightRoutesController::getStatuses');
+});
+
 // Nationalities CRUD routes
 $routes->group('nationalities', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'NationalitiesController::index');

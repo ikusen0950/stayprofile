@@ -339,6 +339,42 @@ class RequestController extends BaseController
             'canDelete' => has_permission('requests.delete')
         ];
 
+        // Load additional data for modals if user has create permission
+        if ($permissions['canCreate']) {
+            try {
+                $leaveModel = new \App\Models\LeaveModel();
+                $islanderModel = new \App\Models\IslanderModel();
+                $visitorModel = new \App\Models\VisitorModel();
+                
+                // Load active leaves for leave reason dropdown
+                $data['leaves'] = $leaveModel->getActiveLeavesWithStatus();
+                $data['leave_reasons'] = $data['leaves']; // Alias for compatibility
+                
+                // Load islanders and visitors for request forms
+                $data['islanders'] = $this->getAuthorizedIslanders();
+                $data['visitors'] = $visitorModel->getActiveVisitors();
+                
+                // Check if user can create past date requests
+                $data['canCreatePastDate'] = has_permission('requests.create_past_date');
+                
+            } catch (\Exception $e) {
+                // Models might not exist, continue with empty arrays
+                log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
+                $data['leaves'] = [];
+                $data['leave_reasons'] = [];
+                $data['islanders'] = [];
+                $data['visitors'] = [];
+                $data['canCreatePastDate'] = false;
+            }
+        } else {
+            // If user can't create, set empty arrays
+            $data['leaves'] = [];
+            $data['leave_reasons'] = [];
+            $data['islanders'] = [];
+            $data['visitors'] = [];
+            $data['canCreatePastDate'] = false;
+        }
+
         $data = [
             'title' => 'Request Management',
             'requests' => $requests,
@@ -349,7 +385,12 @@ class RequestController extends BaseController
             'totalPages' => $totalPages,
             'totalRequests' => $totalRequests,
             'limit' => $limit,
-            'permissions' => $permissions
+            'permissions' => $permissions,
+            'leaves' => $data['leaves'] ?? [],
+            'leave_reasons' => $data['leave_reasons'] ?? [],
+            'islanders' => $data['islanders'] ?? [],
+            'visitors' => $data['visitors'] ?? [],
+            'canCreatePastDate' => $data['canCreatePastDate'] ?? false
         ];
 
         return view('requests/index', $data);
