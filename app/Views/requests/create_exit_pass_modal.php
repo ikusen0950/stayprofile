@@ -914,7 +914,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.set('leave_id', formData.get('leave_reason')); // Use leave reason as leave_id
             formData.set('type', '1');
             formData.set('type_description', 'Exit Pass');
-            formData.set('type_color', '#5ec653');
+            formData.set('type_color', '#7a3be9');
             formData.set('user_type', userType); // Pass user type for status determination
             
             // Combine departure date and time
