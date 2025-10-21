@@ -162,7 +162,7 @@
                                                 </i>
                                                 <div class="d-flex flex-column">
                                                     <h5 class="mb-1 text-dark">Seaplane Information</h5>
-                                                    <div class="fs-6 text-muted">                                                        
+                                                    <div class="fs-6 text-muted">
                                                         <div>
                                                             <i class="ki-duotone ki-information fs-7 text-primary me-2">
                                                                 <span class="path1"></span>
@@ -180,31 +180,58 @@
                                 <!--end::Transport Mode Information-->
                             </div>
                             <!--end::Input group-->
-                            <!--begin::Section-->
-                            <!--begin::Section-->
-                            <h4 class="fw-bold text-gray-800">Departure Informations</h4>
-                            <div class="separator separator-dashed mt-2 mb-7"></div>
 
+                            <!--begin::Section - Departure (For Return Transfer)-->
+                            <div id="departure_arrival_section" style="display: none;">
+                                <!--begin::Section-->
+                                <h4 class="fw-bold text-gray-800">Departure Informations</h4>
+                                <div class="separator separator-dashed mt-2 mb-7"></div>
 
+                            <!--end::Date Information Alert-->
                             <!--begin::Input group - Departure Route & Date-->
                             <div class="row mb-7">
                                 <div class="col-md-6">
                                     <label class="required fs-6 fw-semibold mb-2">Departure Route</label>
-                                    <select name="departure_route" class="form-select form-select-solid"
+                                    <select name="transfer_departure_route_id" class="form-select form-select-solid"
                                         data-placeholder="Select departure route">
                                         <option value="">Select departure route</option>
-                                        <?php if (isset($departure_routes) && !empty($departure_routes)): ?>
-                                        <?php foreach ($departure_routes as $route): ?>
-                                        <option value="<?= esc($route['name'] ?? '') ?>">
-                                            <?= esc($route['name'] ?? '') ?>
-                                            <?php if (!empty($route['description'])): ?>
-                                            - <?= esc($route['description']) ?>
-                                            <?php endif; ?>
-                                        </option>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
+
+                                        <?php
+                                        try {
+                                            // Try to use passed variables first, then load directly if needed
+                                            $routesToDisplay = [];
+                                            
+                                            if (isset($departure_routes) && !empty($departure_routes)) {
+                                                $routesToDisplay = $departure_routes;
+                                            } else {
+                                                // Load routes directly from database as fallback
+                                                $flightRouteModel = new \App\Models\FlightRouteModel();
+                                                $routesToDisplay = $flightRouteModel->getActiveRoutesByType('Departure');
+                                            }
+                                            
+                                            if (!empty($routesToDisplay)) {
+                                                foreach ($routesToDisplay as $route) {
+                                                    $routeName = esc($route['name'] ?? '');
+                                                    $routeType = esc($route['type'] ?? '');
+                                                    
+                                                    // Build display text with proper formatting
+                                                    $displayText = $routeName;
+                                                    if (!empty($routeType)) {
+                                                        $displayText .= ' ('  . $routeType .  ')';
+                                                    }
+                                                    
+                                                    echo '<option value="' . esc($route['id'] ?? '') . '">';
+                                                    echo $displayText;
+                                                    echo '</option>';
+                                                }
+                                            }
+                                        } catch (Exception $e) {
+                                            // Silent fallback - don't show error to users
+                                            log_message('error', 'Failed to load departure routes in modal: ' . $e->getMessage());
+                                        }
+                                        ?>
                                     </select>
-                                    <div class="fv-help-block" data-field="departure_route"></div>
+                                    <div class="fv-help-block" data-field="transfer_departure_route_id"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="required fs-6 fw-semibold mb-2">Departure Date</label>
@@ -223,21 +250,46 @@
                             <div class="row mb-7">
                                 <div class="col-md-6">
                                     <label class="required fs-6 fw-semibold mb-2">Arrival Route</label>
-                                    <select name="arrival_route" class="form-select form-select-solid"
+                                    <select name="transfer_arrival_route_id" class="form-select form-select-solid"
                                         data-placeholder="Select arrival route">
                                         <option value="">Select arrival route</option>
-                                        <?php if (isset($arrival_routes) && !empty($arrival_routes)): ?>
-                                        <?php foreach ($arrival_routes as $route): ?>
-                                        <option value="<?= esc($route['name'] ?? '') ?>">
-                                            <?= esc($route['name'] ?? '') ?>
-                                            <?php if (!empty($route['description'])): ?>
-                                            - <?= esc($route['description']) ?>
-                                            <?php endif; ?>
-                                        </option>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
+
+                                        <?php
+                                        try {
+                                            // Try to use passed variables first, then load directly if needed
+                                            $routesToDisplay = [];
+                                            
+                                            if (isset($arrival_routes) && !empty($arrival_routes)) {
+                                                $routesToDisplay = $arrival_routes;
+                                            } else {
+                                                // Load routes directly from database as fallback
+                                                $flightRouteModel = new \App\Models\FlightRouteModel();
+                                                $routesToDisplay = $flightRouteModel->getActiveRoutesByType('Arrival');
+                                            }
+                                            
+                                            if (!empty($routesToDisplay)) {
+                                                foreach ($routesToDisplay as $route) {
+                                                    $routeName = esc($route['name'] ?? '');
+                                                    $routeType = esc($route['type'] ?? '');
+                                                    
+                                                    // Build display text with proper formatting
+                                                    $displayText = $routeName;
+                                                    if (!empty($routeType)) {
+                                                        $displayText .= ' (' . $routeType . ')';
+                                                    }
+                                                    
+                                                    echo '<option value="' . esc($route['id'] ?? '') . '">';
+                                                    echo $displayText;
+                                                    echo '</option>';
+                                                }
+                                            }
+                                        } catch (Exception $e) {
+                                            // Silent fallback - don't show error to users
+                                            log_message('error', 'Failed to load arrival routes in modal: ' . $e->getMessage());
+                                        }
+                                        ?>
                                     </select>
-                                    <div class="fv-help-block" data-field="arrival_route"></div>
+                                    <div class="fv-help-block" data-field="transfer_arrival_route_id"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="required fs-6 fw-semibold mb-2">Arrival Date</label>
@@ -247,6 +299,64 @@
                                 </div>
                             </div>
                             <!--end::Input group-->
+                            </div>
+                            <!--end::Section - Departure/Arrival-->
+
+                            <!--begin::Section - Transfer (For One Way Transfer)-->
+                            <div id="transfer_information_section" style="display: none;">
+                                <!--begin::Section-->
+                                <h4 class="fw-bold text-gray-800">Transfer Informations</h4>
+                                <div class="separator separator-dashed mt-2 mb-7"></div>
+
+                            <!--end::Date Information Alert-->
+                            <!--begin::Input group - Route & Date-->
+                            <div class="row mb-7">
+                                <div class="col-md-6">
+                                    <label class="required fs-6 fw-semibold mb-2">Route</label>
+                                    <select name="transfer_route_id" class="form-select form-select-solid"
+                                        data-placeholder="Select route">
+                                        <option value="">Select route</option>
+
+                                        <?php
+                                        try {
+                                            // Load all flight routes without type filtering
+                                            $flightRouteModel = new \App\Models\FlightRouteModel();
+                                            $routesToDisplay = $flightRouteModel->findAll(); // Get all routes
+                                            
+                                            if (!empty($routesToDisplay)) {
+                                                foreach ($routesToDisplay as $route) {
+                                                    $routeName = esc($route['name'] ?? '');
+                                                    $routeType = esc($route['type'] ?? '');
+                                                    
+                                                    // Build display text with proper formatting
+                                                    $displayText = $routeName;
+                                                    if (!empty($routeType)) {
+                                                        $displayText .= ' ('  . $routeType .  ')';
+                                                    }
+                                                    
+                                                    echo '<option value="' . esc($route['id'] ?? '') . '">';
+                                                    echo $displayText;
+                                                    echo '</option>';
+                                                }
+                                            }
+                                        } catch (Exception $e) {
+                                            // Silent fallback - don't show error to users
+                                            log_message('error', 'Failed to load routes in modal: ' . $e->getMessage());
+                                        }
+                                        ?>
+                                    </select>
+                                    <div class="fv-help-block" data-field="transfer_route_id"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required fs-6 fw-semibold mb-2">Date</label>
+                                    <input type="date" name="transfer_date"
+                                        class="form-control form-control-solid" />
+                                    <div class="fv-help-block" data-field="transfer_date"></div>
+                                </div>
+                            </div>
+                            <!--end::Input group-->
+                            </div>
+                            <!--end::Section - Transfer Information-->
 
                             <!--begin::Input group - Remarks-->
                             <div class="mb-7">
@@ -292,10 +402,28 @@
     font-size: 0.875rem;
     margin-top: 0.25rem;
     font-weight: 500;
+    min-height: 20px; /* For debugging - ensure element has height */
+    border: 1px solid transparent; /* For debugging - add border */
 }
 
 .fv-help-block:not(:empty) {
-    display: block;
+    display: block !important;
+    border: 1px solid #f1416c; /* For debugging - visible border when content exists */
+}
+
+/* Override FormValidation plugin hiding */
+.fv-plugins-message-container.invalid-feedback {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Ensure FormValidation containers don't hide our messages */
+.fv-plugins-message-container .fv-help-block[data-field="user_selection"] {
+    display: block !important;
+    visibility: visible !important;
 }
 
 /* Select2 error styling */
@@ -408,19 +536,45 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Set date restrictions based on user permissions
     const canCreatePastDate = <?= json_encode($canCreatePastDate ?? false) ?>;
+    const canCreateTransferOnCurrentDate = <?= json_encode($canCreateTransferOnCurrentDate ?? false) ?>;
 
-    if (!canCreatePastDate) {
-        // Restrict to today and future dates only
-        const today = new Date().toISOString().split('T')[0];
+    // Determine departure date minimum based on permissions
+    let departureDateMin;
+    if (canCreatePastDate) {
+        // Can create requests for any date (including past dates)
+        departureDateMin = null; // No minimum restriction
+    } else if (canCreateTransferOnCurrentDate) {
+        // Can create transfers starting from current date (bypasses 3-day advance requirement)
+        const today = new Date();
+        departureDateMin = today.toISOString().split('T')[0];
+    } else {
+        // Regular users must select 3 days in advance
+        const today = new Date();
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
+        departureDateMin = threeDaysFromNow.toISOString().split('T')[0];
+    }
 
-        const departureDateInput = document.querySelector('[name="transfer_departure_date"]');
-        const arrivalDateInput = document.querySelector('[name="transfer_arrival_date"]');
+    // Set date input restrictions
+    const departureDateInput = document.querySelector('[name="transfer_departure_date"]');
+    const arrivalDateInput = document.querySelector('[name="transfer_arrival_date"]');
+    const transferDateInput = document.querySelector('[name="transfer_date"]');
 
-        if (departureDateInput) {
-            departureDateInput.setAttribute('min', today);
-        }
+    if (departureDateInput && departureDateMin) {
+        departureDateInput.setAttribute('min', departureDateMin);
+    }
 
-        if (arrivalDateInput) {
+    // For one-way transfers, apply the same date restrictions as departure date
+    if (transferDateInput && departureDateMin) {
+        transferDateInput.setAttribute('min', departureDateMin);
+    }
+
+    // Arrival date is always at least today (unless user has past date permission)
+    if (arrivalDateInput) {
+        if (canCreatePastDate) {
+            // No minimum restriction for arrival date
+        } else {
+            const today = new Date().toISOString().split('T')[0];
             arrivalDateInput.setAttribute('min', today);
         }
     }
@@ -431,64 +585,94 @@ document.addEventListener('DOMContentLoaded', function() {
     var islanderSelect = document.getElementById('transfer_islander_select');
     var visitorSelect = document.getElementById('transfer_visitor_select');
 
+    // Debounce function to prevent excessive calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     function updateTransferDropdownVisibility() {
         var selectedType = userTypeSelect.value;
-        console.log('Transfer Modal - Switching to user type:', selectedType);
+        console.log('=== UPDATING DROPDOWN VISIBILITY ===');
+        console.log('Selected user type:', selectedType);
 
-        if (selectedType === '1') {
-            // Show Islander dropdown, hide Visitor dropdown
-            islanderSection.style.display = 'block';
-            visitorSection.style.display = 'none';
+        // Batch DOM operations to reduce reflow
+        requestAnimationFrame(function() {
+            if (selectedType === '1') {
+                console.log('*** SHOWING ISLANDER SECTION ***');
+                // Show Islander dropdown, hide Visitor dropdown
+                islanderSection.style.display = 'block';
+                visitorSection.style.display = 'none';
 
-            // Set required attribute
-            islanderSelect.setAttribute('required', 'required');
-            visitorSelect.removeAttribute('required');
+                // Set required attribute for Islander, remove for Visitor
+                islanderSelect.setAttribute('required', 'required');
+                visitorSelect.removeAttribute('required');
+                console.log('Islander section: visible, required=true');
+                console.log('Visitor section: hidden, required=false');
 
-            // Clear visitor selection
-            if (window.jQuery && $(visitorSelect).data('select2')) {
-                $(visitorSelect).val(null).trigger('change');
-            } else {
-                visitorSelect.value = '';
-            }
-
-            // Auto-select islander if only one option available
-            var islanderOptions = Array.from(islanderSelect.querySelectorAll('option')).filter(option => option
-                .value && option.value !== "");
-            if (islanderOptions.length === 1) {
-                var autoSelectValue = islanderOptions[0].value;
-                if (window.jQuery && $(islanderSelect).data('select2')) {
-                    $(islanderSelect).val(autoSelectValue).trigger('change');
+                // Clear visitor selection
+                if (window.jQuery && $(visitorSelect).data('select2')) {
+                    $(visitorSelect).val(null).trigger('change');
                 } else {
-                    islanderSelect.value = autoSelectValue;
+                    visitorSelect.value = '';
                 }
-                console.log('Transfer Modal - Auto-selected islander:', autoSelectValue);
-            }
 
-        } else if (selectedType === '2') {
-            // Show Visitor dropdown, hide Islander dropdown
-            islanderSection.style.display = 'none';
-            visitorSection.style.display = 'block';
+                // Auto-select islander if only one option available
+                var islanderOptions = Array.from(islanderSelect.querySelectorAll('option')).filter(
+                    option => option.value && option.value !== "");
+                if (islanderOptions.length === 1) {
+                    var autoSelectValue = islanderOptions[0].value;
+                    console.log('Auto-selecting single Islander option:', autoSelectValue);
+                    if (window.jQuery && $(islanderSelect).data('select2')) {
+                        $(islanderSelect).val(autoSelectValue).trigger('change');
+                    } else {
+                        islanderSelect.value = autoSelectValue;
+                    }
+                }
 
-            // Set required attribute
-            visitorSelect.setAttribute('required', 'required');
-            islanderSelect.removeAttribute('required');
+            } else if (selectedType === '2') {
+                console.log('*** SHOWING VISITOR SECTION ***');
+                // Show Visitor dropdown, hide Islander dropdown
+                islanderSection.style.display = 'none';
+                visitorSection.style.display = 'block';
 
-            // Clear islander selection
-            if (window.jQuery && $(islanderSelect).data('select2')) {
-                $(islanderSelect).val(null).trigger('change');
+                // Set required attribute for Visitor, remove for Islander
+                visitorSelect.setAttribute('required', 'required');
+                islanderSelect.removeAttribute('required');
+                console.log('Visitor section: visible, required=true');
+                console.log('Islander section: hidden, required=false');
+
+                // Clear islander selection
+                if (window.jQuery && $(islanderSelect).data('select2')) {
+                    $(islanderSelect).val(null).trigger('change');
+                } else {
+                    islanderSelect.value = '';
+                }
+
             } else {
-                islanderSelect.value = '';
+                console.log('*** DEFAULT TO ISLANDER SECTION ***');
+                // Default to Islander (no selection)
+                islanderSection.style.display = 'block';
+                visitorSection.style.display = 'none';
+
+                // Default: Islander required, Visitor not required
+                islanderSelect.setAttribute('required', 'required');
+                visitorSelect.removeAttribute('required');
+                console.log('Default: Islander section visible, required=true');
+                console.log('Default: Visitor section hidden, required=false');
             }
-
-        } else {
-            // Default to Islander (no selection)
-            islanderSection.style.display = 'block';
-            visitorSection.style.display = 'none';
-
-            islanderSelect.setAttribute('required', 'required');
-            visitorSelect.removeAttribute('required');
-        }
+        });
     }
+
+    // Create debounced version for event handlers
+    const debouncedUpdateTransferDropdownVisibility = debounce(updateTransferDropdownVisibility, 150);
 
     if (userTypeSelect && islanderSection && visitorSection) {
         // Initialize Select2 for all dropdowns
@@ -503,8 +687,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Use Select2 change event specifically
             $(userTypeSelect).on('select2:select', function(e) {
-                console.log('Transfer Modal - Select2 change event triggered');
-                setTimeout(updateTransferDropdownVisibility, 50);
+                debouncedUpdateTransferDropdownVisibility();
             });
 
             $(islanderSelect).select2({
@@ -541,6 +724,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectOnClose: false
             });
 
+            // Add transfer type change handler to show/hide sections
+            $('select[name="transfer_type"]').on('change', function() {
+                const transferType = $(this).val();
+                const departureArrivalSection = document.getElementById('departure_arrival_section');
+                const transferInformationSection = document.getElementById('transfer_information_section');
+
+                if (transferType === 'return') {
+                    // Show Departure/Arrival sections, hide Transfer Information section
+                    departureArrivalSection.style.display = 'block';
+                    transferInformationSection.style.display = 'none';
+                    
+                    // Set required attributes for departure/arrival fields
+                    document.querySelector('[name="transfer_departure_route_id"]').setAttribute('required', 'required');
+                    document.querySelector('[name="transfer_departure_date"]').setAttribute('required', 'required');
+                    document.querySelector('[name="transfer_arrival_route_id"]').setAttribute('required', 'required');
+                    document.querySelector('[name="transfer_arrival_date"]').setAttribute('required', 'required');
+                    
+                    // Remove required attributes from transfer information fields
+                    document.querySelector('[name="transfer_route_id"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_date"]').removeAttribute('required');
+                    
+                } else if (transferType === 'one_way') {
+                    // Show Transfer Information section, hide Departure/Arrival sections
+                    departureArrivalSection.style.display = 'none';
+                    transferInformationSection.style.display = 'block';
+                    
+                    // Set required attributes for transfer information fields
+                    document.querySelector('[name="transfer_route_id"]').setAttribute('required', 'required');
+                    document.querySelector('[name="transfer_date"]').setAttribute('required', 'required');
+                    
+                    // Remove required attributes from departure/arrival fields
+                    document.querySelector('[name="transfer_departure_route_id"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_departure_date"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_arrival_route_id"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_arrival_date"]').removeAttribute('required');
+                    
+                } else {
+                    // No transfer type selected, hide both sections
+                    departureArrivalSection.style.display = 'none';
+                    transferInformationSection.style.display = 'none';
+                    
+                    // Remove all required attributes
+                    document.querySelector('[name="transfer_departure_route_id"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_departure_date"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_arrival_route_id"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_arrival_date"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_route_id"]').removeAttribute('required');
+                    document.querySelector('[name="transfer_date"]').removeAttribute('required');
+                }
+                
+                console.log('Transfer type changed to:', transferType);
+            });
+
             // Initialize Mode of Transport Select2
             $('select[name="mode_of_transport"]').select2({
                 dropdownParent: $('#transferModal'),
@@ -550,22 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectOnClose: false
             });
 
-            // Initialize Route Select2 dropdowns
-            $('select[name="departure_route"]').select2({
-                dropdownParent: $('#transferModal'),
-                placeholder: 'Select departure route',
-                allowClear: true,
-                dropdownAutoWidth: true,
-                selectOnClose: false
-            });
-
-            $('select[name="arrival_route"]').select2({
-                dropdownParent: $('#transferModal'),
-                placeholder: 'Select arrival route',
-                allowClear: true,
-                dropdownAutoWidth: true,
-                selectOnClose: false
-            });
+            // Initialize Route Select2 dropdowns - will be initialized when modal is shown
 
             // Add transport mode information functionality
             $('select[name="mode_of_transport"]').on('change', function() {
@@ -608,8 +829,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Also add native change event as backup
         userTypeSelect.addEventListener('change', function() {
-            console.log('Transfer Modal - Native change event triggered');
-            updateTransferDropdownVisibility();
+            debouncedUpdateTransferDropdownVisibility();
         });
 
         // Initial setup - default to Islander
@@ -621,7 +841,73 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#transferModal').on('shown.bs.modal', function() {
             setTimeout(function() {
                 updateTransferDropdownVisibility();
-            }, 500);
+
+                // Initialize Route Select2 dropdowns when modal is shown
+                const departureSelect = $('select[name="transfer_departure_route_id"]');
+                const arrivalSelect = $('select[name="transfer_arrival_route_id"]');
+                const transferRouteSelect = $('select[name="transfer_route_id"]');
+
+                // Destroy existing Select2 if it exists
+                if (departureSelect.data('select2')) {
+                    departureSelect.select2('destroy');
+                }
+
+                departureSelect.select2({
+                    dropdownParent: $('#transferModal'),
+                    placeholder: 'Select departure route',
+                    allowClear: true,
+                    dropdownAutoWidth: true,
+                    selectOnClose: false
+                });
+
+                // Destroy existing Select2 if it exists
+                if (arrivalSelect.data('select2')) {
+                    arrivalSelect.select2('destroy');
+                }
+
+                arrivalSelect.select2({
+                    dropdownParent: $('#transferModal'),
+                    placeholder: 'Select arrival route',
+                    allowClear: true,
+                    dropdownAutoWidth: true,
+                    selectOnClose: false
+                });
+
+                // Destroy existing Select2 if it exists
+                if (transferRouteSelect.data('select2')) {
+                    transferRouteSelect.select2('destroy');
+                }
+
+                transferRouteSelect.select2({
+                    dropdownParent: $('#transferModal'),
+                    placeholder: 'Select route',
+                    allowClear: true,
+                    dropdownAutoWidth: true,
+                    selectOnClose: false
+                });
+                
+                // Trigger transfer type change to set initial section visibility
+                const initialTransferType = $('select[name="transfer_type"]').val();
+                if (initialTransferType) {
+                    $('select[name="transfer_type"]').trigger('change');
+                }
+            }, 600);
+        });
+
+        // Clear form when modal is hidden
+        $('#transferModal').on('hidden.bs.modal', function() {
+            // Reset form
+            const form = document.getElementById('transferModal_form');
+            if (form) {
+                form.reset();
+            }
+            
+            // Reset all Select2 dropdowns
+            $('#transferModal select').each(function() {
+                if ($(this).data('select2')) {
+                    $(this).val(null).trigger('change');
+                }
+            });
         });
     }
 
@@ -629,304 +915,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const transferForm = document.getElementById('transferModal_form');
     const transferSubmitBtn = document.getElementById('transferModal_submit');
     const transferModal = document.getElementById('transferModal');
-
-    // Validation functions
-    function showTransferValidationError(fieldName, message) {
-        const errorElement = document.querySelector(`[data-field="${fieldName}"]`);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
-
-        // Add error styling to the input
-        let inputElement = document.querySelector(`[name="${fieldName}"]`);
-        if (!inputElement && fieldName === 'user_type') {
-            inputElement = document.querySelector('#transfer_user_type_select');
-        }
-        if (!inputElement && fieldName === 'user_selection') {
-            const userType = document.querySelector('[name="user_type"]').value;
-            if (userType === '1') {
-                inputElement = document.querySelector('#transfer_islander_select');
-            } else if (userType === '2') {
-                inputElement = document.querySelector('#transfer_visitor_select');
-            }
-        }
-
-        if (inputElement) {
-            inputElement.classList.add('is-invalid');
-            // For Select2 elements, also add class to the rendered element
-            const select2Element = inputElement.nextElementSibling;
-            if (select2Element && select2Element.classList.contains('select2-container')) {
-                select2Element.querySelector('.select2-selection').classList.add('is-invalid');
-            }
-        }
-    }
-
-    function hideTransferValidationError(fieldName) {
-        const errorElement = document.querySelector(`[data-field="${fieldName}"]`);
-        if (errorElement) {
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-        }
-
-        // Remove error styling from the input
-        let inputElement = document.querySelector(`[name="${fieldName}"]`);
-        if (!inputElement && fieldName === 'user_type') {
-            inputElement = document.querySelector('#transfer_user_type_select');
-        }
-        if (!inputElement && fieldName === 'user_selection') {
-            const userType = document.querySelector('[name="user_type"]').value;
-            if (userType === '1') {
-                inputElement = document.querySelector('#transfer_islander_select');
-            } else if (userType === '2') {
-                inputElement = document.querySelector('#transfer_visitor_select');
-            }
-        }
-
-        if (inputElement) {
-            inputElement.classList.remove('is-invalid');
-            // For Select2 elements, also remove class from the rendered element
-            const select2Element = inputElement.nextElementSibling;
-            if (select2Element && select2Element.classList.contains('select2-container')) {
-                select2Element.querySelector('.select2-selection').classList.remove('is-invalid');
-            }
-        }
-    }
-
-    function clearAllTransferValidationErrors() {
-        const errorElements = document.querySelectorAll('[data-field]');
-        errorElements.forEach(element => {
-            element.textContent = '';
-            element.style.display = 'none';
-        });
-
-        // Remove error styling from all inputs
-        const inputElements = document.querySelectorAll('.is-invalid');
-        inputElements.forEach(element => {
-            element.classList.remove('is-invalid');
-        });
-    }
-
-    function validateTransferForm() {
-        let isValid = true;
-        clearAllTransferValidationErrors();
-
-        // Get user's permission to create past date requests
-        const canCreatePastDate = <?= json_encode($canCreatePastDate ?? false) ?>;
-
-        // 1. Validate User Type
-        const userType = document.querySelector('[name="user_type"]').value;
-        if (!userType) {
-            showTransferValidationError('user_type', 'Please select a user type');
-            isValid = false;
-        } else {
-            hideTransferValidationError('user_type');
-        }
-
-        // 2. Validate Islander/Visitor Selection
-        let selectedUserId = '';
-        if (userType === '1') {
-            // Islander selected
-            selectedUserId = document.querySelector('[name="islander_id"]').value;
-            if (!selectedUserId) {
-                showTransferValidationError('user_selection', 'Please select an Islander');
-                isValid = false;
-            } else {
-                hideTransferValidationError('user_selection');
-            }
-        } else if (userType === '2') {
-            // Visitor selected
-            selectedUserId = document.querySelector('[name="visitor_id"]').value;
-            if (!selectedUserId) {
-                showTransferValidationError('user_selection', 'Please select a Visitor');
-                isValid = false;
-            } else {
-                hideTransferValidationError('user_selection');
-            }
-        }
-
-        // 3. Validate Leave Reason
-        const leaveReason = document.querySelector('[name="leave_reason"]').value;
-        if (!leaveReason) {
-            showTransferValidationError('leave_reason', 'Please select a leave reason');
-            isValid = false;
-        } else {
-            hideTransferValidationError('leave_reason');
-        }
-
-        // 4. Validate Transfer Type
-        const transferType = document.querySelector('[name="transfer_type"]').value;
-        if (!transferType) {
-            showTransferValidationError('transfer_type', 'Please select transfer type');
-            isValid = false;
-        } else {
-            hideTransferValidationError('transfer_type');
-        }
-
-        // 5. Validate Mode of Transport
-        const modeOfTransport = document.querySelector('[name="mode_of_transport"]').value;
-        if (!modeOfTransport) {
-            showTransferValidationError('mode_of_transport', 'Please select mode of transport');
-            isValid = false;
-        } else {
-            hideTransferValidationError('mode_of_transport');
-        }
-
-        // 6. Validate Departure Route
-        const departureRoute = document.querySelector('[name="departure_route"]').value;
-        if (!departureRoute || departureRoute.trim() === '') {
-            showTransferValidationError('departure_route', 'Please enter departure route');
-            isValid = false;
-        } else {
-            hideTransferValidationError('departure_route');
-        }
-
-        // 7. Validate Departure Date
-        const departureDate = document.querySelector('[name="transfer_departure_date"]').value;
-        if (!departureDate) {
-            showTransferValidationError('transfer_departure_date', 'Please select departure date');
-            isValid = false;
-        } else {
-            // Check if departure date is not in the past (unless user has permission)
-            if (!canCreatePastDate) {
-                const today = new Date();
-                const selectedDate = new Date(departureDate);
-                today.setHours(0, 0, 0, 0);
-                selectedDate.setHours(0, 0, 0, 0);
-
-                if (selectedDate < today) {
-                    showTransferValidationError('transfer_departure_date',
-                        'Departure date cannot be in the past');
-                    isValid = false;
-                } else {
-                    hideTransferValidationError('transfer_departure_date');
-                }
-            } else {
-                hideTransferValidationError('transfer_departure_date');
-            }
-        }
-
-        // 8. Validate Arrival Route
-        const arrivalRoute = document.querySelector('[name="arrival_route"]').value;
-        if (!arrivalRoute || arrivalRoute.trim() === '') {
-            showTransferValidationError('arrival_route', 'Please enter arrival route');
-            isValid = false;
-        } else {
-            hideTransferValidationError('arrival_route');
-        }
-
-        // 9. Validate Arrival Date
-        const arrivalDate = document.querySelector('[name="transfer_arrival_date"]').value;
-        if (!arrivalDate) {
-            showTransferValidationError('transfer_arrival_date', 'Please select arrival date');
-            isValid = false;
-        } else {
-            // Check if arrival date is not in the past (unless user has permission)
-            if (!canCreatePastDate) {
-                const today = new Date();
-                const selectedDate = new Date(arrivalDate);
-                today.setHours(0, 0, 0, 0);
-                selectedDate.setHours(0, 0, 0, 0);
-
-                if (selectedDate < today) {
-                    showTransferValidationError('transfer_arrival_date', 'Arrival date cannot be in the past');
-                    isValid = false;
-                } else if (departureDate && arrivalDate < departureDate) {
-                    showTransferValidationError('transfer_arrival_date',
-                        'Arrival date cannot be before departure date');
-                    isValid = false;
-                } else {
-                    hideTransferValidationError('transfer_arrival_date');
-                }
-            } else {
-                // Even with permission, arrival cannot be before departure
-                if (departureDate && arrivalDate < departureDate) {
-                    showTransferValidationError('transfer_arrival_date',
-                        'Arrival date cannot be before departure date');
-                    isValid = false;
-                } else {
-                    hideTransferValidationError('transfer_arrival_date');
-                }
-            }
-        }
-
-        return isValid;
-    }
-
-    // Add real-time validation clearing
-    function addTransferRealtimeValidation() {
-        // User type validation clearing
-        const userTypeSelect = document.querySelector('[name="user_type"]');
-        if (userTypeSelect) {
-            userTypeSelect.addEventListener('change', function() {
-                if (this.value) {
-                    hideTransferValidationError('user_type');
-                }
-            });
-        }
-
-        // Islander/Visitor selection validation clearing
-        const islanderSelect = document.querySelector('[name="islander_id"]');
-        const visitorSelect = document.querySelector('[name="visitor_id"]');
-
-        if (islanderSelect) {
-            islanderSelect.addEventListener('change', function() {
-                if (this.value) {
-                    hideTransferValidationError('user_selection');
-                    // Check for existing transfer request
-                    checkExistingTransferRequest(this.value, 'islander');
-                }
-            });
-        }
-
-        if (visitorSelect) {
-            visitorSelect.addEventListener('change', function() {
-                if (this.value) {
-                    hideTransferValidationError('user_selection');
-                    // Check for existing transfer request
-                    checkExistingTransferRequest(this.value, 'visitor');
-                }
-            });
-        }
-
-        // Other field validation clearing
-        const fieldsToValidate = [
-            'leave_reason', 'transfer_type', 'mode_of_transport',
-            'departure_route', 'transfer_departure_date',
-            'arrival_route', 'transfer_arrival_date'
-        ];
-
-        fieldsToValidate.forEach(fieldName => {
-            const field = document.querySelector(`[name="${fieldName}"]`);
-            if (field) {
-                field.addEventListener('change', function() {
-                    if (this.value && this.value.trim() !== '') {
-                        hideTransferValidationError(fieldName);
-                    }
-                });
-            }
-        });
-
-        // Dynamic arrival date minimum based on departure date
-        const departureDateField = document.querySelector('[name="transfer_departure_date"]');
-        const arrivalDateField = document.querySelector('[name="transfer_arrival_date"]');
-
-        if (departureDateField && arrivalDateField) {
-            departureDateField.addEventListener('change', function() {
-                const departureValue = this.value;
-                if (departureValue) {
-                    // Set arrival date minimum to departure date (can't arrive before departure)
-                    arrivalDateField.setAttribute('min', departureValue);
-
-                    // Clear arrival date if it's now before departure date
-                    if (arrivalDateField.value && arrivalDateField.value < departureValue) {
-                        arrivalDateField.value = '';
-                        hideTransferValidationError('transfer_arrival_date');
-                    }
-                }
-            });
-        }
-    }
 
     // Function to check for existing transfer requests
     function checkExistingTransferRequest(userId, userType) {
@@ -1002,30 +990,57 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Initialize real-time validation
-    addTransferRealtimeValidation();
+        // Islander selection change event for existing request check
+        if (window.jQuery && $('#transfer_islander_select').length) {
+            $('#transfer_islander_select').on('change', function() {
+                const selectedValue = $(this).val();
+                if (selectedValue && selectedValue !== '' && !isNaN(selectedValue)) {
+                    checkExistingTransferRequest(selectedValue, 'islander');
+                }
+            });
+        }
+        
+        // Visitor selection change event for existing request check
+        if (window.jQuery && $('#transfer_visitor_select').length) {
+            $('#transfer_visitor_select').on('change', function() {
+                const selectedValue = $(this).val();
+                if (selectedValue && selectedValue !== '' && !isNaN(selectedValue)) {
+                    checkExistingTransferRequest(selectedValue, 'visitor');
+                }
+            });
+        }
 
     if (transferSubmitBtn && transferForm) {
         transferSubmitBtn.addEventListener('click', function(e) {
             e.preventDefault();
 
-            // Clear previous validation errors and validate form
-            if (!validateTransferForm()) {
-                // Scroll to first error
-                const firstError = document.querySelector('[data-field]:not(:empty)');
-                if (firstError) {
-                    firstError.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
+            // Add small delay to ensure Select2 values are properly available
+            setTimeout(function() {
+                // DON'T force Select2 sync - it clears the selection
+                // Just proceed with validation
+                
+                console.log('Starting form validation without forced sync...');
+                
+                // Clear previous validation errors and validate form
+                if (!validateTransferForm()) {
+                    console.log('Form validation failed - showing errors');
+                    // Scroll to first error
+                    const firstError = document.querySelector('[data-field]:not(:empty)');
+                    if (firstError) {
+                        firstError.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                    return;
                 }
-                return;
-            }
-
-            // Show loading state
-            transferSubmitBtn.querySelector('.indicator-label').style.display = 'none';
-            transferSubmitBtn.querySelector('.indicator-progress').style.display = 'inline-block';
-            transferSubmitBtn.disabled = true;
+                
+                console.log('Form validation passed - proceeding with submission');
+                
+                // Show loading state
+                transferSubmitBtn.querySelector('.indicator-label').style.display = 'none';
+                transferSubmitBtn.querySelector('.indicator-progress').style.display = 'inline-block';
+                transferSubmitBtn.disabled = true;
 
             // Get form data
             const formData = new FormData(transferForm);
@@ -1155,6 +1170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error:', error);
                     Swal.fire('Error', 'Failed to submit transfer request', 'error');
                 });
+            }, 200); // Increased delay to allow Select2 to settle properly
         });
     }
 });

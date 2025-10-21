@@ -1381,4 +1381,14 @@ function handleSessionExpired() {
 }
 </script>
 
+<!-- Include Transfer Modal with data -->
+<?= $this->include('requests/create_transfer_modal.php', [
+    'departure_routes' => $departure_routes ?? [],
+    'arrival_routes' => $arrival_routes ?? [],
+    'islanders' => $islanders ?? [],
+    'visitors' => $visitors ?? [],
+    'leaves' => $leaves ?? $leave_reasons ?? [],
+    'canCreatePastDate' => $canCreatePastDate ?? false
+]) ?>
+
 <?= $this->include('layout/footer.php') ?>

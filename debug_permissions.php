@@ -1,70 +1,74 @@
 <?php
 
-// Simple debug script to check current user permissions
-require_once __DIR__ . '/vendor/autoload.php';
+// Include CodeIgniter
+require_once 'app/Config/Paths.php';
+$paths = new Config\Paths();
+require $paths->systemDirectory . '/bootstrap.php';
 
-// Bootstrap CodeIgniter
 $app = Config\Services::codeigniter();
 $app->initialize();
 
-// Check if user is logged in
-echo "=== Current User Debug ===\n";
+echo "<h2>User Permissions Debug</h2>\n";
 
-if (function_exists('logged_in') && logged_in()) {
-    $user = user();
-    echo "Logged in as: " . $user->username . " (ID: " . $user->id . ")\n";
-    echo "Email: " . $user->email . "\n";
+try {
+    // Load auth helper
+    helper('auth');
     
-    // Check groups
-    if (function_exists('in_groups')) {
-        $isAdmin = in_groups('admin', $user->id);
-        $isManager = in_groups('manager', $user->id);
-        $isUser = in_groups('user', $user->id);
+    // Check current user
+    $auth = service('authentication');
+    if ($auth->check()) {
+        $user = $auth->user();
+        echo "<p><strong>Current User:</strong> " . ($user->full_name ?? 'Unknown') . " (ID: " . ($user->id ?? 'Unknown') . ")</p>\n";
         
-        echo "Is Admin: " . ($isAdmin ? 'Yes' : 'No') . "\n";
-        echo "Is Manager: " . ($isManager ? 'Yes' : 'No') . "\n";
-        echo "Is User: " . ($isUser ? 'Yes' : 'No') . "\n";
+        // Check specific permissions
+        $permissions = [
+            'requests.view',
+            'requests.create',
+            'requests.edit',
+            'requests.delete',
+            'requests.create_past_date'
+        ];
+        
+        echo "<h3>Permission Check:</h3>\n";
+        echo "<ul>\n";
+        foreach ($permissions as $permission) {
+            $hasPermission = has_permission($permission) ? '✅ YES' : '❌ NO';
+            echo "<li><strong>{$permission}:</strong> {$hasPermission}</li>\n";
+        }
+        echo "</ul>\n";
+        
+        // Test flight routes loading with and without permission check
+        echo "<h3>Flight Routes Loading Test:</h3>\n";
+        
+        $flightRouteModel = new \App\Models\FlightRouteModel();
+        
+        // Test direct model access
+        $departureRoutes = $flightRouteModel->getActiveRoutesByType('Departure');
+        $arrivalRoutes = $flightRouteModel->getActiveRoutesByType('Arrival');
+        
+        echo "<p><strong>Direct Model Access:</strong></p>\n";
+        echo "<p>Departure routes: " . count($departureRoutes) . "</p>\n";
+        echo "<p>Arrival routes: " . count($arrivalRoutes) . "</p>\n";
+        
+        // Test with permission check
+        $canCreate = has_permission('requests.create');
+        echo "<p><strong>Can Create Requests:</strong> " . ($canCreate ? 'YES' : 'NO') . "</p>\n";
+        
+        if ($canCreate) {
+            echo "<p>✅ User has permission - flight routes should be loaded</p>\n";
+        } else {
+            echo "<p>❌ User lacks permission - flight routes will NOT be loaded</p>\n";
+            echo "<p><strong>Solution:</strong> Grant 'requests.create' permission to this user</p>\n";
+        }
+        
+    } else {
+        echo "<p><strong>No user logged in</strong></p>\n";
+        echo "<p><a href='/login'>Login first</a></p>\n";
     }
     
-    // Check specific permission
-    if (function_exists('has_permission')) {
-        $hasNationalitiesView = has_permission('nationalities.view', $user->id);
-        echo "Has nationalities.view permission: " . ($hasNationalitiesView ? 'Yes' : 'No') . "\n";
-        
-        $hasDivisionsView = has_permission('divisions.view', $user->id);
-        echo "Has divisions.view permission: " . ($hasDivisionsView ? 'Yes' : 'No') . "\n";
-        
-        $hasGendersView = has_permission('genders.view', $user->id);
-        echo "Has genders.view permission: " . ($hasGendersView ? 'Yes' : 'No') . "\n";
-    }
-    
-} else {
-    echo "User is not logged in!\n";
+} catch (\Exception $e) {
+    echo "<p><strong>Error:</strong> " . $e->getMessage() . "</p>\n";
+    echo "<pre>" . $e->getTraceAsString() . "</pre>\n";
 }
 
-echo "\n=== Database Permissions Check ===\n";
-$db = \Config\Database::connect();
-
-// Check if nationalities permissions exist
-$nationalitiesPerms = $db->query("SELECT * FROM auth_permissions WHERE name LIKE 'nationalities.%'")->getResultArray();
-echo "Nationalities permissions in database:\n";
-foreach ($nationalitiesPerms as $perm) {
-    echo "- " . $perm['name'] . ": " . $perm['description'] . "\n";
-}
-
-// Check admin group permissions
-$adminPerms = $db->query("
-    SELECT p.name 
-    FROM auth_permissions p 
-    JOIN auth_groups_permissions agp ON p.id = agp.permission_id 
-    JOIN auth_groups g ON agp.group_id = g.id 
-    WHERE g.name = 'admin' AND p.name LIKE 'nationalities.%'
-")->getResultArray();
-
-echo "\nAdmin group nationalities permissions:\n";
-foreach ($adminPerms as $perm) {
-    echo "- " . $perm['name'] . "\n";
-}
-
-echo "\nDebug completed!\n";
-?>
+echo "<p><a href='requests'>Go to Requests Page</a></p>\n";

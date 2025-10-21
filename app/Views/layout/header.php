@@ -8,6 +8,7 @@
     <meta name="description" content="Islanders App" />
     <meta name="keywords" content="Islanders, App" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#1e1e2d" />
@@ -305,6 +306,35 @@
     });
     </script>
     
+    <!-- Performance Optimization: Passive Event Listeners -->
+    <script>
+    // Override addEventListener to use passive listeners for scroll-blocking events
+    const supportsPassive = (() => {
+        let supports = false;
+        try {
+            window.addEventListener('test', null, {
+                get passive() {
+                    supports = true;
+                    return false;
+                }
+            });
+        } catch (e) {}
+        return supports;
+    })();
+
+    if (supportsPassive) {
+        // List of events that should use passive listeners by default
+        const passiveEvents = ['touchstart', 'touchmove', 'wheel', 'mousewheel'];
+
+        const originalAddEventListener = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options) {
+            if (passiveEvents.includes(type) && typeof options !== 'object') {
+                options = { passive: true };
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+    }
+    </script>
 
     <!-- Deep Link Handler -->
     <script>
@@ -325,7 +355,8 @@
                 }
             });
         } else {
-            console.warn('Capacitor App plugin not available.');
+            // This is expected when running in web browser (not mobile app)
+            console.debug('Capacitor App plugin not available - running in web mode.');
         }
     });
     </script>

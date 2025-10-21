@@ -257,4 +257,19 @@ class FlightRouteModel extends Model
         
         return true;
     }
+
+    /**
+     * Get active flight routes by type for dropdowns
+     */
+    public function getActiveRoutesByType($type)
+    {
+        $builder = $this->db->table('flight_routes');
+        
+        return $builder->select('id, name, description, type')
+                      ->where('type', $type)
+                      ->where('status_id', 1) // Active status
+                      ->orderBy('name', 'ASC')
+                      ->get()
+                      ->getResultArray();
+    }
 }

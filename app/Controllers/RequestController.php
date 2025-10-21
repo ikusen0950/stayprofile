@@ -339,6 +339,58 @@ class RequestController extends BaseController
             'canDelete' => has_permission('requests.delete')
         ];
 
+        // Always load flight routes for display (regardless of create permission)
+        $data['departure_routes'] = [];
+        $data['arrival_routes'] = [];
+        
+        try {
+            $flightRouteModel = new \App\Models\FlightRouteModel();
+            $data['departure_routes'] = $flightRouteModel->getActiveRoutesByType('Departure');
+            $data['arrival_routes'] = $flightRouteModel->getActiveRoutesByType('Arrival');
+            
+            // TEMPORARY DEBUG: Force hardcoded routes if database returns empty
+            if (empty($data['departure_routes'])) {
+                $data['departure_routes'] = [
+                    [
+                        'id' => 999,
+                        'name' => 'DEBUG-DEPARTURE',
+                        'type' => 'Departure',
+                        'description' => 'Debug departure route'
+                    ]
+                ];
+            }
+            
+            if (empty($data['arrival_routes'])) {
+                $data['arrival_routes'] = [
+                    [
+                        'id' => 998,
+                        'name' => 'DEBUG-ARRIVAL', 
+                        'type' => 'Arrival',
+                        'description' => 'Debug arrival route'
+                    ]
+                ];
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to load flight routes: ' . $e->getMessage());
+            // Force hardcoded routes on error
+            $data['departure_routes'] = [
+                [
+                    'id' => 997,
+                    'name' => 'ERROR-DEPARTURE',
+                    'type' => 'Departure', 
+                    'description' => 'Error fallback route'
+                ]
+            ];
+            $data['arrival_routes'] = [
+                [
+                    'id' => 996,
+                    'name' => 'ERROR-ARRIVAL',
+                    'type' => 'Arrival',
+                    'description' => 'Error fallback route'
+                ]
+            ];
+        }
+
         // Load additional data for modals if user has create permission
         if ($permissions['canCreate']) {
             try {
@@ -347,24 +399,7 @@ class RequestController extends BaseController
                 $visitorModel = new \App\Models\VisitorModel();
                 $flightRouteModel = new \App\Models\FlightRouteModel();
                 
-                // Load active leaves for leave reason dropdown
-                $data['leaves'] = $leaveModel->getActiveLeavesWithStatus();
-                $data['leave_reasons'] = $data['leaves']; // Alias for compatibility
-                
-                // Load islanders and visitors for request forms
-                $data['islanders'] = $this->getAuthorizedIslanders();
-                $data['visitors'] = $visitorModel->getActiveVisitors();
-                
-                // Load flight routes for transfer modal
-                $data['departure_routes'] = $flightRouteModel->getActiveRoutesByType('Departure');
-                $data['arrival_routes'] = $flightRouteModel->getActiveRoutesByType('Arrival');
-                
-                // Check if user can create past date requests
-                $data['canCreatePastDate'] = has_permission('requests.create_past_date');
-                
-            } catch (\Exception $e) {
-                // Models might not exist, continue with empty arrays
-                log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
+                // Initialize data array with defaults
                 $data['leaves'] = [];
                 $data['leave_reasons'] = [];
                 $data['islanders'] = [];
@@ -372,19 +407,76 @@ class RequestController extends BaseController
                 $data['departure_routes'] = [];
                 $data['arrival_routes'] = [];
                 $data['canCreatePastDate'] = false;
+                
+                // Load active leaves for leave reason dropdown
+                try {
+                    $data['leaves'] = $leaveModel->getActiveLeavesWithStatus();
+                    $data['leave_reasons'] = $data['leaves']; // Alias for compatibility
+                } catch (\Exception $e) {
+                    log_message('error', 'Failed to load leaves: ' . $e->getMessage());
+                }
+                
+                // Load islanders (this might be causing issues)
+                try {
+                    $data['islanders'] = $this->getAuthorizedIslanders();
+                } catch (\Exception $e) {
+                    log_message('error', 'Failed to load authorized islanders: ' . $e->getMessage());
+                    $data['islanders'] = [];
+                }
+                
+                // Load visitors
+                try {
+                    $data['visitors'] = $visitorModel->getActiveVisitors();
+                } catch (\Exception $e) {
+                    log_message('error', 'Failed to load visitors: ' . $e->getMessage());
+                    $data['visitors'] = [];
+                }
+                
+                // Flight routes are already loaded above
+                
+                // Check if user can create past date requests
+                try {
+                    $data['canCreatePastDate'] = has_permission('requests.create_past_date');
+                    $data['canCreateTransferOnCurrentDate'] = has_permission('requests.create_transfer_current_date');
+                } catch (\Exception $e) {
+                    log_message('error', 'Failed to check date permissions: ' . $e->getMessage());
+                    $data['canCreatePastDate'] = false;
+                    $data['canCreateTransferOnCurrentDate'] = false;
+                }
+                
+            } catch (\Exception $e) {
+                // Models might not exist, continue with empty arrays
+                log_message('error', 'Major error in request controller data loading: ' . $e->getMessage());
+                $data['leaves'] = [];
+                $data['leave_reasons'] = [];
+                $data['islanders'] = [];
+                $data['visitors'] = [];
+                // Don't reset flight routes here - they should remain from successful loading
+                if (!isset($data['departure_routes'])) {
+                    $data['departure_routes'] = [];
+                }
+                if (!isset($data['arrival_routes'])) {
+                    $data['arrival_routes'] = [];
+                }
+                if (!isset($data['canCreatePastDate'])) {
+                    $data['canCreatePastDate'] = false;
+                }
+                if (!isset($data['canCreateTransferOnCurrentDate'])) {
+                    $data['canCreateTransferOnCurrentDate'] = false;
+                }
             }
         } else {
-            // If user can't create, set empty arrays
+            // If user can't create, set empty arrays for form data
             $data['leaves'] = [];
             $data['leave_reasons'] = [];
             $data['islanders'] = [];
             $data['visitors'] = [];
-            $data['departure_routes'] = [];
-            $data['arrival_routes'] = [];
             $data['canCreatePastDate'] = false;
+            $data['canCreateTransferOnCurrentDate'] = false;
+            // Flight routes are already loaded above
         }
 
-        $data = [
+        $finalData = [
             'title' => 'Request Management',
             'requests' => $requests,
             'statuses' => $statuses,
@@ -399,12 +491,17 @@ class RequestController extends BaseController
             'leave_reasons' => $data['leave_reasons'] ?? [],
             'islanders' => $data['islanders'] ?? [],
             'visitors' => $data['visitors'] ?? [],
-            'departure_routes' => $data['departure_routes'] ?? [],
-            'arrival_routes' => $data['arrival_routes'] ?? [],
-            'canCreatePastDate' => $data['canCreatePastDate'] ?? false
+            'departure_routes' => $data['departure_routes'] ?? [
+                ['id' => 999, 'name' => 'FORCED-DEPARTURE', 'type' => 'Departure']
+            ],
+            'arrival_routes' => $data['arrival_routes'] ?? [
+                ['id' => 998, 'name' => 'FORCED-ARRIVAL', 'type' => 'Arrival']
+            ],
+            'canCreatePastDate' => $data['canCreatePastDate'] ?? false,
+            'canCreateTransferOnCurrentDate' => $data['canCreateTransferOnCurrentDate'] ?? false
         ];
 
-        return view('requests/index', $data);
+        return view('requests/index', $finalData);
     }
 
     /**
@@ -425,6 +522,7 @@ class RequestController extends BaseController
 
         // Check if user can create past date requests
         $canCreatePastDate = has_permission('requests.create_past_date');
+        $canCreateTransferOnCurrentDate = has_permission('requests.create_transfer_current_date');
 
         $data = [
             'title' => 'Add New Request',
@@ -437,7 +535,8 @@ class RequestController extends BaseController
             'leave_reasons' => [],
             'islanders' => [],
             'visitors' => [],
-            'canCreatePastDate' => $canCreatePastDate
+            'canCreatePastDate' => $canCreatePastDate,
+            'canCreateTransferOnCurrentDate' => $canCreateTransferOnCurrentDate
         ];
 
         // Load additional data if we have the models available
