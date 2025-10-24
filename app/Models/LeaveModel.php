@@ -225,4 +225,18 @@ class LeaveModel extends Model
         
         return $builder->get()->getResultArray();
     }
+
+    /**
+     * Get active leaves with status for transfer requests (module_id = 16)
+     */
+    public function getActiveLeavesWithStatusForTransfer()
+    {
+        $builder = $this->db->table('leaves l');
+        $builder->select('l.id, l.name, l.description')
+                ->where('l.status_id', 1) // Active status for leaves
+                ->where('l.module_id', 16) // Filter by module ID 16 for transfer
+                ->orderBy('l.name', 'ASC');
+        
+        return $builder->get()->getResultArray();
+    }
 }

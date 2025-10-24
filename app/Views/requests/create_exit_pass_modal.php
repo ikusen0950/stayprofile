@@ -96,8 +96,8 @@
                                     data-placeholder="Select leave reason"
                                     data-dropdown-parent="#exitPassModal" required>
                                     <option value="">Select Leave Reason</option>
-                                    <?php if (!empty($leave_reasons)): ?>
-                                    <?php foreach ($leave_reasons as $leave_reason): ?>
+                                    <?php if (!empty($exit_pass_leave_reasons)): ?>
+                                    <?php foreach ($exit_pass_leave_reasons as $leave_reason): ?>
                                     <option value="<?= esc($leave_reason['id']) ?>">
                                         <?= esc($leave_reason['name']) ?></option>
                                     <?php endforeach; ?>

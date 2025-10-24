@@ -342,53 +342,27 @@ class RequestController extends BaseController
         // Always load flight routes for display (regardless of create permission)
         $data['departure_routes'] = [];
         $data['arrival_routes'] = [];
+        $data['transfer_routes'] = [];
         
         try {
             $flightRouteModel = new \App\Models\FlightRouteModel();
-            $data['departure_routes'] = $flightRouteModel->getActiveRoutesByType('Departure');
-            $data['arrival_routes'] = $flightRouteModel->getActiveRoutesByType('Arrival');
             
-            // TEMPORARY DEBUG: Force hardcoded routes if database returns empty
-            if (empty($data['departure_routes'])) {
-                $data['departure_routes'] = [
-                    [
-                        'id' => 999,
-                        'name' => 'DEBUG-DEPARTURE',
-                        'type' => 'Departure',
-                        'description' => 'Debug departure route'
-                    ]
-                ];
-            }
+            // Load specific routes for transfer requests
+            $data['departure_routes'] = $flightRouteModel->getDepartureRoutesForTransfer();
+            $data['arrival_routes'] = $flightRouteModel->getArrivalRoutesForTransfer();
+            $data['transfer_routes'] = $flightRouteModel->getTransferRoutesForTransfer();
             
-            if (empty($data['arrival_routes'])) {
-                $data['arrival_routes'] = [
-                    [
-                        'id' => 998,
-                        'name' => 'DEBUG-ARRIVAL', 
-                        'type' => 'Arrival',
-                        'description' => 'Debug arrival route'
-                    ]
-                ];
-            }
+            // DEBUG: Log what we actually got
+            log_message('debug', 'Transfer departure routes count: ' . count($data['departure_routes']));
+            log_message('debug', 'Transfer arrival routes count: ' . count($data['arrival_routes']));
+            log_message('debug', 'Transfer routes count: ' . count($data['transfer_routes']));
+            
         } catch (\Exception $e) {
-            log_message('error', 'Failed to load flight routes: ' . $e->getMessage());
-            // Force hardcoded routes on error
-            $data['departure_routes'] = [
-                [
-                    'id' => 997,
-                    'name' => 'ERROR-DEPARTURE',
-                    'type' => 'Departure', 
-                    'description' => 'Error fallback route'
-                ]
-            ];
-            $data['arrival_routes'] = [
-                [
-                    'id' => 996,
-                    'name' => 'ERROR-ARRIVAL',
-                    'type' => 'Arrival',
-                    'description' => 'Error fallback route'
-                ]
-            ];
+            log_message('error', 'Failed to load flight routes for transfer: ' . $e->getMessage());
+            // Set empty arrays on error
+            $data['departure_routes'] = [];
+            $data['arrival_routes'] = [];
+            $data['transfer_routes'] = [];
         }
 
         // Load additional data for modals if user has create permission
@@ -469,6 +443,8 @@ class RequestController extends BaseController
             // If user can't create, set empty arrays for form data
             $data['leaves'] = [];
             $data['leave_reasons'] = [];
+            $data['exit_pass_leave_reasons'] = [];
+            $data['transfer_leave_reasons'] = [];
             $data['islanders'] = [];
             $data['visitors'] = [];
             $data['canCreatePastDate'] = false;
@@ -533,8 +509,13 @@ class RequestController extends BaseController
             'divisions' => [],
             'positions' => [],
             'leave_reasons' => [],
+            'exit_pass_leave_reasons' => [],
+            'transfer_leave_reasons' => [],
             'islanders' => [],
             'visitors' => [],
+            'departure_routes' => [],
+            'arrival_routes' => [],
+            'transfer_routes' => [],
             'canCreatePastDate' => $canCreatePastDate,
             'canCreateTransferOnCurrentDate' => $canCreateTransferOnCurrentDate
         ];
@@ -555,16 +536,33 @@ class RequestController extends BaseController
             // Load active leaves for leave reason dropdown
             $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatus();
             
+            // Load specific leave reasons for exit pass (module_id = 15)
+            $data['exit_pass_leave_reasons'] = $leaveModel->getActiveLeavesWithStatusForExitPass();
+            
+            // Load specific leave reasons for transfer (module_id = 16)  
+            $data['transfer_leave_reasons'] = $leaveModel->getActiveLeavesWithStatusForTransfer();
+            
             // Load islanders and visitors for exit pass
             $data['islanders'] = $this->getAuthorizedIslanders();
             $data['visitors'] = $visitorModel->getActiveVisitors();
+            
+            // Load flight routes for transfer modal
+            $flightRouteModel = new \App\Models\FlightRouteModel();
+            $data['departure_routes'] = $flightRouteModel->getDepartureRoutesForTransfer();
+            $data['arrival_routes'] = $flightRouteModel->getArrivalRoutesForTransfer();
+            $data['transfer_routes'] = $flightRouteModel->getTransferRoutesForTransfer();
             
         } catch (\Exception $e) {
             // Models might not exist, continue with empty arrays
             log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
             $data['leave_reasons'] = [];
+            $data['exit_pass_leave_reasons'] = [];
+            $data['transfer_leave_reasons'] = [];
             $data['islanders'] = [];
             $data['visitors'] = [];
+            $data['departure_routes'] = [];
+            $data['arrival_routes'] = [];
+            $data['transfer_routes'] = [];
         }
 
         return view('requests/add', $data);
@@ -624,6 +622,8 @@ class RequestController extends BaseController
             // Models might not exist, continue with empty arrays
             log_message('info', 'Some models not available for request forms: ' . $e->getMessage());
             $data['leave_reasons'] = [];
+            $data['exit_pass_leave_reasons'] = [];
+            $data['transfer_leave_reasons'] = [];
             $data['islanders'] = [];
             $data['visitors'] = [];
         }
@@ -640,7 +640,14 @@ class RequestController extends BaseController
                 }
                 return view('requests/create_exit_pass_modal', $data);
             case 'transfer':
-                return view('requests/create_transfer', $data);
+                // Override leave reasons for transfer with specific module filter
+                try {
+                    $data['leave_reasons'] = $leaveModel->getActiveLeavesWithStatusForTransfer();
+                } catch (\Exception $e) {
+                    log_message('error', 'Failed to load transfer leave reasons: ' . $e->getMessage());
+                    $data['leave_reasons'] = [];
+                }
+                return view('requests/create_transfer_modal', $data);
             default:
                 return view('requests/create_modal', $data);
         }
@@ -697,10 +704,93 @@ class RequestController extends BaseController
                                ->with('error', 'User already has an active exit pass request.');
             }
 
-            // Determine status_id based on user role
+            // Determine status_id based on user role for exit pass
             $statusId = $this->determineStatusByUserRole($rawData['user_id'], $rawData['user_type'] ?? null);
             if ($statusId) {
                 $data['status_id'] = $statusId;
+            }
+        }
+
+        // Determine status_id for transfer requests based on user role
+        if (isset($rawData['type']) && $rawData['type'] === '2' && isset($rawData['user_id'])) {
+            // Check for existing transfer requests with conflicting dates
+            // Get dates from both sanitized data and raw data to handle different field mappings
+            $departureDate = $data['transfer_departure_date'] ?? $rawData['transfer_departure_date'] ?? null;
+            $arrivalDate = $data['transfer_arrival_date'] ?? $rawData['transfer_arrival_date'] ?? null;
+            
+            // Determine the route type for the new transfer
+            $newRouteType = $data['transfer_route_type'] ?? $rawData['transfer_route_type'] ?? null;
+            
+            // Also check for one-way transfer dates that might be mapped differently
+            if (!$departureDate && isset($rawData['transfer_date']) && isset($rawData['transfer_route_type']) && $rawData['transfer_route_type'] === 'Departure') {
+                $departureDate = $rawData['transfer_date'];
+                $newRouteType = 'Departure';
+            }
+            if (!$arrivalDate && isset($rawData['transfer_date']) && isset($rawData['transfer_route_type']) && $rawData['transfer_route_type'] === 'Arrival') {
+                $arrivalDate = $rawData['transfer_date'];
+                $newRouteType = 'Arrival';
+            }
+            
+            $existingTransferRequest = $this->checkExistingTransferRequest(
+                $rawData['user_id'], 
+                $departureDate, 
+                $arrivalDate,
+                $newRouteType
+            );
+            
+            if ($existingTransferRequest) {
+                $conflictMessage = 'You already have a transfer request with conflicting dates.';
+                $conflictDetails = [];
+                
+                if ($departureDate && $existingTransferRequest['transfer_departure_date'] === $departureDate) {
+                    $conflictDetails[] = "Departure date: " . date('M d, Y', strtotime($departureDate));
+                }
+                
+                if ($arrivalDate && $existingTransferRequest['transfer_arrival_date'] === $arrivalDate) {
+                    $conflictDetails[] = "Arrival date: " . date('M d, Y', strtotime($arrivalDate));
+                }
+                
+                if (!empty($conflictDetails)) {
+                    $conflictMessage .= ' Conflicting ' . implode(', ', $conflictDetails) . '.';
+                }
+                
+                $conflictMessage .= " Existing request status: {$existingTransferRequest['status_name']}.";
+                
+                if ($this->request->isAJAX()) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => $conflictMessage,
+                        'existing_request' => $existingTransferRequest
+                    ]);
+                }
+                return redirect()->back()
+                               ->withInput()
+                               ->with('error', $conflictMessage);
+            }
+            
+            $statusId = $this->determineStatusByUserRole($rawData['user_id'], $rawData['user_type'] ?? null);
+            if ($statusId) {
+                $data['status_id'] = $statusId;
+            }
+            
+            // Check if this is a quota-exceeding transfer for islanders and set second_transfer flag
+            if (isset($rawData['user_type']) && $rawData['user_type'] === '1') {
+                // This is an islander - check if quota is exceeded
+                $quotaStatus = $this->checkIslanderMonthlyTransferQuota((int)$rawData['user_id']);
+                $quotaExceededConfirmed = isset($rawData['quota_exceeded_confirmed']) && $rawData['quota_exceeded_confirmed'] === '1';
+                
+                if ($quotaStatus && $quotaStatus['quota_exceeded']) {
+                    // Quota is exceeded, this is a chargeable transfer
+                    $data['second_transfer'] = 1;
+                    log_message('info', "Setting second_transfer=1 for user {$rawData['user_id']} due to quota exceeded. User confirmed: " . ($quotaExceededConfirmed ? 'Yes' : 'No') . ". Quota info: {$quotaStatus['message']}");
+                } else {
+                    // Quota not exceeded, this is a free transfer
+                    $data['second_transfer'] = 0;
+                    log_message('info', "Setting second_transfer=0 for user {$rawData['user_id']} - within quota limits");
+                }
+            } else {
+                // Not an islander (visitor) - no quota system applies
+                $data['second_transfer'] = 0;
             }
         }
 
@@ -1071,6 +1161,68 @@ class RequestController extends BaseController
     }
 
     /**
+     * Check if user has existing transfer request with conflicting dates (AJAX)
+     */
+    public function checkExistingTransfer()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        $userId = $this->request->getPost('user_id');
+        $departureDate = $this->request->getPost('departure_date');
+        $arrivalDate = $this->request->getPost('arrival_date');
+
+        if (!$userId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User ID is required'
+            ]);
+        }
+
+        $existingRequest = $this->checkExistingTransferRequest((int)$userId, $departureDate, $arrivalDate);
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'has_existing' => !empty($existingRequest),
+            'existing_request' => $existingRequest
+        ]);
+    }
+
+    /**
+     * Check islander monthly transfer quota (AJAX)
+     */
+    public function checkTransferQuota()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Access denied'
+            ]);
+        }
+
+        $userId = $this->request->getPost('user_id');
+
+        if (!$userId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User ID is required'
+            ]);
+        }
+
+        $quotaStatus = $this->checkIslanderMonthlyTransferQuota((int)$userId);
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'quota_exceeded' => !empty($quotaStatus),
+            'quota_info' => $quotaStatus
+        ]);
+    }
+
+    /**
      * Get authorized islanders based on logged-in user's authorization rules
      */
     private function getAuthorizedIslanders()
@@ -1328,6 +1480,214 @@ class RequestController extends BaseController
             
         } catch (\Exception $e) {
             log_message('error', "Failed to check existing exit pass request for user {$userId}: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Check if user has existing transfer request with conflicting dates
+     * 
+     * @param int $userId The user ID to check for existing requests
+     * @param string|null $departureDate The departure date to check for conflicts
+     * @param string|null $arrivalDate The arrival date to check for conflicts
+     * @param string|null $newRouteType The route type of the new transfer being created
+     * @return array|null Returns existing request data if found, null otherwise
+     */
+    private function checkExistingTransferRequest(int $userId, ?string $departureDate = null, ?string $arrivalDate = null, ?string $newRouteType = null): ?array
+    {
+        try {
+            $builder = $this->db->table('requests');
+            $builder->select('id, type, type_description, status_id, created_at, transfer_departure_date, transfer_arrival_date, transfer_route_type')
+                   ->where('user_id', $userId)
+                   ->where('type', '2') // Transfer type
+                   ->whereIn('status_id', [13, 14, 21]); // Block if: PENDING(13), APPROVED(14), BOOKED(21)
+
+            // Check for conflicting dates based on transfer type logic
+            if ($departureDate || $arrivalDate) {
+                $builder->groupStart(); // Start OR group for date conflicts
+                
+                if ($departureDate) {
+                    if ($newRouteType === 'Departure') {
+                        // For new departure transfers, block if there's an existing departure on same date
+                        // But allow if there's only an arrival on the same date (complementary transfer)
+                        $builder->orWhere('transfer_departure_date', $departureDate);
+                    } else {
+                        // For return transfers or other types, check both departure and arrival conflicts
+                        $builder->orWhere('transfer_departure_date', $departureDate)
+                               ->orWhere('transfer_arrival_date', $departureDate);
+                    }
+                }
+                
+                if ($arrivalDate) {
+                    if ($newRouteType === 'Arrival') {
+                        // For new arrival transfers, block if there's an existing arrival on same date
+                        // But allow if there's only a departure on the same date (complementary transfer)
+                        $builder->orWhere('transfer_arrival_date', $arrivalDate);
+                    } else {
+                        // For return transfers or other types, check both departure and arrival conflicts
+                        $builder->orWhere('transfer_departure_date', $arrivalDate)
+                               ->orWhere('transfer_arrival_date', $arrivalDate);
+                    }
+                }
+                
+                $builder->groupEnd(); // End OR group
+            } else {
+                // If no specific dates provided, check for any active transfer (for return transfers)
+                if ($newRouteType === 'Return') {
+                    $builder->where('1=1'); // Return transfers block any existing active transfer
+                } else {
+                    // For one-way transfers without specific dates, this shouldn't happen
+                    return null;
+                }
+            }
+
+            $existingRequest = $builder->orderBy('created_at', 'DESC')
+                                     ->get()
+                                     ->getRowArray();
+
+            if ($existingRequest) {
+                // Additional logic: Allow complementary one-way transfers on same date
+                if ($newRouteType === 'Departure' && $departureDate) {
+                    // Check if existing request is only an arrival on the same date
+                    if ($existingRequest['transfer_route_type'] === 'Arrival' && 
+                        $existingRequest['transfer_arrival_date'] === $departureDate && 
+                        !$existingRequest['transfer_departure_date']) {
+                        log_message('info', "Allowing complementary departure transfer on {$departureDate} for user {$userId} (existing arrival transfer found)");
+                        return null; // Allow this combination
+                    }
+                }
+                
+                if ($newRouteType === 'Arrival' && $arrivalDate) {
+                    // Check if existing request is only a departure on the same date
+                    if ($existingRequest['transfer_route_type'] === 'Departure' && 
+                        $existingRequest['transfer_departure_date'] === $arrivalDate && 
+                        !$existingRequest['transfer_arrival_date']) {
+                        log_message('info', "Allowing complementary arrival transfer on {$arrivalDate} for user {$userId} (existing departure transfer found)");
+                        return null; // Allow this combination
+                    }
+                }
+
+                // Get status name for better error message
+                $statusBuilder = $this->db->table('status');
+                $status = $statusBuilder->select('name')
+                                       ->where('id', $existingRequest['status_id'])
+                                       ->get()
+                                       ->getRowArray();
+                
+                $existingRequest['status_name'] = $status['name'] ?? 'Unknown';
+                
+                log_message('info', "Conflicting transfer request found for user {$userId}: Request ID {$existingRequest['id']}, Status: {$existingRequest['status_name']}, Departure: {$existingRequest['transfer_departure_date']}, Arrival: {$existingRequest['transfer_arrival_date']}, Route Type: {$existingRequest['transfer_route_type']}");
+                
+                return $existingRequest;
+            }
+
+            return null;
+            
+        } catch (\Exception $e) {
+            log_message('error', "Failed to check existing transfer request for user {$userId}: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Check if islander has existing transfer request for the current month (free transfer quota check)
+     * Each islander gets one free return transfer per month OR two free one-way transfers per month
+     * 
+     * @param int $userId The user ID to check for existing requests
+     * @return array|null Returns quota status and existing requests if found, null if no transfers this month
+     */
+    private function checkIslanderMonthlyTransferQuota(int $userId): ?array
+    {
+        try {
+            // Get current month and year
+            $currentMonth = date('Y-m');
+            $monthStart = $currentMonth . '-01';
+            $monthEnd = date('Y-m-t', strtotime($monthStart)); // Last day of current month
+            
+            $builder = $this->db->table('requests');
+            $existingRequests = $builder->select('id, type, type_description, status_id, created_at, transfer_departure_date, transfer_arrival_date, transfer_route_type')
+                                      ->where('user_id', $userId)
+                                      ->where('type', '2') // Transfer type only
+                                      ->whereIn('status_id', [13, 14, 21]) // Include PENDING(13), APPROVED(14) and BOOKED(21) transfers for quota calculation
+                                      ->groupStart()
+                                          ->where('transfer_departure_date >=', $monthStart)
+                                          ->where('transfer_departure_date <=', $monthEnd)
+                                          ->orGroupStart()
+                                              ->where('transfer_arrival_date >=', $monthStart)
+                                              ->where('transfer_arrival_date <=', $monthEnd)
+                                          ->groupEnd()
+                                      ->groupEnd()
+                                      ->orderBy('created_at', 'DESC')
+                                      ->get()
+                                      ->getResultArray();
+
+            log_message('info', "Quota check for user {$userId}: Found " . count($existingRequests) . " existing transfers for " . date('F Y'));
+
+            if (empty($existingRequests)) {
+                return null; // No transfers this month
+            }
+
+            // Analyze existing transfers to determine quota usage
+            $returnTransfers = 0;
+            $oneWayTransfers = 0;
+            $requestDetails = [];
+
+            foreach ($existingRequests as $request) {
+                $routeType = $request['transfer_route_type'] ?? '';
+                
+                if ($routeType === 'Return') {
+                    $returnTransfers++;
+                } elseif (in_array($routeType, ['Departure', 'Arrival'])) {
+                    $oneWayTransfers++;
+                }
+
+                // Get status name for display
+                $statusBuilder = $this->db->table('status');
+                $status = $statusBuilder->select('name')
+                                       ->where('id', $request['status_id'])
+                                       ->get()
+                                       ->getRowArray();
+                
+                $request['status_name'] = $status['name'] ?? 'Unknown';
+                $requestDetails[] = $request;
+                
+                log_message('info', "Transfer found: ID {$request['id']}, Type: {$routeType}, Status: {$request['status_name']}, Departure: {$request['transfer_departure_date']}, Arrival: {$request['transfer_arrival_date']}");
+            }
+
+            // Determine quota status
+            $quotaExceeded = false;
+            $quotaMessage = '';
+
+            if ($returnTransfers >= 1) {
+                // Already has a return transfer this month
+                $quotaExceeded = true;
+                $quotaMessage = "You already have {$returnTransfers} return transfer(s) for " . date('F Y') . ". ";
+            } elseif ($oneWayTransfers >= 2) {
+                // Already has 2 or more one-way transfers this month
+                $quotaExceeded = true;
+                $quotaMessage = "You already have {$oneWayTransfers} one-way transfer(s) for " . date('F Y') . ". ";
+            }
+
+            if ($quotaExceeded) {
+                $quotaMessage .= "Additional transfers will be charged to your Islander City Ledger account and deducted from your salary.";
+                
+                log_message('info', "Transfer quota exceeded for user {$userId}: {$returnTransfers} return, {$oneWayTransfers} one-way transfers for " . date('F Y'));
+                
+                return [
+                    'quota_exceeded' => true,
+                    'message' => $quotaMessage,
+                    'return_transfers' => $returnTransfers,
+                    'one_way_transfers' => $oneWayTransfers,
+                    'existing_requests' => $requestDetails,
+                    'month' => date('F Y')
+                ];
+            }
+
+            log_message('info', "Transfer quota NOT exceeded for user {$userId}: {$returnTransfers} return, {$oneWayTransfers} one-way transfers for " . date('F Y'));
+            return null; // Quota not exceeded
+            
+        } catch (\Exception $e) {
+            log_message('error', "Failed to check islander monthly transfer quota for user {$userId}: " . $e->getMessage());
             return null;
         }
     }

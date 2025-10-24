@@ -272,4 +272,82 @@ class FlightRouteModel extends Model
                       ->get()
                       ->getResultArray();
     }
+
+    /**
+     * Get active departure routes specifically for exit pass requests
+     */
+    public function getDepartureRoutesForExitPass()
+    {
+        $builder = $this->db->table('flight_routes');
+        
+        return $builder->select('id, name, description, type')
+                      ->where('type', 'Departure')
+                      ->where('status_id', 1) // Active status
+                      ->orderBy('name', 'ASC')
+                      ->get()
+                      ->getResultArray();
+    }
+
+    /**
+     * Get active arrival routes specifically for exit pass requests
+     */
+    public function getArrivalRoutesForExitPass()
+    {
+        $builder = $this->db->table('flight_routes');
+        
+        return $builder->select('id, name, description, type')
+                      ->where('type', 'Arrival')
+                      ->where('status_id', 1) // Active status
+                      ->orderBy('name', 'ASC')
+                      ->get()
+                      ->getResultArray();
+    }
+
+    /**
+     * Get active departure routes specifically for transfer requests
+     */
+    public function getDepartureRoutesForTransfer()
+    {
+        $builder = $this->db->table('flight_routes');
+        
+        // Temporarily remove restrictions to see what data we have
+        return $builder->select('id, name, description, type, status_id')
+                      ->where('type', 'Departure')  // Temporarily disabled
+                      ->where('status_id', 1)       // Temporarily disabled
+                      ->orderBy('name', 'ASC')
+                      ->get()
+                      ->getResultArray();
+    }
+
+    /**
+     * Get active arrival routes specifically for transfer requests
+     */
+    public function getArrivalRoutesForTransfer()
+    {
+        $builder = $this->db->table('flight_routes');
+        
+        // Temporarily return all routes to debug
+        return $builder->select('id, name, description, type, status_id')
+                      ->where('type', 'Arrival')    // Temporarily disabled
+                      ->where('status_id', 1)       // Temporarily disabled
+                      ->orderBy('name', 'ASC')
+                      ->get()
+                      ->getResultArray();
+    }
+
+    /**
+     * Get all routes for transfer requests - shows both departure and arrival routes
+     */
+    public function getTransferRoutesForTransfer()
+    {
+        $builder = $this->db->table('flight_routes');
+        
+        // Return all active routes (both departure and arrival) for transfer selection
+        return $builder->select('id, name, description, type, status_id')
+                      ->where('status_id', 1)       // Only active routes
+                      ->orderBy('type', 'ASC')      // Sort by type first (Arrival, Departure)
+                      ->orderBy('name', 'ASC')      // Then by name
+                      ->get()
+                      ->getResultArray();
+    }
 }
