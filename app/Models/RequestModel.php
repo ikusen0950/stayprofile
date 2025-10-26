@@ -274,11 +274,11 @@ class RequestModel extends Model
     /**
      * Get requests with pagination and search
      */
-    public function getRequestsWithPagination($search = '', $limit = 10, $offset = 0)
+    public function getRequestsWithPagination($search = '', $limit = 10, $offset = 0, $authFilters = null)
     {
         $builder = $this->db->table('requests r');
         
-        // Join with status, users, departments, and positions tables
+        // Join with status, users, departments, sections, divisions, and positions tables
         $builder->select('r.*, 
                          s.name as status_name,
                          s.color as status_color,
@@ -288,14 +288,23 @@ class RequestModel extends Model
                          u.image as user_image,
                          d.name as user_department_name,
                          p.name as user_position_name,
+                         sec.name as user_section_name,
+                         div.name as user_division_name,
                          CONCAT(cu.islander_no, " - ", cu.full_name) as created_by_name,
                          CONCAT(uu.islander_no, " - ", uu.full_name) as updated_by_name')
                 ->join('status s', 's.id = r.status_id', 'left')
                 ->join('users u', 'u.id = r.user_id', 'left')
                 ->join('departments d', 'd.id = u.department_id', 'left')
+                ->join('sections sec', 'sec.id = u.section_id', 'left')
+                ->join('divisions div', 'div.id = u.division_id', 'left')
                 ->join('positions p', 'p.id = u.position_id', 'left')
                 ->join('users cu', 'cu.id = r.created_by', 'left')
                 ->join('users uu', 'uu.id = r.updated_by', 'left');
+        
+        // Apply authorization filters
+        if ($authFilters !== null) {
+            $this->applyAuthorizationFilters($builder, $authFilters);
+        }
         
         if (!empty($search)) {
             // Ensure search is a string for like operations
@@ -308,6 +317,8 @@ class RequestModel extends Model
                     ->orLike('u.full_name', $searchString)
                     ->orLike('u.islander_no', $searchString)
                     ->orLike('d.name', $searchString)
+                    ->orLike('sec.name', $searchString)
+                    ->orLike('div.name', $searchString)
                     ->orLike('p.name', $searchString)
                     ->orLike('cu.full_name', $searchString)
                     ->orLike('cu.islander_no', $searchString)
@@ -321,19 +332,26 @@ class RequestModel extends Model
     }
 
     /**
-     * Count requests with search filter
+     * Count requests with search filter and authorization
      */
-    public function getRequestsCount($search = '')
+    public function getRequestsCount($search = '', $authFilters = null)
     {
         $builder = $this->db->table('requests r');
         
-        // Join with status, users, departments, and positions tables for consistent search results
+        // Join with status, users, departments, sections, divisions, and positions tables for consistent search results
         $builder->join('status s', 's.id = r.status_id', 'left')
                 ->join('users u', 'u.id = r.user_id', 'left')
                 ->join('departments d', 'd.id = u.department_id', 'left')
+                ->join('sections sec', 'sec.id = u.section_id', 'left')
+                ->join('divisions div', 'div.id = u.division_id', 'left')
                 ->join('positions p', 'p.id = u.position_id', 'left')
                 ->join('users cu', 'cu.id = r.created_by', 'left')
                 ->join('users uu', 'uu.id = r.updated_by', 'left');
+        
+        // Apply authorization filters
+        if ($authFilters !== null) {
+            $this->applyAuthorizationFilters($builder, $authFilters);
+        }
         
         if (!empty($search)) {
             // Ensure search is a string for like operations
@@ -346,6 +364,8 @@ class RequestModel extends Model
                     ->orLike('u.full_name', $searchString)
                     ->orLike('u.islander_no', $searchString)
                     ->orLike('d.name', $searchString)
+                    ->orLike('sec.name', $searchString)
+                    ->orLike('div.name', $searchString)
                     ->orLike('p.name', $searchString)
                     ->orLike('cu.full_name', $searchString)
                     ->orLike('cu.islander_no', $searchString)
@@ -353,6 +373,40 @@ class RequestModel extends Model
         }
         
         return $builder->countAllResults();
+    }
+
+    /**
+     * Apply authorization filters to query builder
+     */
+    private function applyAuthorizationFilters($builder, $authFilters)
+    {
+        if ($authFilters['user_only']) {
+            // User can only see their own requests
+            $builder->where('r.user_id', $authFilters['user_id']);
+        } else {
+            // User can see authorized requests + their own requests
+            $builder->groupStart();
+            
+            // Include user's own requests
+            $builder->where('r.user_id', $authFilters['user_id']);
+            
+            // Add department-based authorization
+            if (!empty($authFilters['department_ids'])) {
+                $builder->orWhereIn('u.department_id', $authFilters['department_ids']);
+            }
+            
+            // Add section-based authorization
+            if (!empty($authFilters['section_ids'])) {
+                $builder->orWhereIn('u.section_id', $authFilters['section_ids']);
+            }
+            
+            // Add division-based authorization  
+            if (!empty($authFilters['division_ids'])) {
+                $builder->orWhereIn('u.division_id', $authFilters['division_ids']);
+            }
+            
+            $builder->groupEnd();
+        }
     }
 
     /**

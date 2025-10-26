@@ -8,6 +8,9 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Dashboard::index', ['filter' => 'login']);
 
+// Debug route
+$routes->get('/debug/group5', 'DebugController::checkGroup5Permissions');
+
 // Protected route example
 $routes->get('dashboard', 'Dashboard::index', ['filter' => 'login']);
 

@@ -381,7 +381,7 @@
                     <div class="overlay">
                         <div class="d-flex flex-row-fluid flex-center flex-column-auto flex-column text-center">
                             <a href="/" class="mb-2">
-                                <img alt="Logo" src="/assets/media/logos/default.svg" class="h-40px h-lg-50px" />
+                                <img alt="Logo" src="/assets/media/logos/default.png" class="h-30px h-lg-50px" />
                             </a>
                             <br />
                             <h4 class="fw-light fs-2 text-white lh-lg m-2">

@@ -1,28 +1,18 @@
-<!--begin::Navbar-->
-<div class="app-navbar flex-lg-grow-1" id="kt_app_header_navbar">
-    <div class="app-navbar-item d-flex align-items-center flex-lg-grow-1">
-
-        <!--begin::Search-->
-        <span class="text-gray-900 fw-bolder fs-2x lh-1 d-none d-lg-block">
-            <?= esc($title) ?>
-        </span>
-        <!--end::Search-->
-    </div>
-
+<div class="app-navbar flex-grow-1 justify-content-end" id="kt_app_header_navbar">
     <!--begin::User menu-->
-    <div class="app-navbar-item ms-5" id="kt_header_user_menu_toggle">
+    <div class="app-navbar-item ms-3 ms-lg-4 me-lg-6 me-4" id="kt_header_user_menu_toggle">
         <!--begin::Menu wrapper-->
-        <div class="cursor-pointer symbol symbol-30px symbol-md-35px"
+        <div class="cursor-pointer symbol symbol-30px symbol-lg-40px"
             data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
             data-kt-menu-placement="bottom-end">
-            <!-- <img class="symbol symbol-30px symbol-md-35px" src="/assets/media/avatars/300-3.jpg" alt="user" /> -->
-             <?php if (!empty(user()->image)): ?>
-                <?php
+            <!-- <img src="/assets/media/avatars/300-2.jpg" alt="user" /> -->
+            <?php if (!empty(user()->image)): ?>
+            <?php
                 // Display the user's avatar image, name, and islander number
                 echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
                 ?>
             <?php else: ?>
-                <?php
+            <?php
                 // Display the user's initials, name, and islander number
                 echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=d9dbe1&color=f4f4f4&font-size=.5">';
                 ?>
@@ -37,8 +27,8 @@
                 <div class="menu-content d-flex align-items-center px-3">
                     <!--begin::Avatar-->
                     <div class="symbol symbol-50px me-5">
-                        <!-- <img alt="Logo" src="/assets/media/avatars/300-3.jpg" /> -->
-                        <?php if (!empty(user()->image)): ?>
+                        <!-- <img alt="Logo" src="/assets/media/avatars/300-2.jpg" /> -->
+                         <?php if (!empty(user()->image)): ?>
                             <?php
                             // Display the user's avatar image, name, and islander number
                             echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
@@ -72,13 +62,11 @@
 
             <!--begin::Menu item-->
             <div class="menu-item px-5">
-                <a href="/Profile" class="menu-link px-5">
-                    Profile
+                <a href="/saul-html-pro/account/overview.html" class="menu-link px-5">
+                    My Profile
                 </a>
             </div>
             <!--end::Menu item-->
-
-
 
             <!--begin::Menu separator-->
             <div class="separator my-2"></div>
@@ -170,7 +158,7 @@
                 <div class="menu-sub menu-sub-dropdown w-175px py-4">
                     <!--begin::Menu item-->
                     <div class="menu-item px-3">
-                        <a href="/bold-html-pro/account/settings.html" class="menu-link d-flex px-5 active">
+                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5 active">
                             <span class="symbol symbol-20px me-4">
                                 <img class="rounded-1" src="/assets/media/flags/united-states.svg" alt="" />
                             </span>
@@ -181,7 +169,7 @@
 
                     <!--begin::Menu item-->
                     <div class="menu-item px-3">
-                        <a href="/bold-html-pro/account/settings.html" class="menu-link d-flex px-5">
+                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
                             <span class="symbol symbol-20px me-4">
                                 <img class="rounded-1" src="/assets/media/flags/spain.svg" alt="" />
                             </span>
@@ -192,7 +180,7 @@
 
                     <!--begin::Menu item-->
                     <div class="menu-item px-3">
-                        <a href="/bold-html-pro/account/settings.html" class="menu-link d-flex px-5">
+                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
                             <span class="symbol symbol-20px me-4">
                                 <img class="rounded-1" src="/assets/media/flags/germany.svg" alt="" />
                             </span>
@@ -203,7 +191,7 @@
 
                     <!--begin::Menu item-->
                     <div class="menu-item px-3">
-                        <a href="/bold-html-pro/account/settings.html" class="menu-link d-flex px-5">
+                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
                             <span class="symbol symbol-20px me-4">
                                 <img class="rounded-1" src="/assets/media/flags/japan.svg" alt="" />
                             </span>
@@ -214,7 +202,7 @@
 
                     <!--begin::Menu item-->
                     <div class="menu-item px-3">
-                        <a href="/bold-html-pro/account/settings.html" class="menu-link d-flex px-5">
+                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
                             <span class="symbol symbol-20px me-4">
                                 <img class="rounded-1" src="/assets/media/flags/france.svg" alt="" />
                             </span>
@@ -236,12 +224,12 @@
             <!--end::Menu item-->
         </div>
         <!--end::User account menu-->
-
         <!--end::Menu wrapper-->
     </div>
     <!--end::User menu-->
 
+
+
     <!--begin::Header menu toggle-->
     <!--end::Header menu toggle-->
 </div>
-<!--end::Navbar-->

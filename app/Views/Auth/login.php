@@ -30,7 +30,7 @@
 
     <link href="/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/css/custom-theme.css" rel="stylesheet" type="text/css" />
+    <!-- <link href="/assets/css/custom-theme.css" rel="stylesheet" type="text/css" /> -->
     <script>
     if (window.top != window.self) {
         window.top.location.replace(window.self.location.href);
@@ -518,7 +518,7 @@
     </script>
 
     <script src="/assets/plugins/global/plugins.bundle.js" defer></script>
-    <script src="/assets/js/auth.js" defer></script>
+    <!-- <script src="/assets/js/auth.js" defer></script> -->
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {

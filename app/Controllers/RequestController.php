@@ -323,8 +323,11 @@ class RequestController extends BaseController
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $requests = $this->requestModel->getRequestsWithPagination($search, $limit, $offset);
-        $totalRequests = $this->requestModel->getRequestsCount($search);
+        // Get authorization filters for current user
+        $authFilters = $this->getAuthorizationFilters();
+        
+        $requests = $this->requestModel->getRequestsWithPagination($search, $limit, $offset, $authFilters);
+        $totalRequests = $this->requestModel->getRequestsCount($search, $authFilters);
         $totalPages = ceil($totalRequests / $limit);
 
         // Get active statuses and users for dropdown
@@ -1049,8 +1052,11 @@ class RequestController extends BaseController
         $limit = (int)($this->request->getGet('limit') ?? 10);
         $offset = (int)($this->request->getGet('offset') ?? 0);
 
-        $requests = $this->requestModel->getRequestsWithPagination($search, $limit, $offset);
-        $totalRequests = $this->requestModel->getRequestsCount($search);
+        // Get authorization filters for current user
+        $authFilters = $this->getAuthorizationFilters();
+
+        $requests = $this->requestModel->getRequestsWithPagination($search, $limit, $offset, $authFilters);
+        $totalRequests = $this->requestModel->getRequestsCount($search, $authFilters);
 
         return $this->response->setJSON([
             'success' => true,
@@ -1077,8 +1083,11 @@ class RequestController extends BaseController
         $limit = (int)($this->request->getGet('limit') ?? 10);
         $offset = ($page - 1) * $limit;
 
-        $requests = $this->requestModel->getRequestsWithPagination($search, $limit, $offset);
-        $totalRequests = $this->requestModel->getRequestsCount($search);
+        // Get authorization filters for current user
+        $authFilters = $this->getAuthorizationFilters();
+
+        $requests = $this->requestModel->getRequestsWithPagination($search, $limit, $offset, $authFilters);
+        $totalRequests = $this->requestModel->getRequestsCount($search, $authFilters);
 
         return $this->response->setJSON([
             'success' => true,
@@ -1746,5 +1755,95 @@ class RequestController extends BaseController
             log_message('error', "Failed to send FCM notification: " . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Get authorization filters for current user
+     * Returns array with filter criteria or null if user can see all
+     */
+    private function getAuthorizationFilters(): ?array
+    {
+        // Check if user is logged in
+        if (!$this->auth->check()) {
+            return null;
+        }
+
+        $currentUser = $this->auth->user();
+        $currentUserId = $currentUser->id;
+        
+        if (!$currentUserId) {
+            return null;
+        }
+
+        // Check if user is admin (using the same logic as the determineStatusByUserRole method)
+        // Admins include: ADMINISTRATOR, EXCOM, MANAGER groups
+        try {
+            $userModel = new \App\Models\UserModel();
+            $user = $userModel->find($currentUserId);
+            
+            if ($user && !empty($user->group)) {
+                $userGroup = strtoupper(trim($user->group));
+                if (in_array($userGroup, ['ADMINISTRATOR', 'EXCOM', 'MANAGER'])) {
+                    // Admin can see all requests
+                    return null;
+                }
+            }
+        } catch (\Exception $e) {
+            log_message('error', "Failed to check user group for authorization: " . $e->getMessage());
+        }
+        
+        // Also check for specific admin permissions
+        if (has_permission('admin.all') || has_permission('requests.view_all')) {
+            // Admin can see all requests
+            return null;
+        }
+
+        // Get authorization rules for the current user
+        $authorizationRuleModel = new \App\Models\AuthorizationRuleModel();
+        $userAuthRules = $authorizationRuleModel->where('user_id', $currentUserId)
+                                               ->where('is_active', 1)
+                                               ->where('deleted_at IS NULL')
+                                               ->findAll();
+
+        // If user has no authorization rules, they can only see their own requests
+        if (empty($userAuthRules)) {
+            return [
+                'user_only' => true,
+                'user_id' => $currentUserId
+            ];
+        }
+
+        // User has authorization rules - extract department, section, and division IDs
+        $departmentIds = [];
+        $sectionIds = [];
+        $divisionIds = [];
+
+        foreach ($userAuthRules as $rule) {
+            // Parse JSON fields
+            $parsedRule = $authorizationRuleModel->parseJsonFields($rule);
+            
+            if (!empty($parsedRule['department_ids'])) {
+                $departmentIds = array_merge($departmentIds, $parsedRule['department_ids']);
+            }
+            if (!empty($parsedRule['section_ids'])) {
+                $sectionIds = array_merge($sectionIds, $parsedRule['section_ids']);
+            }
+            if (!empty($parsedRule['division_ids'])) {
+                $divisionIds = array_merge($divisionIds, $parsedRule['division_ids']);
+            }
+        }
+
+        // Remove duplicates
+        $departmentIds = array_unique($departmentIds);
+        $sectionIds = array_unique($sectionIds);
+        $divisionIds = array_unique($divisionIds);
+
+        return [
+            'user_only' => false,
+            'user_id' => $currentUserId, // Include user's own requests
+            'department_ids' => $departmentIds,
+            'section_ids' => $sectionIds,
+            'division_ids' => $divisionIds
+        ];
     }
 }
