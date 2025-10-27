@@ -66,18 +66,18 @@
         }
         
         /* Alternative approach - you can use this instead if the above doesn't work well */
-        
+        /*
         body {
             padding-top: env(safe-area-inset-top);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
             padding-bottom: env(safe-area-inset-bottom);
         }
-       
+        */
         
         /* Ensure content doesn't scroll under status bar */
         .app-page {
-            min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            min-height: calc(60vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         }
     </style>
 
