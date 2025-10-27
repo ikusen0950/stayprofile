@@ -33,6 +33,53 @@
     <!-- CSS -->
     <link rel="stylesheet" href="<?= base_url('assets/plugins/global/plugins.bundle.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/style.bundle.css') ?>">
+    
+    <!-- Capacitor Status Bar Safe Area CSS -->
+    <style>
+        /* Handle iOS status bar safe area */
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sar: env(safe-area-inset-right);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+        }
+        
+        /* Apply safe area top padding to the app root */
+        #kt_app_root {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        /* Ensure header doesn't get covered by status bar */
+        #kt_app_header {
+            padding-top: calc(env(safe-area-inset-top) * 0.5);
+        }
+        
+        /* For iOS devices specifically */
+        @supports (padding: max(0px)) {
+            #kt_app_root {
+                padding-top: max(env(safe-area-inset-top), 0px);
+            }
+            
+            #kt_app_header {
+                padding-top: max(calc(env(safe-area-inset-top) * 0.5), 0px);
+            }
+        }
+        
+        /* Alternative approach - you can use this instead if the above doesn't work well */
+        /*
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        */
+        
+        /* Ensure content doesn't scroll under status bar */
+        .app-page {
+            min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        }
+    </style>
 
    
 
