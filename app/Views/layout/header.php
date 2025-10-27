@@ -205,7 +205,7 @@
                 await StatusBar.setStyle({ style: 'dark' }); // or 'light' depending on your theme
                 
                 // Set status bar background color (optional)
-                await StatusBar.setBackgroundColor({ color: '#ffffff' }); // white background
+                await StatusBar.setBackgroundColor({ color: '#f4f4f4' }); // light gray background
                 
                 // Show status bar if hidden
                 await StatusBar.show();
@@ -289,7 +289,7 @@
 
 
             <!--begin::Header-->
-            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack mt-10 mt-lg-0">
+            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack mt-10 mt-lg-0 mb-5 mb-lg-0">
 
                 <!--begin::Header main-->
                 <div class="d-flex align-items-center flex-stack flex-grow-1">
