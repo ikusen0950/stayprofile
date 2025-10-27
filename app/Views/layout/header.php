@@ -36,13 +36,13 @@
 
      <style>
     /* Mobile status bar safe area handling */
-    /* :root {
+    :root {
         --status-bar-height: env(safe-area-inset-top, 0px);
         --status-bar-bg: #f4f4f4;
-    } */
+    }
 
     /* Mobile app body adjustments - always apply padding for mobile screens */
-    @media (max-width: 768px) {
+    /* @media (max-width: 768px) {
         body {
             padding-top: var(--status-bar-height) !important;
         }
@@ -102,10 +102,10 @@
             padding-top: 0 !important;
             margin-top: 0 !important;
         }
-    }
+    } */
 
     /* Status bar background overlay */
-    body::before {
+    /* body::before {
         content: '';
         position: fixed;
         top: 0;
@@ -115,22 +115,22 @@
         background-color: var(--status-bar-bg);
         z-index: 10001;
         display: none;
-    }
+    } */
 
     /* Show status bar background on mobile */
-    @media (max-width: 768px) {
+    /* @media (max-width: 768px) {
         body::before {
             display: block;
         }
-    }
+    } */
 
     /* Mobile app specific adjustments */
-    .mobile-app,
+    /* .mobile-app,
     .capacitor-app {
-    }
+    } */
 
     /* Handle landscape orientation */
-    @media (orientation: landscape) and (max-height: 500px) {
+    /* @media (orientation: landscape) and (max-height: 500px) {
         body::before {
             height: calc(var(--status-bar-height) * 0.8);
         }
@@ -143,29 +143,27 @@
             top: calc(var(--status-bar-height) * 0.8) !important;
         }
 
-        /* Extra tight content padding in landscape */
         #kt_app_page {
             padding-top: calc(25px + var(--status-bar-height) * 0.8);
         }
 
-        /* Extra small header container padding in landscape */
         #kt_app_header_container {
             padding-top: 0.15rem;
             padding-bottom: 0.15rem;
         }
-    }
+    } */
 
     /* Theme support - solid white backgrounds for different themes */
-    [data-bs-theme="dark"] {
+    /* [data-bs-theme="dark"] {
         --status-bar-bg: #1e1e2d;
     }
 
     [data-bs-theme="light"] {
         --status-bar-bg: #f4f4f4;
-    }
+    } */
 
     /* Solid white header background for all themes on mobile */
-    @media (max-width: 768px) {
+    /* @media (max-width: 768px) {
         [data-bs-theme="dark"] #kt_app_header {
             background: #f4f4f4 !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -175,12 +173,12 @@
             background: #f4f4f4 !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
         }
-    }
+    } */
 
     /* Status bar background should still be solid */
-    body::before {
+    /* body::before {
         background-color: var(--status-bar-bg) !important;
-    }
+    } */
     </style>
 
 
