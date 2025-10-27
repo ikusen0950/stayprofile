@@ -289,7 +289,7 @@
 
 
             <!--begin::Header-->
-            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack ">
+            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack mt-10 mt-lg-0">
 
                 <!--begin::Header main-->
                 <div class="d-flex align-items-center flex-stack flex-grow-1">
