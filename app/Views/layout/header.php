@@ -42,7 +42,7 @@
     }
 
     /* Mobile app body adjustments - always apply padding for mobile screens */
-    /* @media (max-width: 768px) {
+    @media (max-width: 768px) {
         body {
             padding-top: var(--status-bar-height) !important;
         }
@@ -102,7 +102,7 @@
             padding-top: 0 !important;
             margin-top: 0 !important;
         }
-    } */
+    }
 
     /* Status bar background overlay */
     /* body::before {
