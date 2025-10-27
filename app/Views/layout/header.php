@@ -38,7 +38,7 @@
     /* Mobile status bar safe area handling */
     :root {
         --status-bar-height: env(safe-area-inset-top, 0px);
-        --status-bar-bg: #ffffff;
+        --status-bar-bg: #f4f4f4;
         /* Default white background */
     }
 
@@ -173,18 +173,18 @@
     }
 
     [data-bs-theme="light"] {
-        --status-bar-bg: #ffffff;
+        --status-bar-bg: #f4f4f4;
     }
 
     /* Solid white header background for all themes on mobile */
     @media (max-width: 768px) {
         [data-bs-theme="dark"] #kt_app_header {
-            background: #ffffff !important;
+            background: #f4f4f4 !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
         }
 
         [data-bs-theme="light"] #kt_app_header {
-            background: #ffffff !important;
+            background: #f4f4f4 !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
         }
     }
