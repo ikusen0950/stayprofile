@@ -34,6 +34,167 @@
     <link rel="stylesheet" href="<?= base_url('assets/plugins/global/plugins.bundle.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/style.bundle.css') ?>">
 
+     <style>
+    /* Mobile status bar safe area handling */
+    :root {
+        --status-bar-height: env(safe-area-inset-top, 0px);
+        --status-bar-bg: #ffffff;
+        /* Default white background */
+    }
+
+    /* Mobile app body adjustments - always apply padding for mobile screens */
+    @media (max-width: 768px) {
+        body {
+            padding-top: var(--status-bar-height) !important;
+        }
+
+        /* Very minimal space - main content very close to header */
+        #kt_app_page {
+            padding-top: calc(30px + var(--status-bar-height));
+        }
+
+        /* Fix header positioning with exact matching prototype background */
+        #kt_app_header {
+            top: var(--status-bar-height) !important;
+            position: fixed !important;
+            z-index: 1000 !important;
+            width: 100% !important;
+            background: #f4f4f4 !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Ensure header container also has matching background */
+        #kt_app_header_container {
+            background: transparent !important;
+        }
+
+        /* Minimal header container padding and remove margin */
+        #kt_app_header_container {
+            margin-top: 0 !important;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
+        /* Force remove any Bootstrap margin classes */
+        #kt_app_header_container.mt-7 {
+            margin-top: 0 !important;
+        }
+
+        /* Ensure wrapper doesn't overlap and remove any default spacing */
+        #kt_app_wrapper {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Remove any default spacing from main content area */
+        .app-main {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        /* Target common CodeIgniter/Bootstrap spacing classes */
+        .container,
+        .container-fluid {
+            padding-top: 0 !important;
+        }
+
+        /* Remove any toolbar or breadcrumb spacing */
+        .app-toolbar,
+        .toolbar {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Target any content wrapper */
+        .content,
+        .main-content {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+    }
+
+    /* Status bar background overlay */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--status-bar-height);
+        background-color: var(--status-bar-bg);
+        z-index: 10001;
+        display: none;
+    }
+
+    /* Show status bar background on mobile */
+    @media (max-width: 768px) {
+        body::before {
+            display: block;
+        }
+    }
+
+    /* Mobile app specific adjustments */
+    .mobile-app,
+    .capacitor-app {
+        /* Additional mobile app styles if needed */
+    }
+
+    /* Handle landscape orientation */
+    @media (orientation: landscape) and (max-height: 500px) {
+        body::before {
+            height: calc(var(--status-bar-height) * 0.8);
+        }
+
+        body {
+            padding-top: calc(var(--status-bar-height) * 0.8) !important;
+        }
+
+        #kt_app_header {
+            top: calc(var(--status-bar-height) * 0.8) !important;
+        }
+
+        /* Extra tight content padding in landscape */
+        #kt_app_page {
+            padding-top: calc(25px + var(--status-bar-height) * 0.8);
+        }
+
+        /* Extra small header container padding in landscape */
+        #kt_app_header_container {
+            padding-top: 0.15rem;
+            padding-bottom: 0.15rem;
+        }
+    }
+
+    /* Theme support - solid white backgrounds for different themes */
+    [data-bs-theme="dark"] {
+        --status-bar-bg: #1e1e2d;
+    }
+
+    [data-bs-theme="light"] {
+        --status-bar-bg: #ffffff;
+    }
+
+    /* Solid white header background for all themes on mobile */
+    @media (max-width: 768px) {
+        [data-bs-theme="dark"] #kt_app_header {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        [data-bs-theme="light"] #kt_app_header {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+    }
+
+    /* Status bar background should still be solid */
+    body::before {
+        background-color: var(--status-bar-bg) !important;
+    }
+    </style>
+
 
      <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
