@@ -36,11 +36,10 @@
 
      <style>
     /* Mobile status bar safe area handling */
-    :root {
+    /* :root {
         --status-bar-height: env(safe-area-inset-top, 0px);
         --status-bar-bg: #f4f4f4;
-        /* Default white background */
-    }
+    } */
 
     /* Mobile app body adjustments - always apply padding for mobile screens */
     @media (max-width: 768px) {
@@ -48,12 +47,10 @@
             padding-top: var(--status-bar-height) !important;
         }
 
-        /* Very minimal space - main content very close to header */
         #kt_app_page {
             padding-top: calc(30px + var(--status-bar-height));
         }
 
-        /* Fix header positioning with exact matching prototype background */
         #kt_app_header {
             top: var(--status-bar-height) !important;
             position: fixed !important;
@@ -65,49 +62,41 @@
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
         }
         
-        /* Ensure header container also has matching background */
         #kt_app_header_container {
             background: transparent !important;
         }
 
-        /* Minimal header container padding and remove margin */
         #kt_app_header_container {
             margin-top: 0 !important;
             padding-top: 0.25rem;
             padding-bottom: 0.25rem;
         }
 
-        /* Force remove any Bootstrap margin classes */
         #kt_app_header_container.mt-7 {
             margin-top: 0 !important;
         }
 
-        /* Ensure wrapper doesn't overlap and remove any default spacing */
         #kt_app_wrapper {
             margin-top: 0 !important;
             padding-top: 0 !important;
         }
 
-        /* Remove any default spacing from main content area */
         .app-main {
             padding-top: 0 !important;
             margin-top: 0 !important;
         }
 
-        /* Target common CodeIgniter/Bootstrap spacing classes */
         .container,
         .container-fluid {
             padding-top: 0 !important;
         }
 
-        /* Remove any toolbar or breadcrumb spacing */
         .app-toolbar,
         .toolbar {
             margin-top: 0 !important;
             padding-top: 0 !important;
         }
 
-        /* Target any content wrapper */
         .content,
         .main-content {
             padding-top: 0 !important;
@@ -138,7 +127,6 @@
     /* Mobile app specific adjustments */
     .mobile-app,
     .capacitor-app {
-        /* Additional mobile app styles if needed */
     }
 
     /* Handle landscape orientation */
