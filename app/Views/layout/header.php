@@ -200,20 +200,46 @@
         if (window.Capacitor && window.Capacitor.Plugins?.StatusBar) {
             const { StatusBar } = window.Capacitor.Plugins;
             
-            try {
-                // Set status bar style
-                await StatusBar.setStyle({ style: 'dark' }); // or 'light' depending on your theme
-                
-                // Set status bar background color (optional)
-                await StatusBar.setBackgroundColor({ color: '#f4f4f4' }); // light gray background
-                
-                // Show status bar if hidden
-                await StatusBar.show();
-                
-                console.log('Status bar configured successfully');
-            } catch (error) {
-                console.error('Status bar configuration failed:', error);
-            }
+            // Function to set consistent status bar appearance
+            const setStatusBarAppearance = async () => {
+                try {
+                    // Set status bar style
+                    await StatusBar.setStyle({ style: 'dark' }); // or 'light' depending on your theme
+                    
+                    // Set status bar background color (optional)
+                    await StatusBar.setBackgroundColor({ color: '#f4f4f4' }); // light gray background
+                    
+                    // Show status bar if hidden
+                    await StatusBar.show();
+                    
+                    // Set overlay to false to prevent iOS from changing background on scroll
+                    await StatusBar.setOverlaysWebView({ overlay: false });
+                    
+                } catch (error) {
+                    console.error('Status bar configuration failed:', error);
+                }
+            };
+            
+            // Set initial status bar appearance
+            await setStatusBarAppearance();
+            
+            // Add scroll listener to maintain consistent status bar on scroll
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(async () => {
+                    await setStatusBarAppearance();
+                }, 100);
+            });
+            
+            // Also listen for orientation changes
+            window.addEventListener('orientationchange', async () => {
+                setTimeout(async () => {
+                    await setStatusBarAppearance();
+                }, 500);
+            });
+            
+            console.log('Status bar configured successfully with scroll protection');
         }
     });
     </script>
