@@ -66,14 +66,14 @@
         }
         
         /* Alternative approach - you can use this instead if the above doesn't work well */
-        /*
+        
         body {
             padding-top: env(safe-area-inset-top);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
             padding-bottom: env(safe-area-inset-bottom);
         }
-        */
+       
         
         /* Ensure content doesn't scroll under status bar */
         .app-page {
@@ -190,6 +190,31 @@
         PushNotifications.addListener('registrationError', (error) => {
             console.error('[Registration Error] →', error);
         });
+    });
+    </script>
+
+    <!-- Status Bar Configuration -->
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Handle Status Bar for Capacitor apps
+        if (window.Capacitor && window.Capacitor.Plugins?.StatusBar) {
+            const { StatusBar } = window.Capacitor.Plugins;
+            
+            try {
+                // Set status bar style
+                await StatusBar.setStyle({ style: 'dark' }); // or 'light' depending on your theme
+                
+                // Set status bar background color (optional)
+                await StatusBar.setBackgroundColor({ color: '#ffffff' }); // white background
+                
+                // Show status bar if hidden
+                await StatusBar.show();
+                
+                console.log('Status bar configured successfully');
+            } catch (error) {
+                console.error('Status bar configuration failed:', error);
+            }
+        }
     });
     </script>
 
