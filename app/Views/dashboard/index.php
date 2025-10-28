@@ -39,55 +39,56 @@
     <style>
         /* iOS safe area handling for Capacitor apps */
         
-        /* Remove padding from body and apply to header instead */
+        /* Base styles */
         body {
             padding-top: 0 !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
         }
         
-        /* Position header below status bar */
-        @supports (padding-top: env(safe-area-inset-top)) {
-            #kt_app_header {
-                position: fixed !important;
-                top: env(safe-area-inset-top) !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                z-index: 1000 !important;
-                margin-top: 0 !important;
-            }
-            
-            /* Add top padding to wrapper to account for fixed header */
-            #kt_app_wrapper {
-                padding-top: calc(70px + env(safe-area-inset-top)) !important;
-                margin-top: 0 !important;
-            }
+        /* Default header positioning for all devices */
+        #kt_app_header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 1000 !important;
+            margin-top: 0 !important;
         }
         
-        /* Fallback for older browsers */
-        @supports (padding-top: constant(safe-area-inset-top)) {
-            #kt_app_header {
-                position: fixed !important;
-                top: constant(safe-area-inset-top) !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                z-index: 1000 !important;
-                margin-top: 0 !important;
-            }
-            
-            /* Add top padding to wrapper to account for fixed header */
-            #kt_app_wrapper {
-                padding-top: calc(70px + constant(safe-area-inset-top)) !important;
-                margin-top: 0 !important;
-            }
+        /* Default wrapper padding */
+        #kt_app_wrapper {
+            padding-top: 70px !important;
+            margin-top: 0 !important;
         }
         
         /* Reduce space in other elements */
         #kt_app_toolbar {
             padding-top: 0 !important;
             margin-top: 0 !important;
+        }
+        
+        /* Safe area support for newer browsers */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            #kt_app_header {
+                top: env(safe-area-inset-top) !important;
+            }
+            
+            #kt_app_wrapper {
+                padding-top: calc(70px + env(safe-area-inset-top)) !important;
+            }
+        }
+        
+        /* Fallback for older browsers */
+        @supports (padding-top: constant(safe-area-inset-top)) {
+            #kt_app_header {
+                top: constant(safe-area-inset-top) !important;
+            }
+            
+            #kt_app_wrapper {
+                padding-top: calc(70px + constant(safe-area-inset-top)) !important;
+            }
         }
         
         /* Ensure proper height calculation */
@@ -102,7 +103,6 @@
                 -webkit-overflow-scrolling: touch;
             }
             
-            /* Ensure header stays fixed on mobile */
             .app-header {
                 position: fixed !important;
                 z-index: 1000 !important;
@@ -111,26 +111,8 @@
                 right: 0 !important;
             }
             
-            @supports (padding-top: env(safe-area-inset-top)) {
-                .app-header {
-                    top: env(safe-area-inset-top) !important;
-                }
-                
-                .app-wrapper {
-                    padding-top: calc(70px + env(safe-area-inset-top)) !important;
-                    margin-top: 0 !important;
-                }
-            }
-            
-            @supports (padding-top: constant(safe-area-inset-top)) {
-                .app-header {
-                    top: constant(safe-area-inset-top) !important;
-                }
-                
-                .app-wrapper {
-                    padding-top: calc(70px + constant(safe-area-inset-top)) !important;
-                    margin-top: 0 !important;
-                }
+            .app-wrapper {
+                margin-top: 0 !important;
             }
             
             .app-toolbar {
@@ -147,21 +129,13 @@
             }
         }
         
-        /* Fallback for devices without safe area support */
-        @media screen and (max-width: 768px) {
-            #kt_app_header {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                z-index: 1000 !important;
-            }
-            
-            #kt_app_wrapper {
-                padding-top: 70px !important;
-                margin-top: 0 !important;
-            }
+        /* Force styles for Capacitor environment */
+        .capacitor-app #kt_app_header {
+            top: var(--ion-safe-area-top, 44px) !important;
+        }
+        
+        .capacitor-app #kt_app_wrapper {
+            padding-top: calc(70px + var(--ion-safe-area-top, 44px)) !important;
         }
     </style>
     <!--end::iOS Safe Area CSS for Capacitor-->
@@ -198,6 +172,56 @@
 
         document.documentElement.setAttribute("data-bs-theme", themeMode);
     }
+    
+    // iOS Safe Area handling for Capacitor
+    function handleSafeArea() {
+        const header = document.getElementById('kt_app_header');
+        const wrapper = document.getElementById('kt_app_wrapper');
+        
+        if (header && wrapper) {
+            // Try to get safe area inset from CSS
+            const testDiv = document.createElement('div');
+            testDiv.style.position = 'fixed';
+            testDiv.style.top = '0';
+            testDiv.style.left = '0';
+            testDiv.style.visibility = 'hidden';
+            testDiv.style.paddingTop = 'env(safe-area-inset-top)';
+            document.body.appendChild(testDiv);
+            
+            const computedPadding = window.getComputedStyle(testDiv).paddingTop;
+            const safeAreaTop = parseFloat(computedPadding) || 0;
+            
+            document.body.removeChild(testDiv);
+            
+            // If we didn't get a safe area value, try alternative methods
+            let finalSafeAreaTop = safeAreaTop;
+            
+            // Check if we're in a Capacitor app or iOS device
+            if (safeAreaTop === 0 && (window.Capacitor || /iPad|iPhone|iPod/.test(navigator.userAgent))) {
+                // Default iOS status bar height
+                finalSafeAreaTop = window.screen.height >= 812 ? 44 : 20; // iPhone X and newer vs older
+            }
+            
+            // Apply the safe area positioning
+            if (finalSafeAreaTop > 0) {
+                header.style.top = finalSafeAreaTop + 'px';
+                wrapper.style.paddingTop = (70 + finalSafeAreaTop) + 'px';
+                
+                // Add class to body to indicate safe area is applied
+                document.body.classList.add('safe-area-applied');
+            }
+        }
+    }
+    
+    // Run safe area handling when DOM is loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', handleSafeArea);
+    } else {
+        handleSafeArea();
+    }
+    
+    // Also run when window loads (in case elements aren't ready)
+    window.addEventListener('load', handleSafeArea);
     </script>
     <!--end::Theme mode setup on page load-->
 
