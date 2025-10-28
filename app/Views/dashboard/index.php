@@ -313,7 +313,7 @@
                         <!--end::Sidebar mobile toggle-->
 
                         <!--begin::Logo-->
-                        <a href="/saul-html-pro/index.html" class="app-sidebar-logo">
+                        <a href="/" class="app-sidebar-logo">
                             <img alt="Logo" src="/assets/media/logos/default.png"
                                 class="h-30px h-lg-40px  theme-light-show" />
                             <img alt="Logo" src="/assets/media/logos/default-dark.svg"
@@ -686,40 +686,40 @@
                         data-kt-scroll-wrappers="#kt_app_main" data-kt-scroll-offset="5px">
                         <!--begin::Sidebar menu-->
                         <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false"
-                            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-15 mt-lg-0 mt-md-0">
+                            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-20 mt-lg-0 mt-md-0">
 
                             <?php
-                    // Helper function to check if menu item is active
-                    function isMenuActive($routes) {
-                        $currentUrl = current_url();
-                        $baseUrl = base_url();
-                        $uriString = uri_string();
-                        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-                        
-                        foreach ($routes as $route) {
-                            if ($route === '/' || $route === 'dashboard') {
-                                // Special handling for dashboard/home
-                                if ($currentUrl == $baseUrl || 
-                                    $currentUrl == $baseUrl . '/' ||
-                                    $currentUrl == $baseUrl . 'dashboard' ||
-                                    $uriString == '' ||
-                                    $uriString == '/' ||
-                                    $uriString == 'dashboard' ||
-                                    $requestUri == '/' ||
-                                    $requestUri == '/dashboard') {
-                                    return true;
+                                // Helper function to check if menu item is active
+                                function isMenuActive($routes) {
+                                    $currentUrl = current_url();
+                                    $baseUrl = base_url();
+                                    $uriString = uri_string();
+                                    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+                                    
+                                    foreach ($routes as $route) {
+                                        if ($route === '/' || $route === 'dashboard') {
+                                            // Special handling for dashboard/home
+                                            if ($currentUrl == $baseUrl || 
+                                                $currentUrl == $baseUrl . '/' ||
+                                                $currentUrl == $baseUrl . 'dashboard' ||
+                                                $uriString == '' ||
+                                                $uriString == '/' ||
+                                                $uriString == 'dashboard' ||
+                                                $requestUri == '/' ||
+                                                $requestUri == '/dashboard') {
+                                                return true;
+                                            }
+                                        } else {
+                                            // For other routes
+                                            if (strpos($currentUrl, $route) !== false || 
+                                                strpos($requestUri, $route) !== false) {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                    return false;
                                 }
-                            } else {
-                                // For other routes
-                                if (strpos($currentUrl, $route) !== false || 
-                                    strpos($requestUri, $route) !== false) {
-                                    return true;
-                                }
-                            }
-                        }
-                        return false;
-                    }
-                    ?>
+                                ?>
 
                             <!--begin:Menu item-->
                             <?php $isActive = isMenuActive(['/', 'dashboard']); ?>
@@ -999,27 +999,27 @@
 
                             <!--begin:Menu item-->
                             <?php 
-                    // Check permissions for system settings
-                    $hasStatusAccess = has_permission('status.view');
-                    $hasRequestsAccess = has_permission('requests.view');
-                    $hasModulesAccess = has_permission('modules.view');
-                    $hasLogsAccess = has_permission('logs.view');
-                    $hasSystemAccess = $hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess;
-                    
-                    // For Islander Settings, we'll assume admin/manager access for now
-                    // You can add specific permissions for these later if needed
-                    $hasIslanderAccess = has_permission('system.admin') || in_groups(['admin', 'manager']);
-                    
-                    // Check permissions for user management items
-                    $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
-                                             has_permission('groups.view') || has_permission('permissions.view') || 
-                                             in_groups(['admin', 'manager']);
-                    
-                    // Check if user has access to any settings
-                    $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
-                    
-                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
-                    ?>
+                            // Check permissions for system settings
+                            $hasStatusAccess = has_permission('status.view');
+                            $hasRequestsAccess = has_permission('requests.view');
+                            $hasModulesAccess = has_permission('modules.view');
+                            $hasLogsAccess = has_permission('logs.view');
+                            $hasSystemAccess = $hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess;
+                            
+                            // For Islander Settings, we'll assume admin/manager access for now
+                            // You can add specific permissions for these later if needed
+                            $hasIslanderAccess = has_permission('system.admin') || in_groups(['admin', 'manager']);
+                            
+                            // Check permissions for user management items
+                            $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
+                                                    has_permission('groups.view') || has_permission('permissions.view') || 
+                                                    in_groups(['admin', 'manager']);
+                            
+                            // Check if user has access to any settings
+                            $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
+                            
+                            $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                            ?>
                             <?php if ($hasAnySettingsAccess): ?>
                             <div data-kt-menu-trigger="click"
                                 class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
@@ -1566,7 +1566,7 @@
 
                                             <!--begin::Item-->
                                             <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                                <a href="/saul-html-pro/index.html"
+                                                <a href="/"
                                                     class="text-gray-500 text-hover-primary">
                                                     <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
                                                 </a>
