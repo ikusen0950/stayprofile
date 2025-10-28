@@ -98,17 +98,19 @@
 
                         <!--begin::Logo-->
                         <a href="/saul-html-pro/index.html" class="app-sidebar-logo">
-                            <img alt="Logo" src="/assets/media/logos/default.png" class="h-30px h-lg-40px  theme-light-show" />
-                            <img alt="Logo" src="/assets/media/logos/default-dark.svg" class="h-30px h-lg-40px  theme-dark-show" />
+                            <img alt="Logo" src="/assets/media/logos/default.png"
+                                class="h-30px h-lg-40px  theme-light-show" />
+                            <img alt="Logo" src="/assets/media/logos/default-dark.svg"
+                                class="h-30px h-lg-40px  theme-dark-show" />
                         </a>
                         <!--end::Logo-->
                     </div>
 
                     <!--begin::Navbar-->
                     <div class="app-navbar flex-grow-1 justify-content-end" id="kt_app_header_navbar">
-                        
 
-                  
+
+
 
                         <!--begin::User menu-->
                         <div class="app-navbar-item ms-3 ms-lg-4 me-lg-6 me-4" id="kt_header_user_menu_toggle">
