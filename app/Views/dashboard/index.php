@@ -38,61 +38,62 @@
     <!--begin::iOS Safe Area CSS for Capacitor-->
     <style>
         /* iOS safe area handling for Capacitor apps */
+        
+        /* Remove padding from body and apply to header instead */
+        body {
+            padding-top: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        
+        /* Position header below status bar */
         @supports (padding-top: env(safe-area-inset-top)) {
-            body {
-                padding-top: env(safe-area-inset-top) !important;
-                padding-left: env(safe-area-inset-left) !important;
-                padding-right: env(safe-area-inset-right) !important;
+            #kt_app_header {
+                position: fixed !important;
+                top: env(safe-area-inset-top) !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 1000 !important;
+                margin-top: 0 !important;
             }
             
-            #kt_app_header {
+            /* Add top padding to wrapper to account for fixed header */
+            #kt_app_wrapper {
+                padding-top: calc(70px + env(safe-area-inset-top)) !important;
                 margin-top: 0 !important;
-                top: 0 !important;
-                position: fixed !important;
-                z-index: 1000 !important;
-                width: 100% !important;
             }
         }
         
         /* Fallback for older browsers */
         @supports (padding-top: constant(safe-area-inset-top)) {
-            body {
-                padding-top: constant(safe-area-inset-top) !important;
-                padding-left: constant(safe-area-inset-left) !important;
-                padding-right: constant(safe-area-inset-right) !important;
+            #kt_app_header {
+                position: fixed !important;
+                top: constant(safe-area-inset-top) !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 1000 !important;
+                margin-top: 0 !important;
             }
             
-            #kt_app_header {
+            /* Add top padding to wrapper to account for fixed header */
+            #kt_app_wrapper {
+                padding-top: calc(70px + constant(safe-area-inset-top)) !important;
                 margin-top: 0 !important;
-                top: 0 !important;
-                position: fixed !important;
-                z-index: 1000 !important;
-                width: 100% !important;
             }
         }
         
-        /* Reduce space below header */
-        #kt_app_wrapper {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-        
+        /* Reduce space in other elements */
         #kt_app_toolbar {
             padding-top: 0 !important;
             margin-top: 0 !important;
         }
         
-        /* Ensure proper height calculation with reduced spacing */
+        /* Ensure proper height calculation */
         .app-page {
-            min-height: calc(100vh - env(safe-area-inset-top, 0px));
+            min-height: 100vh;
             padding-top: 0 !important;
-        }
-        
-        @supports (padding-top: constant(safe-area-inset-top)) {
-            .app-page {
-                min-height: calc(100vh - constant(safe-area-inset-top, 0px));
-                padding-top: 0 !important;
-            }
         }
         
         /* Mobile specific adjustments */
@@ -101,24 +102,35 @@
                 -webkit-overflow-scrolling: touch;
             }
             
-            /* Force header to be fixed and respect safe area */
+            /* Ensure header stays fixed on mobile */
             .app-header {
                 position: fixed !important;
                 z-index: 1000 !important;
-                top: env(safe-area-inset-top, 0px) !important;
                 width: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+            }
+            
+            @supports (padding-top: env(safe-area-inset-top)) {
+                .app-header {
+                    top: env(safe-area-inset-top) !important;
+                }
+                
+                .app-wrapper {
+                    padding-top: calc(70px + env(safe-area-inset-top)) !important;
+                    margin-top: 0 !important;
+                }
             }
             
             @supports (padding-top: constant(safe-area-inset-top)) {
                 .app-header {
-                    top: constant(safe-area-inset-top, 0px) !important;
+                    top: constant(safe-area-inset-top) !important;
                 }
-            }
-            
-            /* Reduce all unnecessary spacing */
-            .app-wrapper {
-                margin-top: 0 !important;
-                padding-top: 60px !important; /* Approximate header height */
+                
+                .app-wrapper {
+                    padding-top: calc(70px + constant(safe-area-inset-top)) !important;
+                    margin-top: 0 !important;
+                }
             }
             
             .app-toolbar {
@@ -132,6 +144,23 @@
             body {
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
+            }
+        }
+        
+        /* Fallback for devices without safe area support */
+        @media screen and (max-width: 768px) {
+            #kt_app_header {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 1000 !important;
+            }
+            
+            #kt_app_wrapper {
+                padding-top: 70px !important;
+                margin-top: 0 !important;
             }
         }
     </style>
