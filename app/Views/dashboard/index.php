@@ -37,131 +37,146 @@
 
     <!--begin::iOS Safe Area CSS for Capacitor-->
     <style>
-        /* iOS safe area handling for Capacitor apps */
-        
-        /* Base styles */
-        body {
-            padding-top: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-        
-        /* Create a pseudo-element to fill the safe area with header background */
+    /* iOS safe area handling for Capacitor apps */
+
+    /* Base styles */
+    body {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Create a pseudo-element to fill the safe area with header background */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: env(safe-area-inset-top, 0px);
+        background-color: var(--bs-app-header-bg, #ffffff);
+        z-index: 999;
+        display: block;
+    }
+
+    /* Fallback for older browsers */
+    @supports (padding-top: constant(safe-area-inset-top)) {
         body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: env(safe-area-inset-top, 0px);
-            background-color: var(--bs-app-header-bg, #ffffff);
-            z-index: 999;
-            display: block;
+            height: constant(safe-area-inset-top, 0px);
         }
-        
-        /* Fallback for older browsers */
-        @supports (padding-top: constant(safe-area-inset-top)) {
-            body::before {
-                height: constant(safe-area-inset-top, 0px);
-            }
-        }
-        
-        /* Default header positioning for all devices */
-        #kt_app_header {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            width: 100% !important;
-            z-index: 1000 !important;
-            margin-top: 0 !important;
-        }
-        
-        /* Default wrapper padding */
-        #kt_app_wrapper {
-            padding-top: 70px !important;
-            margin-top: 0 !important;
-        }
-        
-        /* Reduce space in other elements */
-        #kt_app_toolbar {
-            padding-top: 0 !important;
-            margin-top: 0 !important;
-        }
-        
-        /* Safe area support for newer browsers */
-        @supports (padding-top: env(safe-area-inset-top)) {
-            #kt_app_header {
-                top: env(safe-area-inset-top) !important;
-            }
-            
-            #kt_app_wrapper {
-                padding-top: calc(70px + env(safe-area-inset-top)) !important;
-            }
-        }
-        
-        /* Fallback for older browsers */
-        @supports (padding-top: constant(safe-area-inset-top)) {
-            #kt_app_header {
-                top: constant(safe-area-inset-top) !important;
-            }
-            
-            #kt_app_wrapper {
-                padding-top: calc(70px + constant(safe-area-inset-top)) !important;
-            }
-        }
-        
-        /* Ensure proper height calculation */
-        .app-page {
-            min-height: 100vh;
-            padding-top: 0 !important;
-        }
-        
-        /* Mobile specific adjustments */
+    }
+
+    /* Default header positioning for all devices */
+    #kt_app_header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 1000 !important;
+        margin-top: 0 !important;
+    }
+
+    /* Default wrapper padding */
+    #kt_app_wrapper {
+        padding-top: 70px !important;
+        margin-top: 0 !important;
+    }
+
+    /* Reduce space in other elements */
+    #kt_app_toolbar {
+        margin-top: 0 !important;
+    }
+
+        /* Mobile specific toolbar adjustments */
         @media screen and (max-width: 768px) {
-            body {
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .app-header {
-                position: fixed !important;
-                z-index: 1000 !important;
-                width: 100% !important;
-                left: 0 !important;
-                right: 0 !important;
-            }
-            
-            .app-wrapper {
-                margin-top: 0 !important;
-            }
-            
-            .app-toolbar {
+            #kt_app_toolbar {
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }
-        }
-        
-        /* Additional iOS Safari specific fix */
-        @media screen and (-webkit-min-device-pixel-ratio: 2) {
-            body {
-                -webkit-touch-callout: none;
-                -webkit-user-select: none;
+            
+            /* Hide breadcrumb on mobile */
+            .breadcrumb {
+                display: none !important;
             }
+            
+            /* Add mt-8 to page heading on mobile */
+            .page-heading {
+                margin-top: 2rem !important; /* mt-8 = 2rem */
+            }
+        }    /* Safe area support for newer browsers */
+    @supports (padding-top: env(safe-area-inset-top)) {
+        #kt_app_header {
+            top: env(safe-area-inset-top) !important;
         }
-        
-        /* Force styles for Capacitor environment */
-        .capacitor-app #kt_app_header {
-            top: var(--ion-safe-area-top, 44px) !important;
+
+        #kt_app_wrapper {
+            padding-top: calc(70px + env(safe-area-inset-top)) !important;
         }
-        
-        .capacitor-app #kt_app_wrapper {
-            padding-top: calc(70px + var(--ion-safe-area-top, 44px)) !important;
+    }
+
+    /* Fallback for older browsers */
+    @supports (padding-top: constant(safe-area-inset-top)) {
+        #kt_app_header {
+            top: constant(safe-area-inset-top) !important;
         }
-        
-        /* Ensure the safe area background matches the header */
-        .capacitor-app body::before {
-            height: var(--ion-safe-area-top, 44px);
+
+        #kt_app_wrapper {
+            padding-top: calc(70px + constant(safe-area-inset-top)) !important;
         }
+    }
+
+    /* Ensure proper height calculation */
+    .app-page {
+        min-height: 100vh;
+        padding-top: 0 !important;
+    }
+
+    /* Mobile specific adjustments */
+    @media screen and (max-width: 768px) {
+        body {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .app-header {
+            position: fixed !important;
+            z-index: 1000 !important;
+            width: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+        }
+
+        .app-wrapper {
+            margin-top: 0 !important;
+        }
+
+        .app-toolbar {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+    }
+
+    /* Additional iOS Safari specific fix */
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+        }
+    }
+
+    /* Force styles for Capacitor environment */
+    .capacitor-app #kt_app_header {
+        top: var(--ion-safe-area-top, 44px) !important;
+    }
+
+    .capacitor-app #kt_app_wrapper {
+        padding-top: calc(70px + var(--ion-safe-area-top, 44px)) !important;
+    }
+
+    /* Ensure the safe area background matches the header */
+    .capacitor-app body::before {
+        height: var(--ion-safe-area-top, 44px);
+    }
     </style>
     <!--end::iOS Safe Area CSS for Capacitor-->
 
@@ -197,12 +212,12 @@
 
         document.documentElement.setAttribute("data-bs-theme", themeMode);
     }
-    
+
     // iOS Safe Area handling for Capacitor
     function handleSafeArea() {
         const header = document.getElementById('kt_app_header');
         const wrapper = document.getElementById('kt_app_wrapper');
-        
+
         if (header && wrapper) {
             // Try to get safe area inset from CSS
             const testDiv = document.createElement('div');
@@ -212,30 +227,30 @@
             testDiv.style.visibility = 'hidden';
             testDiv.style.paddingTop = 'env(safe-area-inset-top)';
             document.body.appendChild(testDiv);
-            
+
             const computedPadding = window.getComputedStyle(testDiv).paddingTop;
             const safeAreaTop = parseFloat(computedPadding) || 0;
-            
+
             document.body.removeChild(testDiv);
-            
+
             // If we didn't get a safe area value, try alternative methods
             let finalSafeAreaTop = safeAreaTop;
-            
+
             // Check if we're in a Capacitor app or iOS device
             if (safeAreaTop === 0 && (window.Capacitor || /iPad|iPhone|iPod/.test(navigator.userAgent))) {
                 // Default iOS status bar height
                 finalSafeAreaTop = window.screen.height >= 812 ? 44 : 20; // iPhone X and newer vs older
             }
-            
+
             // Apply the safe area positioning
             if (finalSafeAreaTop > 0) {
                 header.style.top = finalSafeAreaTop + 'px';
                 wrapper.style.paddingTop = (70 + finalSafeAreaTop) + 'px';
-                
+
                 // Get the header's background color and apply it to the safe area
                 const headerStyles = window.getComputedStyle(header);
                 const headerBgColor = headerStyles.backgroundColor || '#ffffff';
-                
+
                 // Create or update the safe area background element
                 let safeAreaBg = document.getElementById('safe-area-bg');
                 if (!safeAreaBg) {
@@ -243,7 +258,7 @@
                     safeAreaBg.id = 'safe-area-bg';
                     document.body.appendChild(safeAreaBg);
                 }
-                
+
                 // Style the safe area background
                 safeAreaBg.style.position = 'fixed';
                 safeAreaBg.style.top = '0';
@@ -253,20 +268,20 @@
                 safeAreaBg.style.backgroundColor = headerBgColor;
                 safeAreaBg.style.zIndex = '999';
                 safeAreaBg.style.pointerEvents = 'none';
-                
+
                 // Add class to body to indicate safe area is applied
                 document.body.classList.add('safe-area-applied');
             }
         }
     }
-    
+
     // Run safe area handling when DOM is loaded
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', handleSafeArea);
     } else {
         handleSafeArea();
     }
-    
+
     // Also run when window loads (in case elements aren't ready)
     window.addEventListener('load', handleSafeArea);
     </script>
@@ -1529,7 +1544,7 @@
                     <div class="d-flex flex-column flex-column-fluid">
 
                         <!--begin::Toolbar-->
-                        <div id="kt_app_toolbar" class="app-toolbar  pt-5 ">
+                        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
 
                             <!--begin::Toolbar container-->
                             <div id="kt_app_toolbar_container"
@@ -1539,8 +1554,15 @@
 
                                     <!--begin::Page title-->
                                     <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
+
+                                        <!--begin::Title-->
+                                        <h1
+                                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
+                                            Sitemap
+                                        </h1>
+                                        <!--end::Title-->
                                         <!--begin::Breadcrumb-->
-                                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-6">
+                                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
 
                                             <!--begin::Item-->
                                             <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
@@ -1591,12 +1613,7 @@
                                         </ul>
                                         <!--end::Breadcrumb-->
 
-                                        <!--begin::Title-->
-                                        <h1
-                                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0">
-                                            Sitemap
-                                        </h1>
-                                        <!--end::Title-->
+
                                     </div>
                                     <!--end::Page title-->
 
