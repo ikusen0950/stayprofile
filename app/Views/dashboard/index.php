@@ -686,7 +686,7 @@
                         data-kt-scroll-wrappers="#kt_app_main" data-kt-scroll-offset="5px">
                         <!--begin::Sidebar menu-->
                         <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false"
-                            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-20 mt-lg-0 mt-md-0">
+                            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-20 mt-lg-2 mt-md-20">
 
                             <?php
                                 // Helper function to check if menu item is active
