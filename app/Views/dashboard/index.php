@@ -132,31 +132,53 @@
         padding-top: 0 !important;
     }
 
-    /* Mobile specific adjustments */
-    @media screen and (max-width: 768px) {
-        body {
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .app-header {
-            position: fixed !important;
-            z-index: 1000 !important;
-            width: 100% !important;
-            left: 0 !important;
-            right: 0 !important;
-        }
-
-        .app-wrapper {
-            margin-top: 0 !important;
-        }
-
-        .app-toolbar {
-            padding-top: 0 !important;
-            margin-top: 0 !important;
-        }
-    }
-
-    /* Additional iOS Safari specific fix */
+        /* Mobile specific adjustments */
+        @media screen and (max-width: 768px) {
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .app-header {
+                position: fixed !important;
+                z-index: 1000 !important;
+                width: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+            }
+            
+            /* Make sidebar appear above header on mobile with proper clickability */
+            .app-sidebar {
+                z-index: 1002 !important;
+                pointer-events: auto !important;
+            }
+            
+            /* Ensure sidebar content is clickable */
+            .app-sidebar * {
+                pointer-events: auto !important;
+            }
+            
+            /* Sidebar overlay with lower z-index but still above header */
+            .drawer-overlay {
+                z-index: 1001 !important;
+                pointer-events: auto !important;
+            }
+            
+            /* Ensure menu items are clickable */
+            .menu-item, .menu-link {
+                pointer-events: auto !important;
+                position: relative !important;
+                z-index: 1003 !important;
+            }
+            
+            .app-wrapper {
+                margin-top: 0 !important;
+            }
+            
+            .app-toolbar {
+                padding-top: 0 !important;
+                margin-top: 0 !important;
+            }
+        }    /* Additional iOS Safari specific fix */
     @media screen and (-webkit-min-device-pixel-ratio: 2) {
         body {
             -webkit-touch-callout: none;
@@ -686,7 +708,16 @@
                         data-kt-scroll-wrappers="#kt_app_main" data-kt-scroll-offset="5px">
                         <!--begin::Sidebar menu-->
                         <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false"
-                            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-20 mt-lg-2 mt-md-20">
+                            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-5 mt-lg-2 mt-md-2">
+
+                            <!--begin::Logo-->
+                        <a href="/" class="app-sidebar-logo mt-4 mb-4">
+                            <img alt="Logo" src="/assets/media/logos/default.png"
+                                class="h-40px h-lg-40px  theme-light-show" />
+                            <img alt="Logo" src="/assets/media/logos/default-dark.svg"
+                                class="h-40px h-lg-40px  theme-dark-show" />
+                        </a>
+                        <!--end::Logo-->
 
                             <?php
                                 // Helper function to check if menu item is active
