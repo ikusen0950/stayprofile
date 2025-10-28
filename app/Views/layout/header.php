@@ -50,17 +50,27 @@
             background-color: #f4f4f4; /* Match status bar color */
         }
         
-        /* Ensure header doesn't get covered by status bar and has consistent background */
+        /* Ensure header content appears BELOW the status bar */
         #kt_app_header {
             background-color: #f4f4f4; /* Match status bar color */
-            margin-top: 0 !important; /* Remove any top margin */
-            padding-top: 10px; /* Add some padding instead of margin */
+            margin-top: env(safe-area-inset-top) !important; /* Push below status bar */
+            padding-top: 10px; /* Additional spacing */
+        }
+        
+        /* Header logo section - ensure it's properly positioned */
+        #kt_app_header_logo {
+            margin-top: 0 !important;
+            padding-top: 10px;
         }
         
         /* For iOS devices specifically */
         @supports (padding: max(0px)) {
             #kt_app_root {
                 padding-top: max(env(safe-area-inset-top), 0px);
+            }
+            
+            #kt_app_header {
+                margin-top: max(env(safe-area-inset-top), 0px) !important;
             }
         }
         
@@ -82,7 +92,26 @@
         /* Mobile specific adjustments */
         @media (max-width: 991px) {
             #kt_app_header {
+                margin-top: calc(env(safe-area-inset-top) + 5px) !important;
                 padding-top: 15px;
+            }
+            
+            #kt_app_header_logo {
+                padding-top: 15px;
+            }
+        }
+        
+        /* Fallback for devices without safe area support */
+        @media screen and (max-width: 991px) {
+            .no-safe-area #kt_app_header {
+                margin-top: 44px !important; /* Standard iOS status bar height */
+            }
+        }
+        
+        /* Android specific - typically 24px status bar */
+        @media screen and (max-width: 991px) {
+            .android #kt_app_header {
+                margin-top: 24px !important;
             }
         }
     </style>
@@ -202,6 +231,26 @@
     <!-- Status Bar Configuration -->
     <script>
     document.addEventListener('DOMContentLoaded', async function() {
+        // Detect platform and add CSS classes for better control
+        if (window.Capacitor) {
+            const { Device } = window.Capacitor.Plugins;
+            if (Device) {
+                try {
+                    const info = await Device.getInfo();
+                    document.body.classList.add(info.platform.toLowerCase());
+                    
+                    // Add safe area detection
+                    if (CSS.supports('padding-top', 'env(safe-area-inset-top)')) {
+                        document.body.classList.add('has-safe-area');
+                    } else {
+                        document.body.classList.add('no-safe-area');
+                    }
+                } catch (error) {
+                    console.log('Device info not available');
+                }
+            }
+        }
+        
         // Handle Status Bar for Capacitor apps
         if (window.Capacitor && window.Capacitor.Plugins?.StatusBar) {
             const { StatusBar } = window.Capacitor.Plugins;
