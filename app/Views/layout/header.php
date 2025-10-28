@@ -44,6 +44,19 @@
             --sal: env(safe-area-inset-left);
         }
         
+        /* Create a fixed status bar background that never changes */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: env(safe-area-inset-top, 44px);
+            background-color: #f4f4f4 !important;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        
         /* Apply safe area top padding to the app root */
         #kt_app_root {
             padding-top: env(safe-area-inset-top);
@@ -53,24 +66,26 @@
         /* Ensure header content appears BELOW the status bar */
         #kt_app_header {
             background-color: #f4f4f4; /* Match status bar color */
-            margin-top: env(safe-area-inset-top) !important; /* Push below status bar */
-            padding-top: 10px; /* Additional spacing */
+            margin-top: 0 !important; /* Reset margin since we have padding on root */
+            padding-top: 5px; /* Small spacing */
+            position: relative;
+            z-index: 100;
         }
         
         /* Header logo section - ensure it's properly positioned */
         #kt_app_header_logo {
             margin-top: 0 !important;
-            padding-top: 10px;
+            padding-top: 5px;
         }
         
         /* For iOS devices specifically */
         @supports (padding: max(0px)) {
             #kt_app_root {
-                padding-top: max(env(safe-area-inset-top), 0px);
+                padding-top: max(env(safe-area-inset-top), 44px);
             }
             
-            #kt_app_header {
-                margin-top: max(env(safe-area-inset-top), 0px) !important;
+            body::before {
+                height: max(env(safe-area-inset-top), 44px);
             }
         }
         
@@ -92,26 +107,31 @@
         /* Mobile specific adjustments */
         @media (max-width: 991px) {
             #kt_app_header {
-                margin-top: calc(env(safe-area-inset-top) + 5px) !important;
-                padding-top: 15px;
+                padding-top: 10px;
             }
             
             #kt_app_header_logo {
-                padding-top: 15px;
+                padding-top: 10px;
+            }
+            
+            /* Android fallback */
+            .android body::before {
+                height: 24px;
+            }
+            
+            .android #kt_app_root {
+                padding-top: 24px;
             }
         }
         
         /* Fallback for devices without safe area support */
         @media screen and (max-width: 991px) {
-            .no-safe-area #kt_app_header {
-                margin-top: 44px !important; /* Standard iOS status bar height */
+            .no-safe-area body::before {
+                height: 44px; /* Standard iOS status bar height */
             }
-        }
-        
-        /* Android specific - typically 24px status bar */
-        @media screen and (max-width: 991px) {
-            .android #kt_app_header {
-                margin-top: 24px !important;
+            
+            .no-safe-area #kt_app_root {
+                padding-top: 44px;
             }
         }
     </style>
@@ -258,16 +278,16 @@
             // Function to set consistent status bar appearance
             const setStatusBarAppearance = async () => {
                 try {
-                    // Set overlay to false FIRST to prevent iOS from changing background on scroll
+                    // CRITICAL: Set overlay to false to prevent transparency
                     await StatusBar.setOverlaysWebView({ overlay: false });
                     
-                    // Set status bar background color to match our app
-                    await StatusBar.setBackgroundColor({ color: '#f4f4f4' }); // light gray background
+                    // Set status bar background color - this should be persistent
+                    await StatusBar.setBackgroundColor({ color: '#f4f4f4' });
                     
                     // Set status bar style
-                    await StatusBar.setStyle({ style: 'dark' }); // dark text on light background
+                    await StatusBar.setStyle({ style: 'dark' });
                     
-                    // Show status bar if hidden
+                    // Show status bar
                     await StatusBar.show();
                     
                 } catch (error) {
@@ -278,33 +298,54 @@
             // Set initial status bar appearance
             await setStatusBarAppearance();
             
-            // Add multiple event listeners to maintain consistent status bar
-            let scrollTimeout;
+            // More aggressive event listeners to prevent transparency
+            let isScrolling = false;
             
-            // Scroll listener with more aggressive reapplication
+            // Before scroll starts
             window.addEventListener('scroll', () => {
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(async () => {
-                    await setStatusBarAppearance();
-                }, 50); // Reduced timeout for faster response
-            });
+                if (!isScrolling) {
+                    isScrolling = true;
+                    setStatusBarAppearance();
+                }
+            }, { passive: true });
             
-            // Touch events for mobile
-            document.addEventListener('touchstart', async () => {
-                await setStatusBarAppearance();
-            });
-            
-            document.addEventListener('touchend', async () => {
-                setTimeout(async () => {
-                    await setStatusBarAppearance();
+            // After scroll ends
+            window.addEventListener('scroll', () => {
+                clearTimeout(window.scrollEndTimer);
+                window.scrollEndTimer = setTimeout(() => {
+                    isScrolling = false;
+                    setStatusBarAppearance();
                 }, 100);
-            });
+            }, { passive: true });
             
-            // Page visibility change
+            // Touch events - critical for mobile
+            document.addEventListener('touchstart', () => {
+                setStatusBarAppearance();
+            }, { passive: true });
+            
+            document.addEventListener('touchmove', () => {
+                setStatusBarAppearance();
+            }, { passive: true });
+            
+            document.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    setStatusBarAppearance();
+                }, 50);
+            }, { passive: true });
+            
+            // Page visibility and focus events
             document.addEventListener('visibilitychange', async () => {
                 if (!document.hidden) {
                     await setStatusBarAppearance();
                 }
+            });
+            
+            window.addEventListener('focus', async () => {
+                await setStatusBarAppearance();
+            });
+            
+            window.addEventListener('blur', async () => {
+                await setStatusBarAppearance();
             });
             
             // Orientation changes
@@ -314,12 +355,14 @@
                 }, 500);
             });
             
-            // Focus events
-            window.addEventListener('focus', async () => {
-                await setStatusBarAppearance();
-            });
+            // Additional safety - reapply every 2 seconds when app is active
+            setInterval(() => {
+                if (!document.hidden) {
+                    setStatusBarAppearance();
+                }
+            }, 2000);
             
-            console.log('Status bar configured successfully with comprehensive scroll protection');
+            console.log('Status bar configured with maximum protection against transparency');
         }
     });
     </script>
