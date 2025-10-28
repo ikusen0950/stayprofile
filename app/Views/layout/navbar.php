@@ -1,4 +1,5 @@
 <div class="app-navbar flex-grow-1 justify-content-end" id="kt_app_header_navbar">
+
     <!--begin::User menu-->
     <div class="app-navbar-item ms-3 ms-lg-4 me-lg-6 me-4" id="kt_header_user_menu_toggle">
         <!--begin::Menu wrapper-->
@@ -8,14 +9,14 @@
             <!-- <img src="/assets/media/avatars/300-2.jpg" alt="user" /> -->
             <?php if (!empty(user()->image)): ?>
             <?php
-                // Display the user's avatar image, name, and islander number
-                echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
-                ?>
+                                    // Display the user's avatar image, name, and islander number
+                                    echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
+                                    ?>
             <?php else: ?>
             <?php
-                // Display the user's initials, name, and islander number
-                echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=d9dbe1&color=f4f4f4&font-size=.5">';
-                ?>
+                                    // Display the user's initials, name, and islander number
+                                    echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=d9dbe1&color=f4f4f4&font-size=.5">';
+                                    ?>
             <?php endif; ?>
         </div>
 
@@ -28,16 +29,16 @@
                     <!--begin::Avatar-->
                     <div class="symbol symbol-50px me-5">
                         <!-- <img alt="Logo" src="/assets/media/avatars/300-2.jpg" /> -->
-                         <?php if (!empty(user()->image)): ?>
-                            <?php
-                            // Display the user's avatar image, name, and islander number
-                            echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
-                            ?>
+                        <?php if (!empty(user()->image)): ?>
+                        <?php
+                                                // Display the user's avatar image, name, and islander number
+                                                echo '<img src="' . base_url('assets/media/users/' . user()->image) . '" class="me-2 rounded align-self-start" width="100" height="100" style="max-width: 100px; max-height: 100px; object-fit: cover;">';
+                                                ?>
                         <?php else: ?>
-                            <?php
-                            // Display the user's initials, name, and islander number
-                            echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=f4f4f4&color=9ba1b6&font-size=.5">';
-                            ?>
+                        <?php
+                                                // Display the user's initials, name, and islander number
+                                                echo '<img src="' . 'https://ui-avatars.com/api/?name=' . user()->full_name .  '&background=f4f4f4&color=9ba1b6&font-size=.5">';
+                                                ?>
                         <?php endif; ?>
                     </div>
                     <!--end::Avatar-->
@@ -63,10 +64,12 @@
             <!--begin::Menu item-->
             <div class="menu-item px-5">
                 <a href="/saul-html-pro/account/overview.html" class="menu-link px-5">
-                    My Profile
+                    Profile
                 </a>
             </div>
             <!--end::Menu item-->
+
+
 
             <!--begin::Menu separator-->
             <div class="separator my-2"></div>
@@ -141,83 +144,39 @@
             <!--end::Menu item-->
 
             <!--begin::Menu item-->
-            <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
-                <a href="#" class="menu-link px-5">
-                    <span class="menu-title position-relative">
-                        Language
+            <!-- <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
+                                    data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
+                                    <a href="#" class="menu-link px-5">
+                                        <span class="menu-title position-relative">
+                                            Language
 
-                        <span class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">
-                            English <img class="w-15px h-15px rounded-1 ms-2"
-                                src="/assets/media/flags/united-states.svg" alt="" />
-                        </span>
-                    </span>
-                </a>
+                                            <span
+                                                class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">
+                                                English <img class="w-15px h-15px rounded-1 ms-2"
+                                                    src="/assets/media/flags/united-states.svg" alt="" />
+                                            </span>
+                                        </span>
+                                    </a>
 
-                <!--begin::Menu sub-->
-                <div class="menu-sub menu-sub-dropdown w-175px py-4">
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-3">
-                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5 active">
-                            <span class="symbol symbol-20px me-4">
-                                <img class="rounded-1" src="/assets/media/flags/united-states.svg" alt="" />
-                            </span>
-                            English
-                        </a>
-                    </div>
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-3">
-                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
-                            <span class="symbol symbol-20px me-4">
-                                <img class="rounded-1" src="/assets/media/flags/spain.svg" alt="" />
-                            </span>
-                            Spanish
-                        </a>
-                    </div>
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-3">
-                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
-                            <span class="symbol symbol-20px me-4">
-                                <img class="rounded-1" src="/assets/media/flags/germany.svg" alt="" />
-                            </span>
-                            German
-                        </a>
-                    </div>
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-3">
-                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
-                            <span class="symbol symbol-20px me-4">
-                                <img class="rounded-1" src="/assets/media/flags/japan.svg" alt="" />
-                            </span>
-                            Japanese
-                        </a>
-                    </div>
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-3">
-                        <a href="/saul-html-pro/account/settings.html" class="menu-link d-flex px-5">
-                            <span class="symbol symbol-20px me-4">
-                                <img class="rounded-1" src="/assets/media/flags/france.svg" alt="" />
-                            </span>
-                            French
-                        </a>
-                    </div>
-                    <!--end::Menu item-->
-                </div>
-                <!--end::Menu sub-->
-            </div>
+                                    <div class="menu-sub menu-sub-dropdown w-175px py-4">
+                                        <div class="menu-item px-3">
+                                            <a href="/saul-html-pro/account/settings.html"
+                                                class="menu-link d-flex px-5 active">
+                                                <span class="symbol symbol-20px me-4">
+                                                    <img class="rounded-1" src="/assets/media/flags/united-states.svg"
+                                                        alt="" />
+                                                </span>
+                                                English
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div> -->
             <!--end::Menu item-->
+
 
             <!--begin::Menu item-->
             <div class="menu-item px-5">
-                <a href="/logout" class="menu-link px-5">
+                <a href="/saul-html-pro/authentication/layouts/corporate/sign-in.html" class="menu-link px-5">
                     Sign Out
                 </a>
             </div>
@@ -227,7 +186,6 @@
         <!--end::Menu wrapper-->
     </div>
     <!--end::User menu-->
-
 
 
     <!--begin::Header menu toggle-->

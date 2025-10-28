@@ -8,10 +8,11 @@
     <meta name="description" content="Islanders App" />
     <meta name="keywords" content="Islanders, Islanders App" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="csrf-token" content="<?= csrf_hash() ?>" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#1e1e2d" />
+    <meta name="csrf-token" content="<?= csrf_hash() ?>" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Islanders App" />
@@ -29,372 +30,199 @@
     <!--end::Vendor Stylesheets-->
 
 
+    <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
+    <link href="/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <!--end::Global Stylesheets Bundle-->
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="<?= base_url('assets/plugins/global/plugins.bundle.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/css/style.bundle.css') ?>">
-    
-    <!-- Capacitor Status Bar Safe Area CSS -->
-    <style>
-        /* Handle iOS status bar safe area */
-        :root {
-            --sat: env(safe-area-inset-top);
-            --sar: env(safe-area-inset-right);
-            --sab: env(safe-area-inset-bottom);
-            --sal: env(safe-area-inset-left);
-        }
-        
-        /* Create a fixed status bar background that never changes */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: env(safe-area-inset-top, 44px);
-            background-color: #f4f4f4 !important;
-            z-index: 9999;
-            pointer-events: none;
-        }
-        
-        /* Apply safe area top padding to the app root */
-        #kt_app_root {
-            padding-top: env(safe-area-inset-top);
-            background-color: #f4f4f4; /* Match status bar color */
-        }
-        
-        /* Ensure header content appears BELOW the status bar */
-        #kt_app_header {
-            background-color: #f4f4f4; /* Match status bar color */
-            margin-top: 0 !important; /* Reset margin since we have padding on root */
-            padding-top: 5px; /* Small spacing */
-            position: relative;
-            z-index: 100;
-        }
-        
-        /* Header logo section - ensure it's properly positioned */
-        #kt_app_header_logo {
-            margin-top: 0 !important;
-            padding-top: 5px;
-        }
-        
-        /* For iOS devices specifically */
-        @supports (padding: max(0px)) {
-            #kt_app_root {
-                padding-top: max(env(safe-area-inset-top), 44px);
-            }
-            
-            body::before {
-                height: max(env(safe-area-inset-top), 44px);
-            }
-        }
-        
-        /* Ensure the page content has consistent background */
-        #kt_app_page {
-            background-color: #f4f4f4;
-        }
-        
-        /* Prevent any content from showing through status bar area */
-        body {
-            background-color: #f4f4f4;
-        }
-        
-        /* Ensure content doesn't scroll under status bar */
-        .app-page {
-            min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        }
-        
-        /* Mobile specific adjustments */
-        @media (max-width: 991px) {
-            #kt_app_header {
-                padding-top: 10px;
-            }
-            
-            #kt_app_header_logo {
-                padding-top: 10px;
-            }
-            
-            /* Android fallback */
-            .android body::before {
-                height: 24px;
-            }
-            
-            .android #kt_app_root {
-                padding-top: 24px;
-            }
-        }
-        
-        /* Fallback for devices without safe area support */
-        @media screen and (max-width: 991px) {
-            .no-safe-area body::before {
-                height: 44px; /* Standard iOS status bar height */
-            }
-            
-            .no-safe-area #kt_app_root {
-                padding-top: 44px;
-            }
-        }
-    </style>
-
-   
-
-
-     <!-- AOS Animation Library -->
+    <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-    <!-- PushNotifications -->
-    <script>
-    document.addEventListener('deviceready', async () => {
-        const {
-            PushNotifications
-        } = Capacitor.Plugins;
+    <!--begin::iOS Safe Area CSS for Capacitor-->
+    <style>
+    /* iOS safe area handling for Capacitor apps */
 
-        if (!PushNotifications) {
-            console.warn('PushNotifications plugin not available');
-            return;
+    /* Base styles */
+    body {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Create a pseudo-element to fill the safe area with header background */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: env(safe-area-inset-top, 0px);
+        background-color: var(--bs-app-header-bg, #ffffff);
+        z-index: 999;
+        display: block;
+    }
+
+    /* Fallback for older browsers */
+    @supports (padding-top: constant(safe-area-inset-top)) {
+        body::before {
+            height: constant(safe-area-inset-top, 0px);
+        }
+    }
+
+    /* Default header positioning for all devices */
+    #kt_app_header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 1000 !important;
+        margin-top: 0 !important;
+    }
+
+    /* Default wrapper padding */
+    #kt_app_wrapper {
+        padding-top: 70px !important;
+        margin-top: 0 !important;
+    }
+
+    /* Reduce space in other elements */
+    #kt_app_toolbar {
+        margin-top: 0 !important;
+    }
+
+    /* Mobile specific toolbar adjustments */
+    @media screen and (max-width: 768px) {
+        #kt_app_toolbar {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
         }
 
-        const permission = await PushNotifications.requestPermissions();
-        if (permission.receive !== 'granted') {
-            console.warn('Push permission not granted');
-            return;
+        /* Hide breadcrumb on mobile */
+        .breadcrumb {
+            display: none !important;
         }
 
-        await PushNotifications.register();
-
-        // ✅ Save device token
-        PushNotifications.addListener('registration', async (token) => {
-            console.log('[Token] →', token.value);
-
-            // Store token globally for button access
-            window.currentFCMToken = token.value;
-            localStorage.setItem('fcm_token', token.value);
-            console.log('[Token Stored Globally] →', token.value);
-
-            // Wait a moment to ensure user session is ready
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            try {
-                console.log('[Token Save] → Attempting to save token to server...');
-                const res = await fetch('<?= base_url('api/save-token') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        token: token.value,
-                        device_type: 'ios'
-                    })
-                });
-
-                console.log('[Token Save] → Response status:', res.status, res.statusText);
-
-                if (res.status === 401) {
-                    console.log('[Token Save] → User not authenticated, will retry later...');
-                    // Store token for manual registration via button
-                    localStorage.setItem('pending_fcm_token', token.value);
-                    return;
-                }
-
-                const result = await res.json();
-                console.log('[Token Save Response] →', result);
-
-                if (result.status === 'success') {
-                    console.log('[Token Save] ✅ Token saved successfully!');
-                    localStorage.removeItem('pending_fcm_token'); // Clear pending token
-                } else {
-                    console.log('[Token Save] ❌ Failed:', result.message);
-                    // Store for later retry
-                    localStorage.setItem('pending_fcm_token', token.value);
-                }
-
-            } catch (error) {
-                console.error('[Token Save Error] →', error);
-                // Store for later retry
-                localStorage.setItem('pending_fcm_token', token.value);
-            }
-        });
-
-        // ✅ Foreground push notification
-        PushNotifications.addListener('pushNotificationReceived', (notification) => {
-            console.log('[Foreground Push Received] →', notification);
-        });
-
-        // ✅ Handle background/killed notification tap
-        PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-            const data = notification.notification.data;
-            console.log('[Notification Tap] →', data);
-
-            // ✅ Handle deep link or internal routing
-            if (data && data.url) {
-                // Optional: Use Capacitor App plugin for better navigation control
-                if (Capacitor.Plugins.App) {
-                    Capacitor.Plugins.App.getLaunchUrl().then((launchUrl) => {
-                        console.log('[Launch URL] →', launchUrl);
-                    });
-                }
-
-                // Navigate to URL inside app (external or internal)
-                window.location.href = data.url;
-            }
-        });
-
-        // ✅ Handle registration errors
-        PushNotifications.addListener('registrationError', (error) => {
-            console.error('[Registration Error] →', error);
-        });
-    });
-    </script>
-
-    <!-- Status Bar Configuration -->
-    <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-        // Detect platform and add CSS classes for better control
-        if (window.Capacitor) {
-            const { Device } = window.Capacitor.Plugins;
-            if (Device) {
-                try {
-                    const info = await Device.getInfo();
-                    document.body.classList.add(info.platform.toLowerCase());
-                    
-                    // Add safe area detection
-                    if (CSS.supports('padding-top', 'env(safe-area-inset-top)')) {
-                        document.body.classList.add('has-safe-area');
-                    } else {
-                        document.body.classList.add('no-safe-area');
-                    }
-                } catch (error) {
-                    console.log('Device info not available');
-                }
-            }
+        /* Add mt-8 to page heading on mobile */
+        .page-heading {
+            margin-top: 2rem !important;
+            /* mt-8 = 2rem */
         }
-        
-        // Handle Status Bar for Capacitor apps
-        if (window.Capacitor && window.Capacitor.Plugins?.StatusBar) {
-            const { StatusBar } = window.Capacitor.Plugins;
-            
-            // Function to set consistent status bar appearance
-            const setStatusBarAppearance = async () => {
-                try {
-                    // CRITICAL: Set overlay to false to prevent transparency
-                    await StatusBar.setOverlaysWebView({ overlay: false });
-                    
-                    // Set status bar background color - this should be persistent
-                    await StatusBar.setBackgroundColor({ color: '#f4f4f4' });
-                    
-                    // Set status bar style
-                    await StatusBar.setStyle({ style: 'dark' });
-                    
-                    // Show status bar
-                    await StatusBar.show();
-                    
-                } catch (error) {
-                    console.error('Status bar configuration failed:', error);
-                }
-            };
-            
-            // Set initial status bar appearance
-            await setStatusBarAppearance();
-            
-            // More aggressive event listeners to prevent transparency
-            let isScrolling = false;
-            
-            // Before scroll starts
-            window.addEventListener('scroll', () => {
-                if (!isScrolling) {
-                    isScrolling = true;
-                    setStatusBarAppearance();
-                }
-            }, { passive: true });
-            
-            // After scroll ends
-            window.addEventListener('scroll', () => {
-                clearTimeout(window.scrollEndTimer);
-                window.scrollEndTimer = setTimeout(() => {
-                    isScrolling = false;
-                    setStatusBarAppearance();
-                }, 100);
-            }, { passive: true });
-            
-            // Touch events - critical for mobile
-            document.addEventListener('touchstart', () => {
-                setStatusBarAppearance();
-            }, { passive: true });
-            
-            document.addEventListener('touchmove', () => {
-                setStatusBarAppearance();
-            }, { passive: true });
-            
-            document.addEventListener('touchend', () => {
-                setTimeout(() => {
-                    setStatusBarAppearance();
-                }, 50);
-            }, { passive: true });
-            
-            // Page visibility and focus events
-            document.addEventListener('visibilitychange', async () => {
-                if (!document.hidden) {
-                    await setStatusBarAppearance();
-                }
-            });
-            
-            window.addEventListener('focus', async () => {
-                await setStatusBarAppearance();
-            });
-            
-            window.addEventListener('blur', async () => {
-                await setStatusBarAppearance();
-            });
-            
-            // Orientation changes
-            window.addEventListener('orientationchange', async () => {
-                setTimeout(async () => {
-                    await setStatusBarAppearance();
-                }, 500);
-            });
-            
-            // Additional safety - reapply every 2 seconds when app is active
-            setInterval(() => {
-                if (!document.hidden) {
-                    setStatusBarAppearance();
-                }
-            }, 2000);
-            
-            console.log('Status bar configured with maximum protection against transparency');
-        }
-    });
-    </script>
+    }
 
-    <!-- Deep Link Handler -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.Capacitor && window.Capacitor.Plugins?.App) {
-            window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
-                try {
-                    const url = new URL(event.url);
-                    const path = url.pathname;
-                    console.log('App opened with URL path:', path);
-
-                    if (path) {
-                        // Navigate to that path within the app
-                        window.location.href = path;
-                    }
-                } catch (e) {
-                    console.error('Deep link handling failed:', e);
-                }
-            });
-        } else {
-            // This is expected when running in web browser (not mobile app)
-            console.debug('Capacitor App plugin not available - running in web mode.');
+    /* Safe area support for newer browsers */
+    @supports (padding-top: env(safe-area-inset-top)) {
+        #kt_app_header {
+            top: env(safe-area-inset-top) !important;
         }
-    });
-    </script>
+
+        #kt_app_wrapper {
+            padding-top: calc(70px + env(safe-area-inset-top)) !important;
+        }
+    }
+
+    /* Fallback for older browsers */
+    @supports (padding-top: constant(safe-area-inset-top)) {
+        #kt_app_header {
+            top: constant(safe-area-inset-top) !important;
+        }
+
+        #kt_app_wrapper {
+            padding-top: calc(70px + constant(safe-area-inset-top)) !important;
+        }
+    }
+
+    /* Ensure proper height calculation */
+    .app-page {
+        min-height: 100vh;
+        padding-top: 0 !important;
+    }
+
+    /* Mobile specific adjustments */
+    @media screen and (max-width: 768px) {
+        body {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .app-header {
+            position: fixed !important;
+            z-index: 1000 !important;
+            width: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+        }
+
+        /* Make sidebar appear above header on mobile with proper clickability */
+        .app-sidebar {
+            z-index: 1002 !important;
+            pointer-events: auto !important;
+        }
+
+        /* Ensure sidebar content is clickable */
+        .app-sidebar * {
+            pointer-events: auto !important;
+        }
+
+        /* Sidebar overlay with lower z-index but still above header */
+        .drawer-overlay {
+            z-index: 1001 !important;
+            pointer-events: auto !important;
+        }
+
+        /* Ensure menu items are clickable */
+        .menu-item,
+        .menu-link {
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 1003 !important;
+        }
+
+        .app-wrapper {
+            margin-top: 0 !important;
+        }
+
+        .app-toolbar {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+    }
+
+    /* Additional iOS Safari specific fix */
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+        }
+    }
+
+    /* Force styles for Capacitor environment */
+    .capacitor-app #kt_app_header {
+        top: var(--ion-safe-area-top, 44px) !important;
+    }
+
+    .capacitor-app #kt_app_wrapper {
+        padding-top: calc(70px + var(--ion-safe-area-top, 44px)) !important;
+    }
+
+    /* Ensure the safe area background matches the header */
+    .capacitor-app body::before {
+        height: var(--ion-safe-area-top, 44px);
+    }
+
+    /* Hide logo on desktop, show on mobile */
+    @media (min-width: 992px) {
+        .app-sidebar-logo-new {
+            display: none !important;
+        }
+    }
+    </style>
+    <!--end::iOS Safe Area CSS for Capacitor-->
+
+
 
 </head>
 <!--end::Head-->
-
 
 
 <!--begin::Body-->
@@ -425,6 +253,78 @@
 
         document.documentElement.setAttribute("data-bs-theme", themeMode);
     }
+
+    // iOS Safe Area handling for Capacitor
+    function handleSafeArea() {
+        const header = document.getElementById('kt_app_header');
+        const wrapper = document.getElementById('kt_app_wrapper');
+
+        if (header && wrapper) {
+            // Try to get safe area inset from CSS
+            const testDiv = document.createElement('div');
+            testDiv.style.position = 'fixed';
+            testDiv.style.top = '0';
+            testDiv.style.left = '0';
+            testDiv.style.visibility = 'hidden';
+            testDiv.style.paddingTop = 'env(safe-area-inset-top)';
+            document.body.appendChild(testDiv);
+
+            const computedPadding = window.getComputedStyle(testDiv).paddingTop;
+            const safeAreaTop = parseFloat(computedPadding) || 0;
+
+            document.body.removeChild(testDiv);
+
+            // If we didn't get a safe area value, try alternative methods
+            let finalSafeAreaTop = safeAreaTop;
+
+            // Check if we're in a Capacitor app or iOS device
+            if (safeAreaTop === 0 && (window.Capacitor || /iPad|iPhone|iPod/.test(navigator.userAgent))) {
+                // Default iOS status bar height
+                finalSafeAreaTop = window.screen.height >= 812 ? 44 : 20; // iPhone X and newer vs older
+            }
+
+            // Apply the safe area positioning
+            if (finalSafeAreaTop > 0) {
+                header.style.top = finalSafeAreaTop + 'px';
+                wrapper.style.paddingTop = (70 + finalSafeAreaTop) + 'px';
+
+                // Get the header's background color and apply it to the safe area
+                const headerStyles = window.getComputedStyle(header);
+                const headerBgColor = headerStyles.backgroundColor || '#ffffff';
+
+                // Create or update the safe area background element
+                let safeAreaBg = document.getElementById('safe-area-bg');
+                if (!safeAreaBg) {
+                    safeAreaBg = document.createElement('div');
+                    safeAreaBg.id = 'safe-area-bg';
+                    document.body.appendChild(safeAreaBg);
+                }
+
+                // Style the safe area background
+                safeAreaBg.style.position = 'fixed';
+                safeAreaBg.style.top = '0';
+                safeAreaBg.style.left = '0';
+                safeAreaBg.style.right = '0';
+                safeAreaBg.style.height = finalSafeAreaTop + 'px';
+                safeAreaBg.style.backgroundColor = headerBgColor;
+                safeAreaBg.style.zIndex = '999';
+                safeAreaBg.style.pointerEvents = 'none';
+
+                // Add class to body to indicate safe area is applied
+                document.body.classList.add('safe-area-applied');
+            }
+        }
+    }
+
+    // Run safe area handling when DOM is loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', handleSafeArea);
+    } else {
+        handleSafeArea();
+    }
+
+    // Also run when window loads (in case elements aren't ready)
+    window.addEventListener('load', handleSafeArea);
     </script>
     <!--end::Theme mode setup on page load-->
 
@@ -438,7 +338,7 @@
 
 
             <!--begin::Header-->
-            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack">
+            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack ">
 
                 <!--begin::Header main-->
                 <div class="d-flex align-items-center flex-stack flex-grow-1">
@@ -456,30 +356,31 @@
                         <!--begin::Logo-->
                         <a href="/" class="app-sidebar-logo">
                             <img alt="Logo" src="/assets/media/logos/default.png"
-                                class="h-30px h-lg-40px theme-light-show" />
+                                class="h-30px h-lg-40px  theme-light-show" />
                             <img alt="Logo" src="/assets/media/logos/default-dark.svg"
-                                class="h-30px h-lg-40px theme-dark-show" />
+                                class="h-30px h-lg-40px  theme-dark-show" />
                         </a>
                         <!--end::Logo-->
-
                     </div>
 
                     <!--begin::Navbar-->
                     <?= $this->include('layout/navbar.php') ?>
                     <!--end::Navbar-->
-
                 </div>
                 <!--end::Header main-->
 
                 <!--begin::Separator-->
                 <div class="app-header-separator"></div>
                 <!--end::Separator-->
-
-
             </div>
             <!--end::Header-->
             <!--begin::Wrapper-->
             <div class="app-wrapper  flex-column flex-row-fluid " id="kt_app_wrapper">
+
+
+
+
+
 
                 <!--begin::Sidebar-->
                 <?= $this->include('layout/sidebar.php') ?>

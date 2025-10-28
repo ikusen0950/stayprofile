@@ -7,47 +7,48 @@
         id="kt_app_sidebar_main" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto"
         data-kt-scroll-dependencies="#kt_app_header" data-kt-scroll-wrappers="#kt_app_main" data-kt-scroll-offset="5px">
         <!--begin::Sidebar menu-->
-        <!-- <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false"
-            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7">
-
-
-        </div> -->
-
         <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false"
-            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7">
+            class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7 mt-15works per mt-lg-2 mt-md-2">
+
+            <!--begin::Logo-->
+            <a href="/" class="app-sidebar-logo-new mt-4 mb-4">
+                <img alt="Logo" src="/assets/media/logos/default.png" class="h-40px h-lg-40px  theme-light-show" />
+                <img alt="Logo" src="/assets/media/logos/default-dark.svg" class="h-40px h-lg-40px  theme-dark-show" />
+            </a>
+            <!--end::Logo-->
 
             <?php
-                    // Helper function to check if menu item is active
-                    function isMenuActive($routes) {
-                        $currentUrl = current_url();
-                        $baseUrl = base_url();
-                        $uriString = uri_string();
-                        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-                        
-                        foreach ($routes as $route) {
-                            if ($route === '/' || $route === 'dashboard') {
-                                // Special handling for dashboard/home
-                                if ($currentUrl == $baseUrl || 
-                                    $currentUrl == $baseUrl . '/' ||
-                                    $currentUrl == $baseUrl . 'dashboard' ||
-                                    $uriString == '' ||
-                                    $uriString == '/' ||
-                                    $uriString == 'dashboard' ||
-                                    $requestUri == '/' ||
-                                    $requestUri == '/dashboard') {
-                                    return true;
+                                // Helper function to check if menu item is active
+                                function isMenuActive($routes) {
+                                    $currentUrl = current_url();
+                                    $baseUrl = base_url();
+                                    $uriString = uri_string();
+                                    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+                                    
+                                    foreach ($routes as $route) {
+                                        if ($route === '/' || $route === 'dashboard') {
+                                            // Special handling for dashboard/home
+                                            if ($currentUrl == $baseUrl || 
+                                                $currentUrl == $baseUrl . '/' ||
+                                                $currentUrl == $baseUrl . 'dashboard' ||
+                                                $uriString == '' ||
+                                                $uriString == '/' ||
+                                                $uriString == 'dashboard' ||
+                                                $requestUri == '/' ||
+                                                $requestUri == '/dashboard') {
+                                                return true;
+                                            }
+                                        } else {
+                                            // For other routes
+                                            if (strpos($currentUrl, $route) !== false || 
+                                                strpos($requestUri, $route) !== false) {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                    return false;
                                 }
-                            } else {
-                                // For other routes
-                                if (strpos($currentUrl, $route) !== false || 
-                                    strpos($requestUri, $route) !== false) {
-                                    return true;
-                                }
-                            }
-                        }
-                        return false;
-                    }
-                    ?>
+                                ?>
 
             <!--begin:Menu item-->
             <?php $isActive = isMenuActive(['/', 'dashboard']); ?>
@@ -89,8 +90,7 @@
             <!--end:Menu item-->
             <!--begin:Menu item-->
             <?php $isActive = isMenuActive(['/requests/add_request', '/requests', '/authorizations']); ?>
-            <div data-kt-menu-trigger="click"
-                class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
                 <!--begin:Menu link-->
                 <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
                     <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -211,8 +211,7 @@
             <!--end:Menu item-->
             <!--begin:Menu item-->
             <?php $isActive = isMenuActive(['/tickets']); ?>
-            <div data-kt-menu-trigger="click"
-                class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
                 <!--begin:Menu link-->
                 <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
                     <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -247,8 +246,7 @@
             <!--end:Menu item-->
             <!--begin:Menu item-->
             <?php $isActive = isMenuActive(['/todays_arrival', '/todays_departure', '/exit_request']); ?>
-            <div data-kt-menu-trigger="click"
-                class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
                 <!--begin:Menu link-->
                 <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
                     <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -320,30 +318,29 @@
 
             <!--begin:Menu item-->
             <?php 
-                    // Check permissions for system settings
-                    $hasStatusAccess = has_permission('status.view');
-                    $hasRequestsAccess = has_permission('requests.view');
-                    $hasModulesAccess = has_permission('modules.view');
-                    $hasLogsAccess = has_permission('logs.view');
-                    $hasSystemAccess = $hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess;
-                    
-                    // For Islander Settings, we'll assume admin/manager access for now
-                    // You can add specific permissions for these later if needed
-                    $hasIslanderAccess = has_permission('system.admin') || in_groups(['admin', 'manager']);
-                    
-                    // Check permissions for user management items
-                    $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
-                                             has_permission('groups.view') || has_permission('permissions.view') || 
-                                             in_groups(['admin', 'manager']);
-                    
-                    // Check if user has access to any settings
-                    $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
-                    
-                    $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
-                    ?>
+                            // Check permissions for system settings
+                            $hasStatusAccess = has_permission('status.view');
+                            $hasRequestsAccess = has_permission('requests.view');
+                            $hasModulesAccess = has_permission('modules.view');
+                            $hasLogsAccess = has_permission('logs.view');
+                            $hasSystemAccess = $hasStatusAccess || $hasRequestsAccess || $hasModulesAccess || $hasLogsAccess;
+                            
+                            // For Islander Settings, we'll assume admin/manager access for now
+                            // You can add specific permissions for these later if needed
+                            $hasIslanderAccess = has_permission('system.admin') || in_groups(['admin', 'manager']);
+                            
+                            // Check permissions for user management items
+                            $hasUserManagementAccess = has_permission('users.view') || has_permission('sessions.view') || 
+                                                    has_permission('groups.view') || has_permission('permissions.view') || 
+                                                    in_groups(['admin', 'manager']);
+                            
+                            // Check if user has access to any settings
+                            $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
+                            
+                            $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                            ?>
             <?php if ($hasAnySettingsAccess): ?>
-            <div data-kt-menu-trigger="click"
-                class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
                 <!--begin:Menu link-->
                 <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
                     <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
@@ -435,8 +432,8 @@
                             <div class="menu-item">
                                 <!--begin:Menu link-->
                                 <?php $subActive4 = isMenuActive(['/requesting-rules']); ?>
-                                <a class="menu-link <?= $subActive4 ? 'active bg-white' : '' ?>" href="/requesting-rules"
-                                    <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                <a class="menu-link <?= $subActive4 ? 'active bg-white' : '' ?>"
+                                    href="/requesting-rules" <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
@@ -501,8 +498,8 @@
                             <div class="menu-item">
                                 <!--begin:Menu link-->
                                 <?php $subActive8 = isMenuActive(['/user-permissions']); ?>
-                                <a class="menu-link <?= $subActive8 ? 'active bg-white' : '' ?>" href="/user-permissions"
-                                    <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
+                                <a class="menu-link <?= $subActive8 ? 'active bg-white' : '' ?>"
+                                    href="/user-permissions" <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
@@ -810,30 +807,23 @@
 
 
         </div>
-
         <!--end::Sidebar menu-->
         <!--begin::Footer-->
         <!-- <div class="app-sidebar-project-default app-sidebar-project-minimize text-center min-h-lg-400px flex-column-auto d-flex flex-column justify-content-end"
-                            id="kt_app_sidebar_footer"> -->
-        <!--begin::Title-->
-        <!-- <h2 class="fw-bold text-gray-800">Welcome to Islanders 3.0</h2> -->
-        <!--end::Title-->
+                            id="kt_app_sidebar_footer">
+                            <h2 class="fw-bold text-gray-800">Welcome to Islanders App</h2>
 
-        <!--begin::Description-->
-        <!-- <div class="fw-semibold text-gray-700 fs-7 lh-2 px-7 mb-1">Join the movement make a
-                                difference.</div> -->
-        <!--end::Description-->
+                            <div class="fw-semibold text-gray-700 fs-7 lh-2 px-7 mb-1">Join the movement make a
+                                difference.</div>
 
-        <!--begin::Illustration-->
-        <!-- <img class="mx-auto h-150px h-lg-175px mb-4" src="/assets/media/misc/saul-welcome.png"
-                                alt="" /> -->
-        <!--end::Illustration-->
+                            <img class="mx-auto h-150px h-lg-175px mb-4" src="/assets/media/misc/saul-welcome.png"
+                                alt="" />
 
-        <!-- <div class="text-center mb-lg-15 pb-lg-3"> -->
-        <!-- <a href="#" class="btn btn-sm btn-dark" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_create_account">Get Started</a> -->
-        <!-- </div> -->
-        <!-- </div> -->
+                            <div class="text-center mb-lg-5 pb-lg-3">
+                                <a href="#" class="btn btn-sm btn-dark" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_create_account">Get Started</a>
+                            </div>
+                        </div> -->
         <!--end::Footer-->
     </div>
     <!--end::Main-->
