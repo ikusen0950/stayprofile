@@ -586,46 +586,7 @@
 
         // Handle sidebar state for mobile search bar
         const sidebar = document.getElementById('kt_app_sidebar');
-        const mobileSearchBar = document.querySelector('.mobile-search-bar');
-
-        if (sidebar && mobileSearchBar) {
-            // Create observer to watch for sidebar state changes
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation
-                        .attributeName === 'data-kt-drawer') {
-                        const isDrawerOn = sidebar.getAttribute(
-                            'data-kt-drawer') === 'on';
-                        if (isDrawerOn) {
-                            mobileSearchBar.style.zIndex = '100';
-                        } else {
-                            mobileSearchBar.style.zIndex = '999';
-                        }
-                    }
-                });
-            });
-
-            observer.observe(sidebar, {
-                attributes: true,
-                attributeFilter: ['data-kt-drawer']
-            });
-
-            // Also listen for drawer events
-            document.addEventListener('click', function(e) {
-                if (e.target.id === 'kt_app_sidebar_mobile_toggle' || e.target.closest(
-                        '#kt_app_sidebar_mobile_toggle')) {
-                    setTimeout(() => {
-                        const isDrawerOn = sidebar.getAttribute(
-                            'data-kt-drawer') === 'on';
-                        if (isDrawerOn) {
-                            mobileSearchBar.style.zIndex = '100';
-                        } else {
-                            mobileSearchBar.style.zIndex = '999';
-                        }
-                    }, 100);
-                }
-            });
-        }
+        
 
         // Mobile search functionality
         const mobileSearch = document.getElementById('mobile_search');
