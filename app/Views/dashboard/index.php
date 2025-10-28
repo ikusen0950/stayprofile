@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#1e1e2d" />
     <meta name="csrf-token" content="<?= csrf_hash() ?>" />
     <meta property="og:locale" content="en_US" />
@@ -35,6 +35,48 @@
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
 
+    <!--begin::iOS Safe Area CSS for Capacitor-->
+    <style>
+        /* iOS safe area handling for Capacitor apps */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .app-root {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
+        
+        /* Fallback for older browsers */
+        @supports (padding-top: constant(safe-area-inset-top)) {
+            .app-root {
+                padding-top: constant(safe-area-inset-top);
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-left: constant(safe-area-inset-left);
+                padding-right: constant(safe-area-inset-right);
+            }
+        }
+        
+        /* Ensure the app page fills the remaining space */
+        .app-page {
+            min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        }
+        
+        /* Alternative fallback */
+        @supports (padding-top: constant(safe-area-inset-top)) {
+            .app-page {
+                min-height: calc(100vh - constant(safe-area-inset-top) - constant(safe-area-inset-bottom));
+            }
+        }
+        
+        /* Prevent content from being cut off on iOS */
+        @media screen and (max-width: 768px) {
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+    <!--end::iOS Safe Area CSS for Capacitor-->
 
 </head>
 <!--end::Head-->
