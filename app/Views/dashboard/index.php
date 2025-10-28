@@ -48,6 +48,9 @@
             #kt_app_header {
                 margin-top: 0 !important;
                 top: 0 !important;
+                position: fixed !important;
+                z-index: 1000 !important;
+                width: 100% !important;
             }
         }
         
@@ -62,17 +65,33 @@
             #kt_app_header {
                 margin-top: 0 !important;
                 top: 0 !important;
+                position: fixed !important;
+                z-index: 1000 !important;
+                width: 100% !important;
             }
         }
         
-        /* Ensure proper height calculation */
+        /* Reduce space below header */
+        #kt_app_wrapper {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        
+        #kt_app_toolbar {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+        
+        /* Ensure proper height calculation with reduced spacing */
         .app-page {
             min-height: calc(100vh - env(safe-area-inset-top, 0px));
+            padding-top: 0 !important;
         }
         
         @supports (padding-top: constant(safe-area-inset-top)) {
             .app-page {
                 min-height: calc(100vh - constant(safe-area-inset-top, 0px));
+                padding-top: 0 !important;
             }
         }
         
@@ -82,10 +101,29 @@
                 -webkit-overflow-scrolling: touch;
             }
             
-            /* Force header to respect safe area */
+            /* Force header to be fixed and respect safe area */
             .app-header {
-                position: relative !important;
-                z-index: 1000;
+                position: fixed !important;
+                z-index: 1000 !important;
+                top: env(safe-area-inset-top, 0px) !important;
+                width: 100% !important;
+            }
+            
+            @supports (padding-top: constant(safe-area-inset-top)) {
+                .app-header {
+                    top: constant(safe-area-inset-top, 0px) !important;
+                }
+            }
+            
+            /* Reduce all unnecessary spacing */
+            .app-wrapper {
+                margin-top: 0 !important;
+                padding-top: 60px !important; /* Approximate header height */
+            }
+            
+            .app-toolbar {
+                padding-top: 0 !important;
+                margin-top: 0 !important;
             }
         }
         
