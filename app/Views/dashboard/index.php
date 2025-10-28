@@ -46,6 +46,26 @@
             padding-right: 0 !important;
         }
         
+        /* Create a pseudo-element to fill the safe area with header background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: env(safe-area-inset-top, 0px);
+            background-color: var(--bs-app-header-bg, #ffffff);
+            z-index: 999;
+            display: block;
+        }
+        
+        /* Fallback for older browsers */
+        @supports (padding-top: constant(safe-area-inset-top)) {
+            body::before {
+                height: constant(safe-area-inset-top, 0px);
+            }
+        }
+        
         /* Default header positioning for all devices */
         #kt_app_header {
             position: fixed !important;
@@ -137,6 +157,11 @@
         .capacitor-app #kt_app_wrapper {
             padding-top: calc(70px + var(--ion-safe-area-top, 44px)) !important;
         }
+        
+        /* Ensure the safe area background matches the header */
+        .capacitor-app body::before {
+            height: var(--ion-safe-area-top, 44px);
+        }
     </style>
     <!--end::iOS Safe Area CSS for Capacitor-->
 
@@ -206,6 +231,28 @@
             if (finalSafeAreaTop > 0) {
                 header.style.top = finalSafeAreaTop + 'px';
                 wrapper.style.paddingTop = (70 + finalSafeAreaTop) + 'px';
+                
+                // Get the header's background color and apply it to the safe area
+                const headerStyles = window.getComputedStyle(header);
+                const headerBgColor = headerStyles.backgroundColor || '#ffffff';
+                
+                // Create or update the safe area background element
+                let safeAreaBg = document.getElementById('safe-area-bg');
+                if (!safeAreaBg) {
+                    safeAreaBg = document.createElement('div');
+                    safeAreaBg.id = 'safe-area-bg';
+                    document.body.appendChild(safeAreaBg);
+                }
+                
+                // Style the safe area background
+                safeAreaBg.style.position = 'fixed';
+                safeAreaBg.style.top = '0';
+                safeAreaBg.style.left = '0';
+                safeAreaBg.style.right = '0';
+                safeAreaBg.style.height = finalSafeAreaTop + 'px';
+                safeAreaBg.style.backgroundColor = headerBgColor;
+                safeAreaBg.style.zIndex = '999';
+                safeAreaBg.style.pointerEvents = 'none';
                 
                 // Add class to body to indicate safe area is applied
                 document.body.classList.add('safe-area-applied');
