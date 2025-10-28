@@ -47,11 +47,14 @@
         /* Apply safe area top padding to the app root */
         #kt_app_root {
             padding-top: env(safe-area-inset-top);
+            background-color: #f4f4f4; /* Match status bar color */
         }
         
-        /* Ensure header doesn't get covered by status bar */
+        /* Ensure header doesn't get covered by status bar and has consistent background */
         #kt_app_header {
-            padding-top: calc(env(safe-area-inset-top) * 0.5);
+            background-color: #f4f4f4; /* Match status bar color */
+            margin-top: 0 !important; /* Remove any top margin */
+            padding-top: 10px; /* Add some padding instead of margin */
         }
         
         /* For iOS devices specifically */
@@ -59,25 +62,28 @@
             #kt_app_root {
                 padding-top: max(env(safe-area-inset-top), 0px);
             }
-            
-            #kt_app_header {
-                padding-top: max(calc(env(safe-area-inset-top) * 0.5), 0px);
-            }
         }
         
-        /* Alternative approach - you can use this instead if the above doesn't work well */
-        /*
-        body {
-            padding-top: env(safe-area-inset-top);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-            padding-bottom: env(safe-area-inset-bottom);
+        /* Ensure the page content has consistent background */
+        #kt_app_page {
+            background-color: #f4f4f4;
         }
-        */
+        
+        /* Prevent any content from showing through status bar area */
+        body {
+            background-color: #f4f4f4;
+        }
         
         /* Ensure content doesn't scroll under status bar */
         .app-page {
-            min-height: calc(60vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        }
+        
+        /* Mobile specific adjustments */
+        @media (max-width: 991px) {
+            #kt_app_header {
+                padding-top: 15px;
+            }
         }
     </style>
 
@@ -203,17 +209,17 @@
             // Function to set consistent status bar appearance
             const setStatusBarAppearance = async () => {
                 try {
-                    // Set status bar style
-                    await StatusBar.setStyle({ style: 'dark' }); // or 'light' depending on your theme
+                    // Set overlay to false FIRST to prevent iOS from changing background on scroll
+                    await StatusBar.setOverlaysWebView({ overlay: false });
                     
-                    // Set status bar background color (optional)
+                    // Set status bar background color to match our app
                     await StatusBar.setBackgroundColor({ color: '#f4f4f4' }); // light gray background
+                    
+                    // Set status bar style
+                    await StatusBar.setStyle({ style: 'dark' }); // dark text on light background
                     
                     // Show status bar if hidden
                     await StatusBar.show();
-                    
-                    // Set overlay to false to prevent iOS from changing background on scroll
-                    await StatusBar.setOverlaysWebView({ overlay: false });
                     
                 } catch (error) {
                     console.error('Status bar configuration failed:', error);
@@ -223,23 +229,48 @@
             // Set initial status bar appearance
             await setStatusBarAppearance();
             
-            // Add scroll listener to maintain consistent status bar on scroll
+            // Add multiple event listeners to maintain consistent status bar
             let scrollTimeout;
+            
+            // Scroll listener with more aggressive reapplication
             window.addEventListener('scroll', () => {
                 clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(async () => {
                     await setStatusBarAppearance();
+                }, 50); // Reduced timeout for faster response
+            });
+            
+            // Touch events for mobile
+            document.addEventListener('touchstart', async () => {
+                await setStatusBarAppearance();
+            });
+            
+            document.addEventListener('touchend', async () => {
+                setTimeout(async () => {
+                    await setStatusBarAppearance();
                 }, 100);
             });
             
-            // Also listen for orientation changes
+            // Page visibility change
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden) {
+                    await setStatusBarAppearance();
+                }
+            });
+            
+            // Orientation changes
             window.addEventListener('orientationchange', async () => {
                 setTimeout(async () => {
                     await setStatusBarAppearance();
                 }, 500);
             });
             
-            console.log('Status bar configured successfully with scroll protection');
+            // Focus events
+            window.addEventListener('focus', async () => {
+                await setStatusBarAppearance();
+            });
+            
+            console.log('Status bar configured successfully with comprehensive scroll protection');
         }
     });
     </script>
@@ -315,7 +346,7 @@
 
 
             <!--begin::Header-->
-            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack mt-10 mt-lg-0 mb-5 mb-lg-0">
+            <div id="kt_app_header" class="app-header  d-flex flex-column flex-stack">
 
                 <!--begin::Header main-->
                 <div class="d-flex align-items-center flex-stack flex-grow-1">
