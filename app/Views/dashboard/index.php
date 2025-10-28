@@ -39,40 +39,61 @@
     <style>
         /* iOS safe area handling for Capacitor apps */
         @supports (padding-top: env(safe-area-inset-top)) {
-            .app-root {
-                padding-top: env(safe-area-inset-top);
-                padding-bottom: env(safe-area-inset-bottom);
-                padding-left: env(safe-area-inset-left);
-                padding-right: env(safe-area-inset-right);
+            body {
+                padding-top: env(safe-area-inset-top) !important;
+                padding-left: env(safe-area-inset-left) !important;
+                padding-right: env(safe-area-inset-right) !important;
+            }
+            
+            #kt_app_header {
+                margin-top: 0 !important;
+                top: 0 !important;
             }
         }
         
         /* Fallback for older browsers */
         @supports (padding-top: constant(safe-area-inset-top)) {
-            .app-root {
-                padding-top: constant(safe-area-inset-top);
-                padding-bottom: constant(safe-area-inset-bottom);
-                padding-left: constant(safe-area-inset-left);
-                padding-right: constant(safe-area-inset-right);
+            body {
+                padding-top: constant(safe-area-inset-top) !important;
+                padding-left: constant(safe-area-inset-left) !important;
+                padding-right: constant(safe-area-inset-right) !important;
+            }
+            
+            #kt_app_header {
+                margin-top: 0 !important;
+                top: 0 !important;
             }
         }
         
-        /* Ensure the app page fills the remaining space */
+        /* Ensure proper height calculation */
         .app-page {
-            min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            min-height: calc(100vh - env(safe-area-inset-top, 0px));
         }
         
-        /* Alternative fallback */
         @supports (padding-top: constant(safe-area-inset-top)) {
             .app-page {
-                min-height: calc(100vh - constant(safe-area-inset-top) - constant(safe-area-inset-bottom));
+                min-height: calc(100vh - constant(safe-area-inset-top, 0px));
             }
         }
         
-        /* Prevent content from being cut off on iOS */
+        /* Mobile specific adjustments */
         @media screen and (max-width: 768px) {
             body {
                 -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Force header to respect safe area */
+            .app-header {
+                position: relative !important;
+                z-index: 1000;
+            }
+        }
+        
+        /* Additional iOS Safari specific fix */
+        @media screen and (-webkit-min-device-pixel-ratio: 2) {
+            body {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
             }
         }
     </style>
