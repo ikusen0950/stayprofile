@@ -1,8 +1,4 @@
-<!--begin::Navbar-->
 <div class="app-navbar flex-grow-1 justify-content-end" id="kt_app_header_navbar">
-
-
-
 
     <!--begin::User menu-->
     <div class="app-navbar-item ms-3 ms-lg-4 me-lg-6 me-4" id="kt_header_user_menu_toggle">
@@ -195,4 +191,3 @@
     <!--begin::Header menu toggle-->
     <!--end::Header menu toggle-->
 </div>
-<!--end::Navbar-->

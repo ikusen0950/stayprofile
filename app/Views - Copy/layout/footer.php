@@ -1,32 +1,33 @@
-<div id="kt_app_footer"
-    class="app-footer  align-items-center justify-content-center justify-content-md-between flex-column flex-md-row py-3 ">
+<!--begin::Footer-->
+    <div id="kt_app_footer"
+        class="app-footer  align-items-center justify-content-center justify-content-md-between flex-column flex-md-row py-3 ">
 
 
 
-    <!--begin::Copyright-->
-    <div class="text-gray-900 order-2 order-md-1">
-        <span class="text-muted fw-semibold me-1"><?= date('Y') ?>&copy;</span>
-        <span class="me-1">Crafted with ❤️ by</span>
-        <i class="ki-duotone ki-square-brackets fs-3 text-danger me-1">
-            <span class="path1"></span>
-            <span class="path2"></span>
-            <span class="path3"></span>
-            <span class="path4"></span>
-        </i>
-        <a href="/" target="_blank" class="text-danger text-hover-danger">Short Script</a>
+        <!--begin::Copyright-->
+        <div class="text-gray-900 order-2 order-md-1">
+            <span class="text-muted fw-semibold me-1"><?= date('Y') ?>&copy;</span>
+            <span class="me-1">Crafted with ❤️ by</span>
+            <i class="ki-duotone ki-square-brackets fs-3 text-danger me-1">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+                <span class="path4"></span>
+            </i>
+            <a href="/" target="_blank" class="text-danger text-hover-danger">Short Script</a>
+        </div>
+        <!--end::Copyright-->
+
+        <!--begin::Menu-->
+        <ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
+            <li class="menu-item"><a class="menu-link px-2">Version: 3.0.1</a></li>
+
+            <li class="menu-item"><a class="menu-link px-2">Build: 25.11.2025.301</a></li>
+
+        </ul>
+        <!--end::Menu-->
     </div>
-    <!--end::Copyright-->
-
-    <!--begin::Menu-->
-    <ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
-        <li class="menu-item"><a class="menu-link px-2">Version: 3.0.1</a></li>
-
-        <li class="menu-item"><a class="menu-link px-2">Build: 25.11.2025.301</a></li>
-
-    </ul>
-    <!--end::Menu-->
-</div>
-<!--end::Footer-->
+    <!--end::Footer-->
 </div>
 <!--end:::Main-->
 
