@@ -1,6 +1,41 @@
 <?= $this->include('layout/header.php') ?>
 
 <style>
+/* Fixed mobile search bar */
+.mobile-search-bar {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 100 !important;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
+}
+
+/* Hide mobile search bar when sidebar drawer is active */
+[data-kt-drawer-name="app-sidebar"][data-kt-drawer="on"]~* .mobile-search-bar,
+body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
+    z-index: 100 !important;
+}
+
+.mobile-search-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bs-app-header-base-bg-color, rgba(255, 255, 255, 0.95));
+    z-index: -1;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .mobile-search-bar {
+    background: var(--bs-app-header-base-bg-color-dark, var(--bs-gray-800));
+}
+
+[data-bs-theme="dark"] .mobile-search-bar::before {
+    background: var(--bs-app-header-base-bg-color-dark, rgba(30, 30, 30, 0.95));
+}
 
 /* Skeleton loading styles */
 .skeleton-text {
@@ -136,95 +171,222 @@
 </style>
 
 <!--begin::Mobile UI (visible on mobile only)-->
-<?= $this->include('nationalities/mobile_view.php') ?>
-<!--end::Mobile UI-->
+<div class="d-lg-none">
+    <!-- Fixed Search Bar -->
+    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
+        <div class="container-fluid">
+            <div class="mb-2">
+                <h1 class="text-dark fw-bold ms-2">Status</h1>
+            </div>
+            <div class="row align-items-stretch">
+                <div class="col-10">
+                    <div class="position-relative h-100">
+                        <i
+                            class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
+                            placeholder="Search status..." value="<?= esc($search) ?>" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <?php if ($permissions['canCreate']): ?>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#createStatusModal"
+                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
+                        style="min-height: 48px;">
+                        <i class="ki-duotone ki-plus-square fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                    </button>
+                    <?php else: ?>
+                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
+                        style="min-height: 48px;" title="No permission to create status">
+                        <i class="ki-duotone ki-lock fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Content Container with top padding to account for fixed search -->
+    <div class="container-fluid" style="padding-top: 5px;">
+
+        <!-- Flash Messages for Mobile -->
+        <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success d-flex align-items-center p-3 mb-4">
+            <i class="ki-duotone ki-shield-tick fs-2hx text-success me-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            <div>
+                <h6 class="mb-1 text-success">Success</h6>
+                <span class="fs-7"><?= session()->getFlashdata('success') ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger d-flex align-items-center p-3 mb-4">
+            <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            <div>
+                <h6 class="mb-1 text-danger">Error</h6>
+                <span class="fs-7"><?= session()->getFlashdata('error') ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Scrollable Card List -->
+        <div class="row mt-2" id="mobile-cards-container">
+            <?php if (!empty($statuses)): ?>
+            <?php foreach ($statuses as $index => $status): ?>
+            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
+                <div class="card mobile-status-card" data-status-id="<?= esc($status['id']) ?>">
+                    <div class="card-body p-4">
+                        <!-- Status Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <small class="text-muted text-uppercase">#<?= esc($status['id']) ?></small>
+                            </div>
+                            <div class="ms-3">
+                                <?php 
+                                // Use custom color if available, otherwise fallback to status-based colors
+                                if (!empty($status['color'])) 
+                                    // Convert hex color to RGB for light background
+                                    $hex = ltrim($status['color'], '#');
+                                    $r = hexdec(substr($hex, 0, 2));
+                                    $g = hexdec(substr($hex, 2, 2));
+                                    $b = hexdec(substr($hex, 4, 2));
+                                    $lightBg = "rgba($r, $g, $b, 0.1)";
+                                    $textColor = $status['color'];
+                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                ?>
+                                <?php if (!empty($status['color'])): ?>
+                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                    <?= strtoupper(esc($status['name'])) ?>
+                                </span>
+                                <?php else: ?>
+                                <span class="badge <?= $badgeClass ?>"><?= strtoupper(esc($status['name'])) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                            <div class="flex-grow-1">
+                                <strong class="me-5 text-uppercase text-truncate"><?= esc($status['name']) ?></strong>
+                            </div>
+                        </div>
+
+                        <!-- Status Footer -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="d-flex flex-column">
+                                <small class="text-muted">
+                                    <?= !empty($status['created_by_name']) ? esc($status['created_by_name']) : 'System' ?>
+                                </small>
+                            </div>
+                            <small class="text-muted"><?= date('M d, Y', strtotime($status['created_at'])) ?></small>
+                        </div>
+
+                        <!-- Expandable Actions (initially hidden) -->
+                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
+                            <div class="row g-2">
+                                <?php if ($permissions['canView']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-status-btn"
+                                        data-status-id="<?= esc($status['id']) ?>">
+                                        <i class="ki-duotone ki-eye fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                        View
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canEdit']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-status-btn"
+                                        data-status-id="<?= esc($status['id']) ?>">
+                                        <i class="ki-duotone ki-pencil fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        Edit
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canDelete']): ?>
+                                <div class="col-4">
+                                    <button
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-status-btn"
+                                        data-status-id="<?= esc($status['id']) ?>">
+                                        <i class="ki-duotone ki-trash fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                            <span class="path4"></span>
+                                            <span class="path5"></span>
+                                        </i>
+                                        Delete
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <div class="col-12">
+                <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                    <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <h6 class="fw-bold text-gray-700 mb-2">No status found</h6>
+                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first status entry</p>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Loading indicator for infinite scroll -->
+        <div id="loading-indicator" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading more status...</p>
+        </div>
+
+        <!-- No more data indicator -->
+        <div id="no-more-data" class="text-center py-4 d-none">
+            <p class="text-muted">No more status to load</p>
+        </div>
+    </div>
+</div>
+<!--end::Mobile UI-->
 
 <!--begin::Main-->
 <div class="app-main flex-column flex-row-fluid d-none d-lg-flex" id="kt_app_main">
     <!--begin::Content wrapper-->
     <div class="d-flex flex-column flex-column-fluid">
 
-        <!--begin::Toolbar-->
-        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
-
-            <!--begin::Toolbar container-->
-            <div id="kt_app_toolbar_container" class="app-container  container-fluid d-flex align-items-stretch ">
-                <!--begin::Toolbar wrapper-->
-                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
-
-                    <!--begin::Page title-->
-                    <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
-
-                        <!--begin::Title-->
-                        <h1
-                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
-                            Nationalities
-                        </h1>
-                        <!--end::Title-->
-                        <!--begin::Breadcrumb-->
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                <a href="/" class="text-gray-500 text-hover-primary">
-                                    <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
-                                </a>
-                            </li>
-                            <!--end::Item-->
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
-                            </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                Settings </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
-                            </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700">
-                                Nationalities </li>
-                            <!--end::Item-->
-
-
-                        </ul>
-                        <!--end::Breadcrumb-->
-
-
-                    </div>
-                    <!--end::Page title-->
-
-                    <!--begin::Actions-->
-                    <!-- <a href="#" class="btn btn-sm btn-success ms-3 px-4 py-3" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_create_app">
-                                        Create Project</span>
-                                    </a> -->
-                    <!--end::Actions-->
-                </div>
-                <!--end::Toolbar wrapper-->
-            </div>
-            <!--end::Toolbar container-->
-        </div>
-        <!--end::Toolbar-->
-
         <!--begin::Content-->
-        <div id="kt_app_content" class="app-content  flex-column-fluid ">
-
-
+        <div id="kt_app_content" class="app-content flex-column-fluid">
             <!--begin::Content container-->
-            <div id="kt_app_content_container" class="app-container  container-fluid ">
+            <div id="kt_app_content_container" class="app-container container-fluid">
 
                 <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success d-flex align-items-center p-5 mb-10">
@@ -252,40 +414,50 @@
                 </div>
                 <?php endif; ?>
 
-                <div class="row">
-                    <div class="col-6">
-                        <!--begin::Search-->
+                <!--begin::Card-->
+                <div class="card">
+                    <!--begin::Card header-->
+                    <div class="card-header border-0 pt-6">
+                        <!--begin::Card title-->
+                        <div class="card-title">
+                            <!--begin::Search-->
                             <div class="d-flex align-items-center position-relative my-1">
                                 <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
                                     <span class="path1"></span>
                                     <span class="path2"></span>
                                 </i>
                                 <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search nationalities..."
+                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search status..."
                                     value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
-                    </div>
-                    <div class="col-6">
-                        <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-nationality-table-toolbar="base">
-                                <!--begin::Add nationality-->
+                        </div>
+                        <!--begin::Card title-->
+
+                        <!--begin::Card toolbar-->
+                        <div class="card-toolbar">
+                            <!--begin::Toolbar-->
+                            <div class="d-flex justify-content-end" data-kt-status-table-toolbar="base">
+                                <!--begin::Add status-->
                                 <?php if ($permissions['canCreate']): ?>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createNationalityModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Nationality
+                                    data-bs-target="#createStatusModal">
+                                    <i class="ki-duotone ki-plus fs-2"></i>Add Status
                                 </button>
                                 <?php endif; ?>
-                                <!--end::Add nationality-->
+                                <!--end::Add status-->
                             </div>
                             <!--end::Toolbar-->
+                        </div>
+                        <!--end::Card toolbar-->
                     </div>
-                </div>
+                    <!--end::Card header-->
 
-
-                <!--begin::Table-->
+                    <!--begin::Card body-->
+                    <div class="card-body py-4">
+                        <!--begin::Table-->
                         <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_nationality_table">
+                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_status_table">
                                 <!--begin::Table head-->
                                 <thead>
                                     <!--begin::Table row-->
@@ -294,14 +466,14 @@
                                             <div
                                                 class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                                 <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_nationality_table .form-check-input"
+                                                    data-kt-check-target="#kt_status_table .form-check-input"
                                                     value="1" />
                                             </div>
                                         </th>
                                         <th class="min-w-20px">#</th>
-                                        <th class="min-w-150px">Nationality Name</th>
+                                        <th class="min-w-80px">Status</th>
+                                        <th class="min-w-100px">Module</th>
                                         <th class="min-w-200px">Description</th>
-                                        <th class="min-w-100px">Status</th>
                                         <th class="min-w-120px">Created By</th>
                                         <th class="min-w-120px">Updated By</th>
                                         <th class="text-end min-w-100px">Actions</th>
@@ -312,15 +484,15 @@
 
                                 <!--begin::Table body-->
                                 <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($nationalities)): ?>
-                                    <?php foreach ($nationalities as $nationality): ?>
+                                    <?php if (!empty($statuses)): ?>
+                                    <?php foreach ($statuses as $status): ?>
                                     <!--begin::Table row-->
                                     <tr>
                                         <!--begin::Checkbox-->
                                         <td>
                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                                 <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($nationality['id']) ?>" />
+                                                    value="<?= esc($status['id']) ?>" />
                                             </div>
                                         </td>
                                         <!--end::Checkbox-->
@@ -328,73 +500,65 @@
                                         <!--begin::ID-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($nationality['id']) ?></small>
+                                                <small class="text-muted">#<?= esc($status['id']) ?></small>
                                             </div>
                                         </td>
                                         <!--end::ID-->
                                      
-                                        <!--begin::Nationality Name-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span class="badge badge-light-primary fw-bold"
-                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                                    <?= strtoupper(esc($nationality['name'])) ?>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <!--end::Nationality Name-->
-
-                                        <!--begin::Description-->
-                                        <td>
-                                            <div class="text-gray-600">
-                                                <?= esc($nationality['description']) ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Description-->
-
                                         <!--begin::Status-->
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <?php if (!empty($nationality['status_name'])): ?>
-                                                    <?php 
-                                                    // Use custom color if available, otherwise fallback to status-based colors
-                                                    if (!empty($nationality['status_color'])) {
-                                                        // Convert hex color to RGB for light background
-                                                        $hex = ltrim($nationality['status_color'], '#');
-                                                        $r = hexdec(substr($hex, 0, 2));
-                                                        $g = hexdec(substr($hex, 2, 2));
-                                                        $b = hexdec(substr($hex, 4, 2));
-                                                        $lightBg = "rgba($r, $g, $b, 0.1)";
-                                                        $textColor = $nationality['status_color'];
-                                                        $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                                    } else {
-                                                        // Fallback to default styling
-                                                        $badgeStyle = "padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                                    }
-                                                    ?>
-                                                    <?php if (!empty($nationality['status_color'])): ?>
-                                                    <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                        <?= strtoupper(esc($nationality['status_name'])) ?>
-                                                    </span>
-                                                    <?php else: ?>
-                                                    <span class="badge badge-light-success fw-bold" style="<?= $badgeStyle ?>">
-                                                        <?= strtoupper(esc($nationality['status_name'])) ?>
-                                                    </span>
-                                                    <?php endif; ?>
+                                                <?php 
+                                                // Use custom color if available, otherwise fallback to status-based colors
+                                                if (!empty($status['color'])) {
+                                                    // Convert hex color to RGB for light background
+                                                    $hex = ltrim($status['color'], '#');
+                                                    $r = hexdec(substr($hex, 0, 2));
+                                                    $g = hexdec(substr($hex, 2, 2));
+                                                    $b = hexdec(substr($hex, 4, 2));
+                                                    $lightBg = "rgba($r, $g, $b, 0.1)";
+                                                    $textColor = $status['color'];
+                                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
+                                                
+                                                }
+                                                ?>
+                                                <?php if (!empty($status['color'])): ?>
+                                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                                    <?= strtoupper(esc($status['name'])) ?>
+                                                </span>
                                                 <?php else: ?>
-                                                <span class="badge badge-light-secondary fw-bold" style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">N/A</span>
+                                                <span class="badge <?= $badgeClass ?> fw-bold"
+                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                                    <?= strtoupper(esc($status['name'])) ?>
+                                                </span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
                                         <!--end::Status-->
 
+                                        <!--begin::Module-->
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <small class="fw-bold text-dark"><?= esc($status['module_name']) ?></small>
+                                            </div>
+                                        </td>
+                                        <!--end::Module-->
+
+                                        <!--begin::Description-->
+                                        <td>
+                                            <div class="text-gray-600">
+                                                <?= esc($status['description']) ?>
+                                            </div>
+                                        </td>
+                                        <!--end::Description-->
+
                                         <!--begin::Created By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($nationality['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($nationality['created_by_name']) ?></span>
+                                                <?php if (!empty($status['created_by_name'])): ?>
+                                                <span class="text-muted"><?= esc($status['created_by_name']) ?></span>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($nationality['created_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['created_at'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -402,10 +566,10 @@
                                         <!--begin::Updated By-->
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <?php if (!empty($nationality['updated_by_name']) && !empty($nationality['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($nationality['updated_by_name']) ?></span>
+                                                <?php if (!empty($status['updated_by_name']) && !empty($status['updated_at'])): ?>
+                                                <span class="text-muted"><?= esc($status['updated_by_name']) ?></span>
                                                 <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($nationality['updated_at'])) ?></small>
+                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['updated_at'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -425,24 +589,24 @@
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canView']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-nationality-btn"
-                                                        data-nationality-id="<?= esc($nationality['id']) ?>">View</a>
+                                                    <a class="menu-link px-3 view-status-btn"
+                                                        data-status-id="<?= esc($status['id']) ?>">View</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canEdit']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-nationality-btn"
-                                                        data-nationality-id="<?= esc($nationality['id']) ?>">Edit</a>
+                                                    <a class="menu-link px-3 edit-status-btn"
+                                                        data-status-id="<?= esc($status['id']) ?>">Edit</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
                                                 <!--begin::Menu item-->
                                                 <?php if ($permissions['canDelete']): ?>
                                                 <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-nationality-btn"
-                                                        data-nationality-id="<?= esc($nationality['id']) ?>">Delete</a>
+                                                    <a class="menu-link px-3 delete-status-btn"
+                                                        data-status-id="<?= esc($status['id']) ?>">Delete</a>
                                                 </div>
                                                 <?php endif; ?>
                                                 <!--end::Menu item-->
@@ -456,14 +620,14 @@
                                     <?php else: ?>
                                     <!--begin::No results-->
                                     <tr>
-                                        <td colspan="7" class="text-center py-10">
+                                        <td colspan="9" class="text-center py-10">
                                             <div class="d-flex flex-column align-items-center">
                                                 <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
                                                     <span class="path1"></span>
                                                     <span class="path2"></span>
                                                 </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No nationalities found</div>
-                                                <div class="text-gray-500">Start by creating your first nationality entry
+                                                <div class="fw-bold text-gray-700 mb-2">No status found</div>
+                                                <div class="text-gray-500">Start by creating your first status entry
                                                 </div>
                                             </div>
                                         </td>
@@ -479,30 +643,34 @@
                         <?php
                         // Include table footer with pagination
                         $footerData = [
-                            'baseUrl' => 'nationalities',
+                            'baseUrl' => 'status',
                             'currentPage' => $currentPage,
                             'totalPages' => $totalPages,
                             'limit' => $limit,
-                            'totalRecords' => $totalNationalities,
+                            'totalRecords' => $totalStatus,
                             'search' => $search,
-                            'tableId' => 'kt_nationality_table_length',
-                            'jsFunction' => 'changeNationalityTableLimit'
+                            'tableId' => 'kt_status_table_length',
+                            'jsFunction' => 'changeStatusTableLimit'
                         ];
                         echo view('partials/table_footer', $footerData);
                         ?>
-
-
+                    </div>
+                    <!--end::Card body-->
+                </div>
+                <!--end::Card-->
             </div>
             <!--end::Content container-->
         </div>
         <!--end::Content-->
-
     </div>
     <!--end::Content wrapper-->
-
-</div>
 </div>
 <!--end::Main-->
+
+<!-- Include Modals -->
+<?= $this->include('status/create_modal') ?>
+<?= $this->include('status/edit_modal') ?>
+<?= $this->include('status/view_modal') ?>
 
 <script>
 // Global variables
@@ -513,12 +681,14 @@ let searchTimeout;
 
 // Check if there are server-rendered cards and adjust currentPage
 document.addEventListener('DOMContentLoaded', function() {
-    const existingCards = document.querySelectorAll('#mobile-cards-container .mobile-nationality-card');
+    const existingCards = document.querySelectorAll('#mobile-cards-container .mobile-status-card');
     if (existingCards.length > 0) {
         // Server already rendered the first page, so start from page 2
         currentPage = Math.ceil(existingCards.length / 10) + 1;
     }
 });
+
+// Global functions are now defined above for modal access
 
 // Document ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -534,6 +704,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle sidebar state for mobile search bar
     const sidebar = document.getElementById('kt_app_sidebar');
+    const mobileSearchBar = document.querySelector('.mobile-search-bar');
+
+    if (sidebar && mobileSearchBar) {
+        // Create observer to watch for sidebar state changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName ===
+                    'data-kt-drawer') {
+                    const isDrawerOn = sidebar.getAttribute('data-kt-drawer') === 'on';
+                    if (isDrawerOn) {
+                        mobileSearchBar.style.zIndex = '100';
+                    } else {
+                        mobileSearchBar.style.zIndex = '999';
+                    }
+                }
+            });
+        });
+
+        observer.observe(sidebar, {
+            attributes: true,
+            attributeFilter: ['data-kt-drawer']
+        });
+
+        // Also listen for drawer events
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'kt_app_sidebar_mobile_toggle' || e.target.closest(
+                    '#kt_app_sidebar_mobile_toggle')) {
+                setTimeout(() => {
+                    const isDrawerOn = sidebar.getAttribute('data-kt-drawer') === 'on';
+                    if (isDrawerOn) {
+                        mobileSearchBar.style.zIndex = '100';
+                    } else {
+                        mobileSearchBar.style.zIndex = '999';
+                    }
+                }, 100);
+            }
+        });
+    }
 
     // Mobile search functionality
     const mobileSearch = document.getElementById('mobile_search');
@@ -551,7 +759,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (container && window.innerWidth < 992) {
                 // Mobile view - use AJAX
                 container.innerHTML = '';
-                loadNationalities(true, query);
+                loadStatus(true, query);
             } else {
                 // Desktop view - reload page with search
                 const url = new URL(window.location);
@@ -577,13 +785,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load initial nationalities for mobile
+    // Load initial status for mobile
     const mobileContainer = document.getElementById('mobile-cards-container');
     if (mobileContainer) {
         // Only load initial data if container is empty (no server-rendered content)
-        const existingCards = mobileContainer.querySelectorAll('.mobile-nationality-card');
+        const existingCards = mobileContainer.querySelectorAll('.mobile-status-card');
         if (existingCards.length === 0) {
-            loadNationalities(false);
+            loadStatus(false);
         }
 
         // Infinite scroll for mobile
@@ -596,43 +804,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     const documentHeight = document.documentElement.offsetHeight;
 
                     if (scrollPosition >= documentHeight - 1000) {
-                        loadNationalities(false, mobileSearch?.value || '');
+                        loadStatus(false, mobileSearch?.value || '');
                     }
                 }
             }, 100);
         });
     }
 
-    // Handle view nationality
+    // Handle view status
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.view-nationality-btn')) {
+        if (e.target.closest('.view-status-btn')) {
             e.preventDefault();
-            const nationalityId = e.target.closest('.view-nationality-btn').getAttribute('data-nationality-id');
-            viewNationality(nationalityId);
+            const statusId = e.target.closest('.view-status-btn').getAttribute('data-status-id');
+            viewStatus(statusId);
         }
     });
 
-    // Handle edit nationality
+    // Handle edit status
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-nationality-btn')) {
+        if (e.target.closest('.edit-status-btn')) {
             e.preventDefault();
-            const nationalityId = e.target.closest('.edit-nationality-btn').getAttribute('data-nationality-id');
-            editNationality(nationalityId);
+            const statusId = e.target.closest('.edit-status-btn').getAttribute('data-status-id');
+            editStatus(statusId);
         }
     });
 
-    // Handle delete nationality
+    // Handle delete status
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-nationality-btn')) {
+        if (e.target.closest('.delete-status-btn')) {
             e.preventDefault();
-            const nationalityId = e.target.closest('.delete-nationality-btn').getAttribute('data-nationality-id');
-            deleteNationality(nationalityId);
+            const statusId = e.target.closest('.delete-status-btn').getAttribute('data-status-id');
+            deleteStatus(statusId);
         }
     });
 
 });
 
-function loadNationalities(reset = false, search = '') {
+function loadStatus(reset = false, search = '') {
     if (isLoading) return;
 
     if (reset) {
@@ -658,7 +866,7 @@ function loadNationalities(reset = false, search = '') {
         showSkeletonLoading();
     }
 
-    const url = `/nationalities/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
+    const url = `/status/api?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`;
 
     secureFetch(url)
         .then(response => {
@@ -680,7 +888,7 @@ function loadNationalities(reset = false, search = '') {
                 removeSkeletonLoading();
 
                 if (data.data && data.data.length > 0) {
-                    renderNationalities(data.data);
+                    renderStatus(data.data);
                     currentPage++;
                     hasMoreData = data.hasMore;
 
@@ -691,7 +899,7 @@ function loadNationalities(reset = false, search = '') {
                 } else {
                     hasMoreData = false;
                     if (currentPage === 1) {
-                        showNoNationalitiesMessage();
+                        showNoStatusMessage();
                     }
                 }
 
@@ -715,43 +923,72 @@ function loadNationalities(reset = false, search = '') {
         });
 }
 
-function renderNationalities(nationalities) {
+function renderStatus(statuses) {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
-    nationalities.forEach((nationality, index) => {
-        const nationalityCard = createNationalityCard(nationality, (currentPage - 1) * 10 + index);
-        container.appendChild(nationalityCard);
+    statuses.forEach((status, index) => {
+        const statusCard = createStatusCard(status, (currentPage - 1) * 10 + index);
+        container.appendChild(statusCard);
     });
 
     // Reinitialize mobile cards after adding new ones
     initMobileCards();
 }
 
-function createNationalityCard(nationality, index) {
+function createStatusCard(status, index) {
     const col = document.createElement('div');
     col.className = 'col-12 mb-3';
     col.setAttribute('data-aos', 'fade-up');
     col.setAttribute('data-aos-delay', (index * 100).toString());
     col.setAttribute('data-aos-duration', '600');
 
-    const description = nationality.description ?
-        `<p class="text-muted mb-0 mt-3">${nationality.description}</p>` : '';
+    const colorPreview = status.color ?
+        `<div class="color-preview" style="background-color: ${status.color};"></div>` : '';
 
-    const createdByName = nationality.created_by_name || 'System';
+    const description = status.description ?
+        `<p class="text-muted mb-0 mt-3">${status.description}</p>` : '';
 
-    const createdAt = new Date(nationality.created_at).toLocaleDateString('en-US', {
+    const createdByName = status.created_by_name || 'System';
+    const updatedInfo = status.updated_by_name ?
+        `<small class="text-success">Updated: ${status.updated_by_name}</small>` : '';
+
+    const createdAt = new Date(status.created_at).toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
         year: 'numeric'
     });
+    const updatedAt = status.updated_at ?
+        new Date(status.updated_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+        }) : '';
+
+    // Determine badge style based on status color or fallback to default classes
+    let badgeClass = 'badge-light-primary';
+    let badgeStyle = '';
+    let badgeText = status.name.toUpperCase();
+
+    if (status.color) {
+        // Use custom color from status
+        const hex = status.color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
+        badgeStyle =
+            `background-color: ${lightBg}; color: ${status.color}; padding: 4px 8px; font-size: 11px; line-height: 1.2;`;
+        badgeClass = 'badge fw-bold';
+
+    }
 
     // Create action buttons based on permissions
     let actionButtons = '';
     <?php if ($permissions['canView']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-nationality-btn" data-nationality-id="${nationality.id}">
+            <button type="button" class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-status-btn" data-status-id="${status.id}">
                 <i class="ki-duotone ki-eye fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -765,7 +1002,7 @@ function createNationalityCard(nationality, index) {
     <?php if ($permissions['canEdit']): ?>
     actionButtons += `
         <div class="col-4">
-            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-nationality-btn" data-nationality-id="${nationality.id}">
+            <button type="button" class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-status-btn" data-status-id="${status.id}">
                 <i class="ki-duotone ki-pencil fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -778,7 +1015,7 @@ function createNationalityCard(nationality, index) {
     <?php if ($permissions['canDelete']): ?>
     actionButtons += `
         <div class="col-4">
-            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-nationality-btn" data-nationality-id="${nationality.id}">
+            <button class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-status-btn" data-status-id="${status.id}">
                 <i class="ki-duotone ki-trash fs-1 me-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
@@ -803,31 +1040,25 @@ function createNationalityCard(nationality, index) {
     ` : '';
 
     col.innerHTML = `
-        <div class="card mobile-nationality-card" data-nationality-id="${nationality.id}">
+        <div class="card mobile-status-card" data-status-id="${status.id}">
             <div class="card-body p-4">
-                <!-- Nationality Header -->
+                <!-- Status Header -->
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div class="flex-grow-1">
-                        <small class="text-muted text-uppercase">#${nationality.id}</small>
+                        <small class="text-muted text-uppercase">#${status.id}</small>
                     </div>
-                    <div class="ms-3 d-flex gap-2">
-                        ${nationality.status_name ? `
-                            ${nationality.status_color ? 
-                                `<span class="badge fw-bold fs-8" style="background-color: ${nationality.status_color}1a; color: ${nationality.status_color};">${nationality.status_name.toUpperCase()}</span>` :
-                                `<span class="badge badge-light-success fw-bold fs-8">${nationality.status_name.toUpperCase()}</span>`
-                            }
-                        ` : ''}
-                        <span class="badge badge-light-primary fw-bold">NATIONALITY</span>
+                    <div class="ms-3">
+                        <span class="${badgeClass}" style="${badgeStyle}">${badgeText}</span>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
                     <div class="flex-grow-1">
-                        <strong class="me-5 text-uppercase text-truncate">${nationality.name}</strong>
+                        <strong class="me-5 text-uppercase text-truncate">${status.name}</strong>
                     </div>
                 </div>
 
-                <!-- Nationality Footer -->
+                <!-- Status Footer -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="d-flex flex-column">
                         <small class="text-muted">${createdByName}</small>
@@ -878,7 +1109,7 @@ function removeSkeletonLoading() {
     skeletonCards.forEach(card => card.remove());
 }
 
-function showNoNationalitiesMessage() {
+function showNoStatusMessage() {
     const container = document.getElementById('mobile-cards-container');
     if (!container) return;
 
@@ -890,16 +1121,16 @@ function showNoNationalitiesMessage() {
                 <span class="path1"></span>
                 <span class="path2"></span>
             </i>
-            <h6 class="fw-bold text-gray-700 mb-2">No nationalities found</h6>
-            <p class="fs-7 text-gray-500 mb-4">Start by creating your first nationality entry</p>
+            <h6 class="fw-bold text-gray-700 mb-2">No status found</h6>
+            <p class="fs-7 text-gray-500 mb-4">Start by creating your first status entry</p>
         </div>
     `;
     container.appendChild(noDataDiv);
 }
 
-// Nationality CRUD functions
-function viewNationality(nationalityId) {
-    secureFetch(`/nationalities/show/${nationalityId}`)
+// Status CRUD functions
+function viewStatus(statusId) {
+    secureFetch(`/status/show/${statusId}`)
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 handleSessionExpired();
@@ -912,7 +1143,7 @@ function viewNationality(nationalityId) {
                 // Populate view modal
                 populateViewModal(data.data);
                 // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('viewNationalityModal'));
+                const modal = new bootstrap.Modal(document.getElementById('viewStatusModal'));
                 modal.show();
             } else {
                 Swal.fire('Error', data.message, 'error');
@@ -920,12 +1151,12 @@ function viewNationality(nationalityId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load nationality details', 'error');
+            Swal.fire('Error', 'Failed to load status details', 'error');
         });
 }
 
-function editNationality(nationalityId) {
-    secureFetch(`/nationalities/show/${nationalityId}`)
+function editStatus(statusId) {
+    secureFetch(`/status/show/${statusId}`)
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 handleSessionExpired();
@@ -938,7 +1169,7 @@ function editNationality(nationalityId) {
                 // Populate edit modal
                 populateEditModal(data.data);
                 // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('editNationalityModal'));
+                const modal = new bootstrap.Modal(document.getElementById('editStatusModal'));
                 modal.show();
             } else {
                 Swal.fire('Error', data.message, 'error');
@@ -946,11 +1177,11 @@ function editNationality(nationalityId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load nationality details', 'error');
+            Swal.fire('Error', 'Failed to load status details', 'error');
         });
 }
 
-function deleteNationality(nationalityId) {
+function deleteStatus(statusId) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -961,7 +1192,7 @@ function deleteNationality(nationalityId) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            secureFetch(`/nationalities/delete/${nationalityId}`, {
+            secureFetch(`/status/delete/${statusId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -985,20 +1216,20 @@ function deleteNationality(nationalityId) {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    Swal.fire('Error', 'Failed to delete nationality', 'error');
+                    Swal.fire('Error', 'Failed to delete status', 'error');
                 });
         }
     });
 }
 
-// Mobile card click functionality
+// Mobile card click functionality (matching modules UI)
 function initMobileCards() {
     // Remove existing listeners to prevent duplicates
-    document.querySelectorAll('.mobile-nationality-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-status-card').forEach(function(card) {
         card.replaceWith(card.cloneNode(true));
     });
 
-    document.querySelectorAll('.mobile-nationality-card').forEach(function(card) {
+    document.querySelectorAll('.mobile-status-card').forEach(function(card) {
         card.addEventListener('click', function(e) {
             if (e.target.closest('.mobile-actions') || e.target.closest('button') || e.target.closest(
                     'a')) {
@@ -1025,16 +1256,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Modal population functions
-function populateViewModal(nationality) {
-    // Basic nationality info
-    document.getElementById('view_nationality_name').textContent = nationality.name;
+function populateViewModal(status) {
+    // Basic status info
+    document.getElementById('view_status_name').textContent = status.name;
+    document.getElementById('view_module_name').textContent = status.module_name || 'N/A';
+    
+    // Color info
+    const colorPreview = document.getElementById('view_color_preview');
+    const colorCode = document.getElementById('view_color_code');
+    const colorSection = document.getElementById('view_color_section');
+    
+    if (status.color) {
+        colorPreview.style.backgroundColor = status.color;
+        colorCode.textContent = status.color;
+        colorSection.style.display = 'block';
+    } else {
+        colorPreview.style.backgroundColor = '#f0f0f0';
+        colorCode.textContent = 'Not specified';
+        colorSection.style.display = 'none';
+    }
     
     // Description
     const description = document.getElementById('view_description');
     const descriptionSection = document.getElementById('view_description_section');
     
-    if (nationality.description && nationality.description.trim() !== '') {
-        description.textContent = nationality.description;
+    if (status.description && status.description.trim() !== '') {
+        description.textContent = status.description;
         descriptionSection.style.display = 'block';
     } else {
         description.textContent = 'No description provided';
@@ -1042,9 +1289,9 @@ function populateViewModal(nationality) {
     }
     
     // Audit info
-    document.getElementById('view_created_by').textContent = nationality.created_by_name || 'System';
-    document.getElementById('view_created_at').textContent = nationality.created_at ? 
-        new Date(nationality.created_at).toLocaleDateString('en-US', { 
+    document.getElementById('view_created_by').textContent = status.created_by_name || 'System';
+    document.getElementById('view_created_at').textContent = status.created_at ? 
+        new Date(status.created_at).toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
             day: 'numeric',
@@ -1056,15 +1303,15 @@ function populateViewModal(nationality) {
     const updatedBySection = document.getElementById('view_updated_by_section');
     const updatedAtSection = document.getElementById('view_updated_at_section');
     
-    if (nationality.updated_by_name) {
-        document.getElementById('view_updated_by').textContent = nationality.updated_by_name;
+    if (status.updated_by_name) {
+        document.getElementById('view_updated_by').textContent = status.updated_by_name;
         updatedBySection.style.display = 'block';
     } else {
         updatedBySection.style.display = 'none';
     }
     
-    if (nationality.updated_at) {
-        document.getElementById('view_updated_at').textContent = new Date(nationality.updated_at).toLocaleDateString('en-US', { 
+    if (status.updated_at) {
+        document.getElementById('view_updated_at').textContent = new Date(status.updated_at).toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
             day: 'numeric',
@@ -1076,27 +1323,29 @@ function populateViewModal(nationality) {
         updatedAtSection.style.display = 'none';
     }
     
-    // Set nationality ID for edit button if it exists
+    // Set status ID for edit button if it exists
     const editBtn = document.getElementById('view_edit_btn');
     if (editBtn) {
-        editBtn.setAttribute('data-nationality-id', nationality.id);
+        editBtn.setAttribute('data-status-id', status.id);
     }
 }
 
-function populateEditModal(nationality) {
-    document.getElementById('edit_nationality_id').value = nationality.id;
-    document.querySelector('#editNationalityForm input[name="name"]').value = nationality.name;
-    document.querySelector('#editNationalityForm textarea[name="description"]').value = nationality.description || '';
-    
-    // Set status dropdown
-    const statusSelect = document.querySelector('#editNationalityForm select[name="status_id"]');
-    if (statusSelect && nationality.status_id) {
-        statusSelect.value = nationality.status_id;
+function populateEditModal(status) {
+    document.getElementById('edit_status_id').value = status.id;
+    document.querySelector('#editStatusForm input[name="name"]').value = status.name;
+    document.querySelector('#editStatusForm select[name="module_id"]').value = status.module_id;
+    document.querySelector('#editStatusForm input[name="color"]').value = status.color || '#000000';
+    document.querySelector('#editStatusForm textarea[name="description"]').value = status.description || '';
+
+    // Trigger Select2 update if it's initialized
+    const moduleSelect = document.querySelector('#editStatusForm select[name="module_id"]');
+    if (moduleSelect && typeof $(moduleSelect).select2 === 'function') {
+        $(moduleSelect).trigger('change');
     }
 }
 
 // Change table limit (records per page)
-function changeNationalityTableLimit(newLimit) {
+function changeStatusTableLimit(newLimit) {
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('limit', newLimit);
     currentUrl.searchParams.set('page', '1'); // Reset to first page
@@ -1140,10 +1389,5 @@ function handleSessionExpired() {
     });
 }
 </script>
-
-<!-- Include Modals (placed at end for mobile compatibility) -->
-<?= $this->include('nationalities/create_modal') ?>
-<?= $this->include('nationalities/edit_modal') ?>
-<?= $this->include('nationalities/view_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>

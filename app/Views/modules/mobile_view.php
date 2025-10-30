@@ -1,4 +1,3 @@
-<!--begin::Mobile UI (visible on mobile only)-->
 <div class="d-lg-none">
     <!-- Fixed Search Bar -->
     <div class="top-0 py-3 mb-2" style="top: 60px !important;">
@@ -202,4 +201,3 @@
         </div>
     </div>
 </div>
-<!--end::Mobile UI-->

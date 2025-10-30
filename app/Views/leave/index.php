@@ -1,235 +1,97 @@
 <?= $this->include('layout/header.php') ?>
 
-<style>
-/* Fixed mobile search bar */
-.mobile-search-bar {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 100 !important;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid var(--bs-border-color);
-    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
-}
 
- 
-  
-/* ...rest of the CSS from status/index.php... */
-</style>
 
 <!--begin::Mobile UI (visible on mobile only)-->
-<div class="d-lg-none">
-    <!-- Fixed Search Bar -->
-    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
-        <div class="container-fluid">
-            <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Leave</h1>
-            </div>
-            <div class="row align-items-stretch">
-                <div class="col-10">
-                    <div class="position-relative h-100">
-                        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                        <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search leave..." value="<?= esc($search) ?>" />
-                    </div>
-                </div>
-                <div class="col-2">
-                    <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createLeaveModal"
-                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
-                        style="min-height: 48px;">
-                        <i class="ki-duotone ki-plus-square fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                        </i>
-                    </button>
-                    <?php else: ?>
-                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create leave">
-                        <i class="ki-duotone ki-lock fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Content Container with top padding to account for fixed search -->
-    <div class="container-fluid" style="padding-top: 5px;">
-
-        <!-- Flash Messages for Mobile -->
-        <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success d-flex align-items-center p-3 mb-4">
-            <i class="ki-duotone ki-shield-tick fs-2hx text-success me-3">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-            <div>
-                <h6 class="mb-1 text-success">Success</h6>
-                <span class="fs-7"><?= session()->getFlashdata('success') ?></span>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger d-flex align-items-center p-3 mb-4">
-            <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-3">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-            <div>
-                <h6 class="mb-1 text-danger">Error</h6>
-                <span class="fs-7"><?= session()->getFlashdata('error') ?></span>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Scrollable Card List -->
-        <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($leaves)): ?>
-            <?php foreach ($leaves as $index => $leave): ?>
-            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-leave-card" data-leave-id="<?= esc($leave['id']) ?>">
-                    <div class="card-body p-4">
-                        <!-- Leave Header -->
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase">#<?= esc($leave['id']) ?></small>
-                            </div>
-                            <div class="ms-3">
-                                <?php 
-                                if (!empty($leave['status_color'])) 
-                                    $hex = ltrim($leave['status_color'], '#');
-                                    $r = hexdec(substr($hex, 0, 2));
-                                    $g = hexdec(substr($hex, 2, 2));
-                                    $b = hexdec(substr($hex, 4, 2));
-                                    $lightBg = "rgba($r, $g, $b, 0.1)";
-                                    $textColor = $leave['status_color'];
-                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                ?>
-                                <?php if (!empty($leave['status_color'])): ?>
-                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                    <?= strtoupper(esc($leave['name'])) ?>
-                                </span>
-                                <?php else: ?>
-                                <span class="badge <?= $badgeClass ?>"><?= strtoupper(esc($leave['name'])) ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
-                            <div class="flex-grow-1">
-                                <strong class="me-5 text-uppercase text-truncate"><?= esc($leave['name']) ?></strong>
-                            </div>
-                        </div>
-
-                        <!-- Leave Footer -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="d-flex flex-column">
-                                <small class="text-muted">
-                                    <?= !empty($leave['created_by_name']) ? esc($leave['created_by_name']) : 'System' ?>
-                                </small>
-                            </div>
-                            <small class="text-muted"><?= date('M d, Y', strtotime($leave['created_at'])) ?></small>
-                        </div>
-
-                        <!-- Expandable Actions (initially hidden) -->
-                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
-                            <div class="row g-2">
-                                <?php if ($permissions['canView']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-leave-btn"
-                                        data-leave-id="<?= esc($leave['id']) ?>">
-                                        <i class="ki-duotone ki-eye fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                        </i>
-                                        View
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-leave-btn"
-                                        data-leave-id="<?= esc($leave['id']) ?>">
-                                        <i class="ki-duotone ki-pencil fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                        Edit
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canDelete']): ?>
-                                <div class="col-4">
-                                    <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-leave-btn"
-                                        data-leave-id="<?= esc($leave['id']) ?>">
-                                        <i class="ki-duotone ki-trash fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                            <span class="path5"></span>
-                                        </i>
-                                        Delete
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-            <?php else: ?>
-            <div class="col-12">
-                <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                    <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <h6 class="fw-bold text-gray-700 mb-2">No leave found</h6>
-                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first leave entry</p>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Loading indicator for infinite scroll -->
-        <div id="loading-indicator" class="text-center py-4 d-none">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Loading more leave...</p>
-        </div>
-
-        <!-- No more data indicator -->
-        <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more leave to load</p>
-        </div>
-    </div>
-</div>
+<?= $this->include('leave/mobile_view.php') ?>
 <!--end::Mobile UI-->
+
 
 <!--begin::Main-->
 <div class="app-main flex-column flex-row-fluid d-none d-lg-flex" id="kt_app_main">
     <!--begin::Content wrapper-->
     <div class="d-flex flex-column flex-column-fluid">
 
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
+
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container  container-fluid d-flex align-items-stretch ">
+                <!--begin::Toolbar wrapper-->
+                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
+
+                    <!--begin::Page title-->
+                    <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
+
+                        <!--begin::Title-->
+                        <h1
+                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
+                            Leave Reasons
+                        </h1>
+                        <!--end::Title-->
+                        <!--begin::Breadcrumb-->
+                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
+                                <a href="/" class="text-gray-500 text-hover-primary">
+                                    <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
+                                </a>
+                            </li>
+                            <!--end::Item-->
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item">
+                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
+                            </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
+                                Settings </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item">
+                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
+                            </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700">
+                                Leave </li>
+                            <!--end::Item-->
+
+
+                        </ul>
+                        <!--end::Breadcrumb-->
+
+
+                    </div>
+                    <!--end::Page title-->
+
+                    <!--begin::Actions-->
+                    <!-- <a href="#" class="btn btn-sm btn-success ms-3 px-4 py-3" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_create_app">
+                                        Create Project</span>
+                                    </a> -->
+                    <!--end::Actions-->
+                </div>
+                <!--end::Toolbar wrapper-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+
         <!--begin::Content-->
-        <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content" class="app-content  flex-column-fluid ">
+
+
             <!--begin::Content container-->
-            <div id="kt_app_content_container" class="app-container container-fluid">
+            <div id="kt_app_content_container" class="app-container  container-fluid ">
 
                 <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success d-flex align-items-center p-5 mb-10">
@@ -257,102 +119,90 @@
                 </div>
                 <?php endif; ?>
 
-                <!--begin::Card-->
-                <div class="card">
-                    <!--begin::Card header-->
-                    <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
-                        <div class="card-title">
-                            <!--begin::Search-->
-                            <div class="d-flex align-items-center position-relative my-1">
-                                <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                                <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search leave..."
-                                    value="<?= esc($search) ?>" />
-                            </div>
-                            <!--end::Search-->
+                <div class="row">
+                    <div class="col-6">
+                        <!--begin::Search-->
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text" id="kt_filter_search"
+                                class="form-control form-control-solid w-250px ps-13" placeholder="Search leave..."
+                                value="<?= esc($search) ?>" />
                         </div>
-                        <!--begin::Card title-->
-
-                        <!--begin::Card toolbar-->
-                        <div class="card-toolbar">
-                            <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-leave-table-toolbar="base">
-                                <!--begin::Add leave-->
-                                <?php if ($permissions['canCreate']): ?>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createLeaveModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Leave
-                                </button>
-                                <?php endif; ?>
-                                <!--end::Add leave-->
-                            </div>
-                            <!--end::Toolbar-->
-                        </div>
-                        <!--end::Card toolbar-->
+                        <!--end::Search-->
                     </div>
-                    <!--end::Card header-->
+                    <div class="col-6">
+                        <!--begin::Toolbar-->
+                        <div class="d-flex justify-content-end" data-kt-leave-table-toolbar="base">
+                            <!--begin::Add leave-->
+                            <?php if ($permissions['canCreate']): ?>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createLeaveModal">
+                                <i class="ki-duotone ki-plus fs-2"></i>Add Leave
+                            </button>
+                            <?php endif; ?>
+                            <!--end::Add leave-->
+                        </div>
+                        <!--end::Toolbar-->
+                    </div>
+                </div>
 
-                    <!--begin::Card body-->
-                    <div class="card-body py-4">
-                        <!--begin::Table-->
-                        <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_leave_table">
-                                <!--begin::Table head-->
-                                <thead>
-                                    <!--begin::Table row-->
-                                    <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                        <th class="w-10px pe-2">
-                                            <div
-                                                class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                                <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_leave_table .form-check-input"
-                                                    value="1" />
-                                            </div>
-                                        </th>
-                                        <th class="min-w-20px">#</th>
-                                        <th class="min-w-80px">Status</th>
-                                        <th class="min-w-200px">Leave</th>
-                                        <th class="min-w-100px">Module</th>
-                                        <th class="min-w-200px">Description</th>
-                                        <th class="min-w-120px">Created By</th>
-                                        <th class="min-w-120px">Updated By</th>
-                                        <th class="text-end min-w-100px">Actions</th>
-                                    </tr>
-                                    <!--end::Table row-->
-                                </thead>
-                                <!--end::Table head-->
 
-                                <!--begin::Table body-->
-                                <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($leaves)): ?>
-                                    <?php foreach ($leaves as $leave): ?>
-                                    <!--begin::Table row-->
-                                    <tr>
-                                        <!--begin::Checkbox-->
-                                        <td>
-                                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                                <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($leave['id']) ?>" />
-                                            </div>
-                                        </td>
-                                        <!--end::Checkbox-->
+                <!--begin::Table-->
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_leave_table">
+                        <!--begin::Table head-->
+                        <thead>
+                            <!--begin::Table row-->
+                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                <th class="w-10px pe-2">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                                        <input class="form-check-input" type="checkbox" data-kt-check="true"
+                                            data-kt-check-target="#kt_leave_table .form-check-input" value="1" />
+                                    </div>
+                                </th>
+                                <th class="min-w-20px">#</th>
+                                <th class="min-w-80px">Status</th>
+                                <th class="min-w-200px">Leave</th>
+                                <th class="min-w-100px">Module</th>
+                                <th class="min-w-200px">Description</th>
+                                <th class="min-w-120px">Created By</th>
+                                <th class="min-w-120px">Updated By</th>
+                                <th class="text-end min-w-100px">Actions</th>
+                            </tr>
+                            <!--end::Table row-->
+                        </thead>
+                        <!--end::Table head-->
 
-                                        <!--begin::ID-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($leave['id']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::ID-->
-                                     
-                                        <!--begin::Leave-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php 
+                        <!--begin::Table body-->
+                        <tbody class="text-gray-600 fw-semibold">
+                            <?php if (!empty($leaves)): ?>
+                            <?php foreach ($leaves as $leave): ?>
+                            <!--begin::Table row-->
+                            <tr>
+                                <!--begin::Checkbox-->
+                                <td>
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox"
+                                            value="<?= esc($leave['id']) ?>" />
+                                    </div>
+                                </td>
+                                <!--end::Checkbox-->
+
+                                <!--begin::ID-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small class="text-muted">#<?= esc($leave['id']) ?></small>
+                                    </div>
+                                </td>
+                                <!--end::ID-->
+
+                                <!--begin::Leave-->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <?php 
                                                 if (!empty($leave['status_color'])) {
                                                     $hex = ltrim($leave['status_color'], '#');
                                                     $r = hexdec(substr($hex, 0, 2));
@@ -363,133 +213,133 @@
                                                     $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
                                                 }
                                                 ?>
-                                                <?php if (!empty($leave['status_color'])): ?>
-                                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($leave['status_name'])) ?>
-                                                </span>
-                                                <?php else: ?>
-                                                <span class="badge <?= $badgeClass ?> fw-bold"
-                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                                    <?= strtoupper(esc($leave['status_name'])) ?>
-                                                </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Leave-->
+                                        <?php if (!empty($leave['status_color'])): ?>
+                                        <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                            <?= strtoupper(esc($leave['status_name'])) ?>
+                                        </span>
+                                        <?php else: ?>
+                                        <span class="badge <?= $badgeClass ?> fw-bold"
+                                            style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                            <?= strtoupper(esc($leave['status_name'])) ?>
+                                        </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Leave-->
 
-										<!--begin::Module-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="fw-bold text-dark"><?= esc($leave['name']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::Module-->
+                                <!--begin::Module-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small class="fw-bold text-dark"><?= esc($leave['name']) ?></small>
+                                    </div>
+                                </td>
+                                <!--end::Module-->
 
-                                        <!--begin::Module-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="fw-bold "><?= esc($leave['module_name']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::Module-->
+                                <!--begin::Module-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small class="fw-bold "><?= esc($leave['module_name']) ?></small>
+                                    </div>
+                                </td>
+                                <!--end::Module-->
 
-                                        <!--begin::Description-->
-                                        <td>
-                                            <div class="text-gray-600">
-                                                <?= esc($leave['description']) ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Description-->
+                                <!--begin::Description-->
+                                <td>
+                                    <div class="text-gray-600">
+                                        <?= esc($leave['description']) ?>
+                                    </div>
+                                </td>
+                                <!--end::Description-->
 
-                                        <!--begin::Created By-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <?php if (!empty($leave['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($leave['created_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($leave['created_at'])) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Created By-->
-                                        <!--begin::Updated By-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <?php if (!empty($leave['updated_by_name']) && !empty($leave['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($leave['updated_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($leave['updated_at'])) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Updated By-->
+                                <!--begin::Created By-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <?php if (!empty($leave['created_by_name'])): ?>
+                                        <span class="text-muted"><?= esc($leave['created_by_name']) ?></span>
+                                        <small
+                                            class="text-muted"><?= date('d M Y \a\t H:i', strtotime($leave['created_at'])) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Created By-->
+                                <!--begin::Updated By-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <?php if (!empty($leave['updated_by_name']) && !empty($leave['updated_at'])): ?>
+                                        <span class="text-muted"><?= esc($leave['updated_by_name']) ?></span>
+                                        <small
+                                            class="text-muted"><?= date('d M Y \a\t H:i', strtotime($leave['updated_at'])) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Updated By-->
 
-                                        <!--begin::Action-->
-                                        <td class="text-end">
-                                            <a href="#"
-                                                class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
-                                                data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                                Actions
-                                                <i class="ki-duotone ki-down fs-5 ms-1"></i>
-                                            </a>
-                                            <!--begin::Menu-->
-                                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
-                                                data-kt-menu="true">
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canView']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-leave-btn"
-                                                        data-leave-id="<?= esc($leave['id']) ?>">View</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canEdit']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-leave-btn"
-                                                        data-leave-id="<?= esc($leave['id']) ?>">Edit</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canDelete']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-leave-btn"
-                                                        data-leave-id="<?= esc($leave['id']) ?>">Delete</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                            </div>
-                                            <!--end::Menu-->
-                                        </td>
-                                        <!--end::Action-->
-                                    </tr>
-                                    <!--end::Table row-->
-                                    <?php endforeach; ?>
-                                    <?php else: ?>
-                                    <!--begin::No results-->
-                                    <tr>
-                                        <td colspan="9" class="text-center py-10">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
-                                                    <span class="path1"></span>
-                                                    <span class="path2"></span>
-                                                </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No leave found</div>
-                                                <div class="text-gray-500">Start by creating your first leave entry
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <!--end::No results-->
-                                    <?php endif; ?>
-                                </tbody>
-                                <!--end::Table body-->
-                            </table>
-                        </div>
-                        <!--end::Table-->
-                        
-                        <?php
+                                <!--begin::Action-->
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
+                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                        Actions
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </a>
+                                    <!--begin::Menu-->
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
+                                        data-kt-menu="true">
+                                        <!--begin::Menu item-->
+                                        <?php if ($permissions['canView']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 view-leave-btn"
+                                                data-leave-id="<?= esc($leave['id']) ?>">View</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <?php if ($permissions['canEdit']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 edit-leave-btn"
+                                                data-leave-id="<?= esc($leave['id']) ?>">Edit</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <?php if ($permissions['canDelete']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 delete-leave-btn"
+                                                data-leave-id="<?= esc($leave['id']) ?>">Delete</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                    </div>
+                                    <!--end::Menu-->
+                                </td>
+                                <!--end::Action-->
+                            </tr>
+                            <!--end::Table row-->
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <!--begin::No results-->
+                            <tr>
+                                <td colspan="9" class="text-center py-10">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <div class="fw-bold text-gray-700 mb-2">No leave found</div>
+                                        <div class="text-gray-500">Start by creating your first leave entry
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!--end::No results-->
+                            <?php endif; ?>
+                        </tbody>
+                        <!--end::Table body-->
+                    </table>
+                </div>
+                <!--end::Table-->
+
+                <?php
                         $footerData = [
                             'baseUrl' => 'leave',
                             'currentPage' => $currentPage,
@@ -502,23 +352,19 @@
                         ];
                         echo view('partials/table_footer', $footerData);
                         ?>
-                    </div>
-                    <!--end::Card body-->
-                </div>
-                <!--end::Card-->
+
+
             </div>
             <!--end::Content container-->
         </div>
         <!--end::Content-->
+
     </div>
     <!--end::Content wrapper-->
+
+</div>
 </div>
 <!--end::Main-->
-
-<!-- Include Modals -->
-<?= $this->include('leave/create_modal') ?>
-<?= $this->include('leave/edit_modal') ?>
-<?= $this->include('leave/view_modal') ?>
 
 <script>
 // --- Leave Edit Modal Logic ---
@@ -839,5 +685,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Ensure all script blocks and functions are properly closed
 });
 </script>
+
+<!-- Include Modals (placed at end for mobile compatibility) -->
+<?= $this->include('leave/create_modal') ?>
+<?= $this->include('leave/edit_modal') ?>
+<?= $this->include('leave/view_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>

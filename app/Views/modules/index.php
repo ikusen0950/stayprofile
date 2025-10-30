@@ -1,7 +1,9 @@
+<!--begin::Header-->
 <?= $this->include('layout/header.php') ?>
+<!--end::Header-->
+
 
 <style>
-
 /* Skeleton loading styles */
 .skeleton-text {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -112,224 +114,113 @@
         border-top: 1px solid var(--bs-border-color) !important;
         flex-shrink: 0 !important;
     }
+
+    /* Ensure modal backdrop doesn't interfere */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Ensure modals are above everything else */
+    .modal {
+        z-index: 1055 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1054 !important;
+    }
 }
 </style>
 
 <!--begin::Mobile UI (visible on mobile only)-->
-<div class="d-lg-none">
-    <!-- Fixed Search Bar -->
-    <div class="top-0 py-3 mb-2" style="top: 60px !important;">
-        <div class="container-fluid">
-            <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Modules</h1>
-            </div>
-            <div class="row align-items-stretch">
-                <div class="col-10">
-                    <div class="position-relative h-100">
-                        <i
-                            class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                        <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search modules..." value="<?= esc($search) ?>" />
-                    </div>
-                </div>
-                <div class="col-2">
-                    <?php if (isset($permissions) && $permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createModuleModal"
-                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
-                        style="min-height: 48px;">
-                        <i class="ki-duotone ki-plus-square fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                        </i>
-                    </button>
-                    <?php else: ?>
-                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create modules">
-                        <i class="ki-duotone ki-lock fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Content Container with top padding to account for fixed search -->
-    <div class="container-fluid" style="padding-top: 5px;">
-
-        <!-- Flash Messages for Mobile -->
-        <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success d-flex align-items-center p-3 mb-4">
-            <i class="ki-duotone ki-shield-tick fs-2hx text-success me-3">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-            <div>
-                <h6 class="mb-1 text-success">Success</h6>
-                <span class="fs-7"><?= session()->getFlashdata('success') ?></span>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger d-flex align-items-center p-3 mb-4">
-            <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-3">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-            <div>
-                <h6 class="mb-1 text-danger">Error</h6>
-                <span class="fs-7"><?= session()->getFlashdata('error') ?></span>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Scrollable Card List -->
-        <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($modules)): ?>
-            <?php foreach ($modules as $index => $module): ?>
-            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-module-card" data-module-id="<?= esc($module['id']) ?>">
-                    <div class="card-body p-4">
-                        <!-- Module Header -->
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase">#<?= esc($module['id']) ?></small>
-                            </div>
-                            <div class="ms-3">
-                                <?php 
-                                // Use custom color if available from status
-                                if (!empty($module['status_color'])) {
-                                    $hex = ltrim($module['status_color'], '#');
-                                    $r = hexdec(substr($hex, 0, 2));
-                                    $g = hexdec(substr($hex, 2, 2));
-                                    $b = hexdec(substr($hex, 4, 2));
-                                    $lightBg = "rgba($r, $g, $b, 0.1)";
-                                    $textColor = $module['status_color'];
-                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                } else {
-                                    $badgeStyle = "background-color: rgba(108, 117, 125, 0.1); color: #6c757d; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                }
-                                ?>
-                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                    <?= strtoupper(esc($module['status_name'] ?? 'Unknown')) ?>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
-                            <div class="flex-grow-1">
-                                <strong class="me-5 text-uppercase text-truncate"><?= esc($module['name']) ?></strong>
-                            </div>
-                        </div>
-
-                        <!-- Module Footer -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="d-flex flex-column">
-                                <small class="text-muted">
-                                    <?= !empty($module['created_by_name']) ? esc($module['created_by_name']) : 'System' ?>
-                                </small>
-                            </div>
-                            <small class="text-muted"><?= date('M d, Y', strtotime($module['created_at'])) ?></small>
-                        </div>
-
-                        <!-- Expandable Actions (initially hidden) -->
-                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
-                            <div class="row g-2">
-                                <?php if (isset($permissions) && $permissions['canView']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-module-btn"
-                                        data-module-id="<?= esc($module['id']) ?>">
-                                        <i class="ki-duotone ki-eye fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                        </i>
-                                        View
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if (isset($permissions) && $permissions['canEdit']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-module-btn"
-                                        data-module-id="<?= esc($module['id']) ?>">
-                                        <i class="ki-duotone ki-pencil fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                        Edit
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if (isset($permissions) && $permissions['canDelete']): ?>
-                                <div class="col-4">
-                                    <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-module-btn"
-                                        data-module-id="<?= esc($module['id']) ?>">
-                                        <i class="ki-duotone ki-trash fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                            <span class="path5"></span>
-                                        </i>
-                                        Delete
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-            <?php else: ?>
-            <div class="col-12">
-                <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                    <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <h6 class="fw-bold text-gray-700 mb-2">No modules found</h6>
-                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first module entry</p>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Loading indicator for infinite scroll -->
-        <div id="loading-indicator" class="text-center py-4 d-none">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Loading more modules...</p>
-        </div>
-
-        <!-- No more data indicator -->
-        <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more modules to load</p>
-        </div>
-    </div>
-</div>
+<?= $this->include('modules/mobile_view.php') ?>
 <!--end::Mobile UI-->
+
 
 <!--begin::Main-->
 <div class="app-main flex-column flex-row-fluid d-none d-lg-flex" id="kt_app_main">
     <!--begin::Content wrapper-->
     <div class="d-flex flex-column flex-column-fluid">
 
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
+
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container  container-fluid d-flex align-items-stretch ">
+                <!--begin::Toolbar wrapper-->
+                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
+
+                    <!--begin::Page title-->
+                    <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
+
+                        <!--begin::Title-->
+                        <h1
+                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
+                            Modules
+                        </h1>
+                        <!--end::Title-->
+                        <!--begin::Breadcrumb-->
+                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
+                                <a href="/" class="text-gray-500 text-hover-primary">
+                                    <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
+                                </a>
+                            </li>
+                            <!--end::Item-->
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item">
+                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
+                            </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
+                                Settings </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item">
+                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
+                            </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700">
+                                Modules </li>
+                            <!--end::Item-->
+
+
+                        </ul>
+                        <!--end::Breadcrumb-->
+
+
+                    </div>
+                    <!--end::Page title-->
+
+                    <!--begin::Actions-->
+                    <!-- <a href="#" class="btn btn-sm btn-success ms-3 px-4 py-3" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_create_app">
+                                        Create Project</span>
+                                    </a> -->
+                    <!--end::Actions-->
+                </div>
+                <!--end::Toolbar wrapper-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+
         <!--begin::Content-->
-        <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content" class="app-content  flex-column-fluid ">
+
+
             <!--begin::Content container-->
-            <div id="kt_app_content_container" class="app-container container-fluid">
+            <div id="kt_app_content_container" class="app-container  container-fluid ">
 
                 <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success d-flex align-items-center p-5 mb-10">
@@ -357,107 +248,96 @@
                 </div>
                 <?php endif; ?>
 
-                <!--begin::Card-->
-                <div class="card">
-                    <!--begin::Card header-->
-                    <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
-                        <div class="card-title">
-                            <!--begin::Search-->
-                            <div class="d-flex align-items-center position-relative my-1">
-                                <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                                <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13"
-                                    placeholder="Search modules..." value="<?= esc($search) ?>" />
-                            </div>
-                            <!--end::Search-->
+                <div class="row">
+                    <div class="col-6">
+                        <!--begin::Search-->
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text" id="kt_filter_search"
+                                class="form-control form-control-solid w-250px ps-13" placeholder="Search modules..."
+                                value="<?= esc($search) ?>" />
                         </div>
-                        <!--begin::Card title-->
-
-                        <!--begin::Card toolbar-->
-                        <div class="card-toolbar">
-                            <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-module-table-toolbar="base">
-                                <!--begin::Add module-->
-                                <?php if (isset($permissions) && $permissions['canCreate']): ?>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createModuleModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Module
-                                </button>
-                                <?php else: ?>
-                                <button type="button" class="btn btn-light-secondary disabled" title="No permission to create modules">
-                                    <i class="ki-duotone ki-lock fs-2"></i>Add Module
-                                </button>
-                                <?php endif; ?>
-                                <!--end::Add module-->
-                            </div>
-                            <!--end::Toolbar-->
-                        </div>
-                        <!--end::Card toolbar-->
+                        <!--end::Search-->
                     </div>
-                    <!--end::Card header-->
-
-                    <!--begin::Card body-->
-                    <div class="card-body py-4">
-                        <!--begin::Table-->
-                        <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_module_table">
-                                <!--begin::Table head-->
-                                <thead>
-                                    <!--begin::Table row-->
-                                    <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                        <th class="w-10px pe-2">
-                                            <div
-                                                class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                                <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_module_table .form-check-input"
-                                                    value="1" />
-                                            </div>
-                                        </th>
-                                        <th class="min-w-20px">#</th>
-                                        <th class="min-w-100px">Status</th>
-
-                                        <th class="min-w-80px">Module</th>
-                                        <th class="min-w-200px">Description</th>
-                                        <th class="min-w-120px">Created By</th>
-                                        <th class="min-w-120px">Updated By</th>
-                                        <th class="text-end min-w-100px">Actions</th>
-                                    </tr>
-                                    <!--end::Table row-->
-                                </thead>
-                                <!--end::Table head-->
-
-                                <!--begin::Table body-->
-                                <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($modules)): ?>
-                                    <?php foreach ($modules as $module): ?>
-                                    <!--begin::Table row-->
-                                    <tr>
-                                        <!--begin::Checkbox-->
-                                        <td>
-                                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                                <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($module['id']) ?>" />
-                                            </div>
-                                        </td>
-                                        <!--end::Checkbox-->
-
-                                        <!--begin::ID-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($module['id']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::ID-->
+                    <div class="col-6">
+                        <!--begin::Toolbar-->
+                        <div class="d-flex justify-content-end" data-kt-module-table-toolbar="base">
+                            <!--begin::Add module-->
+                            <?php if (isset($permissions) && $permissions['canCreate']): ?>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createModuleModal">
+                                <i class="ki-duotone ki-plus fs-2"></i>Add Module
+                            </button>
+                            <?php else: ?>
+                            <button type="button" class="btn btn-light-secondary disabled"
+                                title="No permission to create modules">
+                                <i class="ki-duotone ki-lock fs-2"></i>Add Module
+                            </button>
+                            <?php endif; ?>
+                            <!--end::Add module-->
+                        </div>
+                        <!--end::Toolbar-->
+                    </div>
+                </div>
 
 
-                                        <!--begin::Status-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php 
+                <!--begin::Table-->
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_module_table">
+                        <!--begin::Table head-->
+                        <thead>
+                            <!--begin::Table row-->
+                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                <th class="w-10px pe-2">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                                        <input class="form-check-input" type="checkbox" data-kt-check="true"
+                                            data-kt-check-target="#kt_module_table .form-check-input" value="1" />
+                                    </div>
+                                </th>
+                                <th class="min-w-20px">#</th>
+                                <th class="min-w-100px">Status</th>
+
+                                <th class="min-w-80px">Module</th>
+                                <th class="min-w-200px">Description</th>
+                                <th class="min-w-120px">Created By</th>
+                                <th class="min-w-120px">Updated By</th>
+                                <th class="text-end min-w-100px">Actions</th>
+                            </tr>
+                            <!--end::Table row-->
+                        </thead>
+                        <!--end::Table head-->
+
+                        <!--begin::Table body-->
+                        <tbody class="text-gray-600 fw-semibold">
+                            <?php if (!empty($modules)): ?>
+                            <?php foreach ($modules as $module): ?>
+                            <!--begin::Table row-->
+                            <tr>
+                                <!--begin::Checkbox-->
+                                <td>
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox"
+                                            value="<?= esc($module['id']) ?>" />
+                                    </div>
+                                </td>
+                                <!--end::Checkbox-->
+
+                                <!--begin::ID-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small class="text-muted">#<?= esc($module['id']) ?></small>
+                                    </div>
+                                </td>
+                                <!--end::ID-->
+
+
+                                <!--begin::Status-->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <?php 
                                                 // Use custom color if available, otherwise fallback to status-based colors
                                                 if (!empty($module['status_color'])) {
                                                     // Convert hex color to RGB for light background
@@ -471,127 +351,127 @@
                                                 
                                                 }
                                                 ?>
-                                                <?php if (!empty($module['status_color'])): ?>
-                                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($module['status_name'])) ?>
-                                                </span>
-                                                <?php else: ?>
-                                                <span class="badge <?= $badgeClass ?> fw-bold"
-                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                                    <?= strtoupper(esc($status['status_name'])) ?>
-                                                </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Status-->
-
-                                        
-                                        <!--begin::Module-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span class="fw-bold text-dark"><?= esc($module['name']) ?></span>
-                                            </div>
-                                        </td>
-                                        <!--end::Module-->
+                                        <?php if (!empty($module['status_color'])): ?>
+                                        <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                            <?= strtoupper(esc($module['status_name'])) ?>
+                                        </span>
+                                        <?php else: ?>
+                                        <span class="badge <?= $badgeClass ?> fw-bold"
+                                            style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                            <?= strtoupper(esc($status['status_name'])) ?>
+                                        </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Status-->
 
 
-                                        <!--begin::Description-->
-                                        <td>
-                                            <div class="text-gray-600">
-                                                <?= esc($module['description']) ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Description-->
+                                <!--begin::Module-->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold text-dark"><?= esc($module['name']) ?></span>
+                                    </div>
+                                </td>
+                                <!--end::Module-->
 
-                                        <!--begin::Created By-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <?php if (!empty($module['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($module['created_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($module['created_at'])) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Created By-->
-                                        <!--begin::Updated By-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <?php if (!empty($module['updated_by_name']) && !empty($module['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($module['updated_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($module['updated_at'])) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Updated By-->
 
-                                        <!--begin::Action-->
-                                        <td class="text-end">
-                                            <a href="#"
-                                                class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
-                                                data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                                Actions
-                                                <i class="ki-duotone ki-down fs-5 ms-1"></i>
-                                            </a>
-                                            <!--begin::Menu-->
-                                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
-                                                data-kt-menu="true">
-                                                <!--begin::Menu item-->
-                                                <?php if (isset($permissions) && $permissions['canView']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-module-btn"
-                                                        data-module-id="<?= esc($module['id']) ?>">View</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if (isset($permissions) && $permissions['canEdit']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-module-btn"
-                                                        data-module-id="<?= esc($module['id']) ?>">Edit</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if (isset($permissions) && $permissions['canDelete']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-module-btn"
-                                                        data-module-id="<?= esc($module['id']) ?>">Delete</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                            </div>
-                                            <!--end::Menu-->
-                                        </td>
-                                        <!--end::Action-->
-                                    </tr>
-                                    <!--end::Table row-->
-                                    <?php endforeach; ?>
-                                    <?php else: ?>
-                                    <!--begin::No results-->
-                                    <tr>
-                                        <td colspan="8" class="text-center py-10">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
-                                                    <span class="path1"></span>
-                                                    <span class="path2"></span>
-                                                </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No modules found</div>
-                                                <div class="text-gray-500">Start by creating your first module entry
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <!--end::No results-->
-                                    <?php endif; ?>
-                                </tbody>
-                                <!--end::Table body-->
-                            </table>
-                        </div>
-                        <!--end::Table-->
-                        
-                        <?php
+                                <!--begin::Description-->
+                                <td>
+                                    <div class="text-gray-600">
+                                        <?= esc($module['description']) ?>
+                                    </div>
+                                </td>
+                                <!--end::Description-->
+
+                                <!--begin::Created By-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <?php if (!empty($module['created_by_name'])): ?>
+                                        <span class="text-muted"><?= esc($module['created_by_name']) ?></span>
+                                        <small
+                                            class="text-muted"><?= date('d M Y \a\t H:i', strtotime($module['created_at'])) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Created By-->
+                                <!--begin::Updated By-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <?php if (!empty($module['updated_by_name']) && !empty($module['updated_at'])): ?>
+                                        <span class="text-muted"><?= esc($module['updated_by_name']) ?></span>
+                                        <small
+                                            class="text-muted"><?= date('d M Y \a\t H:i', strtotime($module['updated_at'])) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Updated By-->
+
+                                <!--begin::Action-->
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
+                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                        Actions
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </a>
+                                    <!--begin::Menu-->
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
+                                        data-kt-menu="true">
+                                        <!--begin::Menu item-->
+                                        <?php if (isset($permissions) && $permissions['canView']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 view-module-btn"
+                                                data-module-id="<?= esc($module['id']) ?>">View</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <?php if (isset($permissions) && $permissions['canEdit']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 edit-module-btn"
+                                                data-module-id="<?= esc($module['id']) ?>">Edit</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <?php if (isset($permissions) && $permissions['canDelete']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 delete-module-btn"
+                                                data-module-id="<?= esc($module['id']) ?>">Delete</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                    </div>
+                                    <!--end::Menu-->
+                                </td>
+                                <!--end::Action-->
+                            </tr>
+                            <!--end::Table row-->
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <!--begin::No results-->
+                            <tr>
+                                <td colspan="8" class="text-center py-10">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <div class="fw-bold text-gray-700 mb-2">No modules found</div>
+                                        <div class="text-gray-500">Start by creating your first module entry
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!--end::No results-->
+                            <?php endif; ?>
+                        </tbody>
+                        <!--end::Table body-->
+                    </table>
+                </div>
+                <!--end::Table-->
+
+                <?php
                         // Include table footer with pagination
                         $footerData = [
                             'baseUrl' => 'modules',
@@ -605,24 +485,19 @@
                         ];
                         echo view('partials/table_footer', $footerData);
                         ?>
-                    </div>
-                    <!--end::Card body-->
-                </div>
-                <!--end::Card-->
+
+
             </div>
             <!--end::Content container-->
         </div>
         <!--end::Content-->
+
     </div>
     <!--end::Content wrapper-->
+
+</div>
 </div>
 <!--end::Main-->
-</div>
-
-<!-- Include Modals -->
-<?= $this->include('modules/create_modal') ?>
-<?= $this->include('modules/edit_modal') ?>
-<?= $this->include('modules/view_modal') ?>
 
 <script>
 // Global variables
@@ -1038,8 +913,15 @@ function viewModule(moduleId) {
         })
         .then(data => {
             if (data.success) {
-                // Populate view modal
-                openViewModal(data.data);
+                // Populate view modal and show it
+                if (typeof openViewModal === 'function') {
+                    openViewModal(data.data);
+                } else {
+                    // Fallback: directly populate and show modal
+                    populateViewModal(data.data);
+                    const viewModal = new bootstrap.Modal(document.getElementById('viewModuleModal'));
+                    viewModal.show();
+                }
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
@@ -1061,8 +943,15 @@ function editModule(moduleId) {
         })
         .then(data => {
             if (data.success) {
-                // Populate edit modal
-                openEditModal(data.data);
+                // Populate edit modal and show it
+                if (typeof openEditModal === 'function') {
+                    openEditModal(data.data);
+                } else {
+                    // Fallback: directly populate and show modal
+                    populateEditModal(data.data);
+                    const editModal = new bootstrap.Modal(document.getElementById('editModuleModal'));
+                    editModal.show();
+                }
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
@@ -1071,6 +960,42 @@ function editModule(moduleId) {
             console.error('Error:', error);
             Swal.fire('Error', 'Failed to load module details', 'error');
         });
+}
+
+// Fallback modal population functions
+function populateViewModal(module) {
+    // Populate view modal fields if the modal include doesn't have the function
+    const nameEl = document.getElementById('view_module_name');
+    const statusEl = document.getElementById('view_status_badge');
+    const descEl = document.getElementById('view_module_description');
+    
+    if (nameEl) nameEl.textContent = module.name || 'N/A';
+    if (statusEl) {
+        statusEl.textContent = (module.status_name || 'Unknown').toUpperCase();
+        if (module.status_color) {
+            const hex = module.status_color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
+            statusEl.style.backgroundColor = lightBg;
+            statusEl.style.color = module.status_color;
+        }
+    }
+    if (descEl) descEl.textContent = module.description || 'No description provided';
+}
+
+function populateEditModal(module) {
+    // Populate edit modal fields if the modal include doesn't have the function
+    const nameEl = document.getElementById('edit_module_name');
+    const statusEl = document.getElementById('edit_status_id');
+    const descEl = document.getElementById('edit_module_description');
+    const idEl = document.getElementById('edit_module_id');
+    
+    if (nameEl) nameEl.value = module.name || '';
+    if (statusEl) statusEl.value = module.status_id || '';
+    if (descEl) descEl.value = module.description || '';
+    if (idEl) idEl.value = module.id || '';
 }
 
 function deleteModule(moduleId) {
@@ -1208,5 +1133,10 @@ function handleSessionExpired() {
     });
 }
 </script>
+
+<!-- Include Modals (placed at end for mobile compatibility) -->
+<?= $this->include('modules/create_modal') ?>
+<?= $this->include('modules/edit_modal') ?>
+<?= $this->include('modules/view_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>

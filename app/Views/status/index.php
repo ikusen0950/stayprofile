@@ -1,41 +1,6 @@
 <?= $this->include('layout/header.php') ?>
 
 <style>
-/* Fixed mobile search bar */
-.mobile-search-bar {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 100 !important;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid var(--bs-border-color);
-    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
-}
-
-/* Hide mobile search bar when sidebar drawer is active */
-[data-kt-drawer-name="app-sidebar"][data-kt-drawer="on"]~* .mobile-search-bar,
-body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
-    z-index: 100 !important;
-}
-
-.mobile-search-bar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bs-app-header-base-bg-color, rgba(255, 255, 255, 0.95));
-    z-index: -1;
-}
-
-/* Dark mode support */
-[data-bs-theme="dark"] .mobile-search-bar {
-    background: var(--bs-app-header-base-bg-color-dark, var(--bs-gray-800));
-}
-
-[data-bs-theme="dark"] .mobile-search-bar::before {
-    background: var(--bs-app-header-base-bg-color-dark, rgba(30, 30, 30, 0.95));
-}
 
 /* Skeleton loading styles */
 .skeleton-text {
@@ -171,222 +136,95 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
 </style>
 
 <!--begin::Mobile UI (visible on mobile only)-->
-<div class="d-lg-none">
-    <!-- Fixed Search Bar -->
-    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
-        <div class="container-fluid">
-            <div class="mb-2">
-                <h1 class="text-dark fw-bold ms-2">Status</h1>
-            </div>
-            <div class="row align-items-stretch">
-                <div class="col-10">
-                    <div class="position-relative h-100">
-                        <i
-                            class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                        <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
-                            placeholder="Search status..." value="<?= esc($search) ?>" />
-                    </div>
-                </div>
-                <div class="col-2">
-                    <?php if ($permissions['canCreate']): ?>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#createStatusModal"
-                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
-                        style="min-height: 48px;">
-                        <i class="ki-duotone ki-plus-square fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                        </i>
-                    </button>
-                    <?php else: ?>
-                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
-                        style="min-height: 48px;" title="No permission to create status">
-                        <i class="ki-duotone ki-lock fs-3x">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Content Container with top padding to account for fixed search -->
-    <div class="container-fluid" style="padding-top: 5px;">
-
-        <!-- Flash Messages for Mobile -->
-        <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success d-flex align-items-center p-3 mb-4">
-            <i class="ki-duotone ki-shield-tick fs-2hx text-success me-3">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-            <div>
-                <h6 class="mb-1 text-success">Success</h6>
-                <span class="fs-7"><?= session()->getFlashdata('success') ?></span>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger d-flex align-items-center p-3 mb-4">
-            <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-3">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-            <div>
-                <h6 class="mb-1 text-danger">Error</h6>
-                <span class="fs-7"><?= session()->getFlashdata('error') ?></span>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Scrollable Card List -->
-        <div class="row mt-2" id="mobile-cards-container">
-            <?php if (!empty($statuses)): ?>
-            <?php foreach ($statuses as $index => $status): ?>
-            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
-                <div class="card mobile-status-card" data-status-id="<?= esc($status['id']) ?>">
-                    <div class="card-body p-4">
-                        <!-- Status Header -->
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase">#<?= esc($status['id']) ?></small>
-                            </div>
-                            <div class="ms-3">
-                                <?php 
-                                // Use custom color if available, otherwise fallback to status-based colors
-                                if (!empty($status['color'])) 
-                                    // Convert hex color to RGB for light background
-                                    $hex = ltrim($status['color'], '#');
-                                    $r = hexdec(substr($hex, 0, 2));
-                                    $g = hexdec(substr($hex, 2, 2));
-                                    $b = hexdec(substr($hex, 4, 2));
-                                    $lightBg = "rgba($r, $g, $b, 0.1)";
-                                    $textColor = $status['color'];
-                                    $badgeStyle = "background-color: $lightBg; color: $textColor; padding: 4px 8px; font-size: 11px; line-height: 1.2;";
-                                ?>
-                                <?php if (!empty($status['color'])): ?>
-                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                    <?= strtoupper(esc($status['name'])) ?>
-                                </span>
-                                <?php else: ?>
-                                <span class="badge <?= $badgeClass ?>"><?= strtoupper(esc($status['name'])) ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
-                            <div class="flex-grow-1">
-                                <strong class="me-5 text-uppercase text-truncate"><?= esc($status['name']) ?></strong>
-                            </div>
-                        </div>
-
-                        <!-- Status Footer -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="d-flex flex-column">
-                                <small class="text-muted">
-                                    <?= !empty($status['created_by_name']) ? esc($status['created_by_name']) : 'System' ?>
-                                </small>
-                            </div>
-                            <small class="text-muted"><?= date('M d, Y', strtotime($status['created_at'])) ?></small>
-                        </div>
-
-                        <!-- Expandable Actions (initially hidden) -->
-                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
-                            <div class="row g-2">
-                                <?php if ($permissions['canView']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-status-btn"
-                                        data-status-id="<?= esc($status['id']) ?>">
-                                        <i class="ki-duotone ki-eye fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                        </i>
-                                        View
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canEdit']): ?>
-                                <div class="col-4">
-                                    <button type="button"
-                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-status-btn"
-                                        data-status-id="<?= esc($status['id']) ?>">
-                                        <i class="ki-duotone ki-pencil fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                        Edit
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                                <?php if ($permissions['canDelete']): ?>
-                                <div class="col-4">
-                                    <button
-                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-status-btn"
-                                        data-status-id="<?= esc($status['id']) ?>">
-                                        <i class="ki-duotone ki-trash fs-1 me-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                            <span class="path5"></span>
-                                        </i>
-                                        Delete
-                                    </button>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-            <?php else: ?>
-            <div class="col-12">
-                <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                    <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <h6 class="fw-bold text-gray-700 mb-2">No status found</h6>
-                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first status entry</p>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Loading indicator for infinite scroll -->
-        <div id="loading-indicator" class="text-center py-4 d-none">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Loading more status...</p>
-        </div>
-
-        <!-- No more data indicator -->
-        <div id="no-more-data" class="text-center py-4 d-none">
-            <p class="text-muted">No more status to load</p>
-        </div>
-    </div>
-</div>
+<?= $this->include('status/mobile_view.php') ?>
 <!--end::Mobile UI-->
+
 
 <!--begin::Main-->
 <div class="app-main flex-column flex-row-fluid d-none d-lg-flex" id="kt_app_main">
     <!--begin::Content wrapper-->
     <div class="d-flex flex-column flex-column-fluid">
 
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
+
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container  container-fluid d-flex align-items-stretch ">
+                <!--begin::Toolbar wrapper-->
+                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
+
+                    <!--begin::Page title-->
+                    <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
+
+                        <!--begin::Title-->
+                        <h1
+                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
+                            Statuses
+                        </h1>
+                        <!--end::Title-->
+                        <!--begin::Breadcrumb-->
+                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
+                                <a href="/" class="text-gray-500 text-hover-primary">
+                                    <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
+                                </a>
+                            </li>
+                            <!--end::Item-->
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item">
+                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
+                            </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
+                                Settings </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item">
+                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
+                            </li>
+                            <!--end::Item-->
+
+
+                            <!--begin::Item-->
+                            <li class="breadcrumb-item text-gray-700">
+                                Statuses </li>
+                            <!--end::Item-->
+
+
+                        </ul>
+                        <!--end::Breadcrumb-->
+
+
+                    </div>
+                    <!--end::Page title-->
+
+                    <!--begin::Actions-->
+                    <!-- <a href="#" class="btn btn-sm btn-success ms-3 px-4 py-3" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_create_app">
+                                        Create Project</span>
+                                    </a> -->
+                    <!--end::Actions-->
+                </div>
+                <!--end::Toolbar wrapper-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+
         <!--begin::Content-->
-        <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content" class="app-content  flex-column-fluid ">
+
+
             <!--begin::Content container-->
-            <div id="kt_app_content_container" class="app-container container-fluid">
+            <div id="kt_app_content_container" class="app-container  container-fluid ">
 
                 <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success d-flex align-items-center p-5 mb-10">
@@ -414,101 +252,89 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                 </div>
                 <?php endif; ?>
 
-                <!--begin::Card-->
-                <div class="card">
-                    <!--begin::Card header-->
-                    <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
-                        <div class="card-title">
-                            <!--begin::Search-->
-                            <div class="d-flex align-items-center position-relative my-1">
-                                <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                                <input type="text" id="kt_filter_search"
-                                    class="form-control form-control-solid w-250px ps-13" placeholder="Search status..."
-                                    value="<?= esc($search) ?>" />
-                            </div>
-                            <!--end::Search-->
+                <div class="row">
+                    <div class="col-6">
+                        <!--begin::Search-->
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text" id="kt_filter_search"
+                                class="form-control form-control-solid w-250px ps-13" placeholder="Search status..."
+                                value="<?= esc($search) ?>" />
                         </div>
-                        <!--begin::Card title-->
-
-                        <!--begin::Card toolbar-->
-                        <div class="card-toolbar">
-                            <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-status-table-toolbar="base">
-                                <!--begin::Add status-->
-                                <?php if ($permissions['canCreate']): ?>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createStatusModal">
-                                    <i class="ki-duotone ki-plus fs-2"></i>Add Status
-                                </button>
-                                <?php endif; ?>
-                                <!--end::Add status-->
-                            </div>
-                            <!--end::Toolbar-->
-                        </div>
-                        <!--end::Card toolbar-->
+                        <!--end::Search-->
                     </div>
-                    <!--end::Card header-->
+                    <div class="col-6">
+                        <!--begin::Toolbar-->
+                        <div class="d-flex justify-content-end" data-kt-status-table-toolbar="base">
+                            <!--begin::Add status-->
+                            <?php if ($permissions['canCreate']): ?>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#createStatusModal">
+                                <i class="ki-duotone ki-plus fs-2"></i>Add Status
+                            </button>
+                            <?php endif; ?>
+                            <!--end::Add status-->
+                        </div>
+                        <!--end::Toolbar-->
+                    </div>
+                </div>
 
-                    <!--begin::Card body-->
-                    <div class="card-body py-4">
-                        <!--begin::Table-->
-                        <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_status_table">
-                                <!--begin::Table head-->
-                                <thead>
-                                    <!--begin::Table row-->
-                                    <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                        <th class="w-10px pe-2">
-                                            <div
-                                                class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                                <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                    data-kt-check-target="#kt_status_table .form-check-input"
-                                                    value="1" />
-                                            </div>
-                                        </th>
-                                        <th class="min-w-20px">#</th>
-                                        <th class="min-w-80px">Status</th>
-                                        <th class="min-w-100px">Module</th>
-                                        <th class="min-w-200px">Description</th>
-                                        <th class="min-w-120px">Created By</th>
-                                        <th class="min-w-120px">Updated By</th>
-                                        <th class="text-end min-w-100px">Actions</th>
-                                    </tr>
-                                    <!--end::Table row-->
-                                </thead>
-                                <!--end::Table head-->
 
-                                <!--begin::Table body-->
-                                <tbody class="text-gray-600 fw-semibold">
-                                    <?php if (!empty($statuses)): ?>
-                                    <?php foreach ($statuses as $status): ?>
-                                    <!--begin::Table row-->
-                                    <tr>
-                                        <!--begin::Checkbox-->
-                                        <td>
-                                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                                <input class="form-check-input" type="checkbox"
-                                                    value="<?= esc($status['id']) ?>" />
-                                            </div>
-                                        </td>
-                                        <!--end::Checkbox-->
+                <!--begin::Table-->
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_status_table">
+                        <!--begin::Table head-->
+                        <thead>
+                            <!--begin::Table row-->
+                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                <th class="w-10px pe-2">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                                        <input class="form-check-input" type="checkbox" data-kt-check="true"
+                                            data-kt-check-target="#kt_status_table .form-check-input" value="1" />
+                                    </div>
+                                </th>
+                                <th class="min-w-20px">#</th>
+                                <th class="min-w-80px">Status</th>
+                                <th class="min-w-100px">Module</th>
+                                <th class="min-w-200px">Description</th>
+                                <th class="min-w-120px">Created By</th>
+                                <th class="min-w-120px">Updated By</th>
+                                <th class="text-end min-w-100px">Actions</th>
+                            </tr>
+                            <!--end::Table row-->
+                        </thead>
+                        <!--end::Table head-->
 
-                                        <!--begin::ID-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="text-muted">#<?= esc($status['id']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::ID-->
-                                     
-                                        <!--begin::Status-->
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php 
+                        <!--begin::Table body-->
+                        <tbody class="text-gray-600 fw-semibold">
+                            <?php if (!empty($statuses)): ?>
+                            <?php foreach ($statuses as $status): ?>
+                            <!--begin::Table row-->
+                            <tr>
+                                <!--begin::Checkbox-->
+                                <td>
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox"
+                                            value="<?= esc($status['id']) ?>" />
+                                    </div>
+                                </td>
+                                <!--end::Checkbox-->
+
+                                <!--begin::ID-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small class="text-muted">#<?= esc($status['id']) ?></small>
+                                    </div>
+                                </td>
+                                <!--end::ID-->
+
+                                <!--begin::Status-->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <?php 
                                                 // Use custom color if available, otherwise fallback to status-based colors
                                                 if (!empty($status['color'])) {
                                                     // Convert hex color to RGB for light background
@@ -522,125 +348,125 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                                                 
                                                 }
                                                 ?>
-                                                <?php if (!empty($status['color'])): ?>
-                                                <span class="badge fw-bold" style="<?= $badgeStyle ?>">
-                                                    <?= strtoupper(esc($status['name'])) ?>
-                                                </span>
-                                                <?php else: ?>
-                                                <span class="badge <?= $badgeClass ?> fw-bold"
-                                                    style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-                                                    <?= strtoupper(esc($status['name'])) ?>
-                                                </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Status-->
+                                        <?php if (!empty($status['color'])): ?>
+                                        <span class="badge fw-bold" style="<?= $badgeStyle ?>">
+                                            <?= strtoupper(esc($status['name'])) ?>
+                                        </span>
+                                        <?php else: ?>
+                                        <span class="badge <?= $badgeClass ?> fw-bold"
+                                            style="padding: 4px 8px; font-size: 11px; line-height: 1.2;">
+                                            <?= strtoupper(esc($status['name'])) ?>
+                                        </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Status-->
 
-                                        <!--begin::Module-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <small class="fw-bold text-dark"><?= esc($status['module_name']) ?></small>
-                                            </div>
-                                        </td>
-                                        <!--end::Module-->
+                                <!--begin::Module-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small class="fw-bold text-dark"><?= esc($status['module_name']) ?></small>
+                                    </div>
+                                </td>
+                                <!--end::Module-->
 
-                                        <!--begin::Description-->
-                                        <td>
-                                            <div class="text-gray-600">
-                                                <?= esc($status['description']) ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Description-->
+                                <!--begin::Description-->
+                                <td>
+                                    <div class="text-gray-600">
+                                        <?= esc($status['description']) ?>
+                                    </div>
+                                </td>
+                                <!--end::Description-->
 
-                                        <!--begin::Created By-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <?php if (!empty($status['created_by_name'])): ?>
-                                                <span class="text-muted"><?= esc($status['created_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['created_at'])) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Created By-->
-                                        <!--begin::Updated By-->
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <?php if (!empty($status['updated_by_name']) && !empty($status['updated_at'])): ?>
-                                                <span class="text-muted"><?= esc($status['updated_by_name']) ?></span>
-                                                <small
-                                                    class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['updated_at'])) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <!--end::Updated By-->
+                                <!--begin::Created By-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <?php if (!empty($status['created_by_name'])): ?>
+                                        <span class="text-muted"><?= esc($status['created_by_name']) ?></span>
+                                        <small
+                                            class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['created_at'])) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Created By-->
+                                <!--begin::Updated By-->
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <?php if (!empty($status['updated_by_name']) && !empty($status['updated_at'])): ?>
+                                        <span class="text-muted"><?= esc($status['updated_by_name']) ?></span>
+                                        <small
+                                            class="text-muted"><?= date('d M Y \a\t H:i', strtotime($status['updated_at'])) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <!--end::Updated By-->
 
-                                        <!--begin::Action-->
-                                        <td class="text-end">
-                                            <a href="#"
-                                                class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
-                                                data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                                Actions
-                                                <i class="ki-duotone ki-down fs-5 ms-1"></i>
-                                            </a>
-                                            <!--begin::Menu-->
-                                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
-                                                data-kt-menu="true">
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canView']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 view-status-btn"
-                                                        data-status-id="<?= esc($status['id']) ?>">View</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canEdit']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 edit-status-btn"
-                                                        data-status-id="<?= esc($status['id']) ?>">Edit</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <?php if ($permissions['canDelete']): ?>
-                                                <div class="menu-item px-3">
-                                                    <a class="menu-link px-3 delete-status-btn"
-                                                        data-status-id="<?= esc($status['id']) ?>">Delete</a>
-                                                </div>
-                                                <?php endif; ?>
-                                                <!--end::Menu item-->
-                                            </div>
-                                            <!--end::Menu-->
-                                        </td>
-                                        <!--end::Action-->
-                                    </tr>
-                                    <!--end::Table row-->
-                                    <?php endforeach; ?>
-                                    <?php else: ?>
-                                    <!--begin::No results-->
-                                    <tr>
-                                        <td colspan="9" class="text-center py-10">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
-                                                    <span class="path1"></span>
-                                                    <span class="path2"></span>
-                                                </i>
-                                                <div class="fw-bold text-gray-700 mb-2">No status found</div>
-                                                <div class="text-gray-500">Start by creating your first status entry
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <!--end::No results-->
-                                    <?php endif; ?>
-                                </tbody>
-                                <!--end::Table body-->
-                            </table>
-                        </div>
-                        <!--end::Table-->
-                        
-                        <?php
+                                <!--begin::Action-->
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm"
+                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                        Actions
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </a>
+                                    <!--begin::Menu-->
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
+                                        data-kt-menu="true">
+                                        <!--begin::Menu item-->
+                                        <?php if ($permissions['canView']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 view-status-btn"
+                                                data-status-id="<?= esc($status['id']) ?>">View</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <?php if ($permissions['canEdit']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 edit-status-btn"
+                                                data-status-id="<?= esc($status['id']) ?>">Edit</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <?php if ($permissions['canDelete']): ?>
+                                        <div class="menu-item px-3">
+                                            <a class="menu-link px-3 delete-status-btn"
+                                                data-status-id="<?= esc($status['id']) ?>">Delete</a>
+                                        </div>
+                                        <?php endif; ?>
+                                        <!--end::Menu item-->
+                                    </div>
+                                    <!--end::Menu-->
+                                </td>
+                                <!--end::Action-->
+                            </tr>
+                            <!--end::Table row-->
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <!--begin::No results-->
+                            <tr>
+                                <td colspan="9" class="text-center py-10">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <div class="fw-bold text-gray-700 mb-2">No status found</div>
+                                        <div class="text-gray-500">Start by creating your first status entry
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!--end::No results-->
+                            <?php endif; ?>
+                        </tbody>
+                        <!--end::Table body-->
+                    </table>
+                </div>
+                <!--end::Table-->
+
+                <?php
                         // Include table footer with pagination
                         $footerData = [
                             'baseUrl' => 'status',
@@ -654,23 +480,19 @@ body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
                         ];
                         echo view('partials/table_footer', $footerData);
                         ?>
-                    </div>
-                    <!--end::Card body-->
-                </div>
-                <!--end::Card-->
+
+
             </div>
             <!--end::Content container-->
         </div>
         <!--end::Content-->
+
     </div>
     <!--end::Content wrapper-->
+
+</div>
 </div>
 <!--end::Main-->
-
-<!-- Include Modals -->
-<?= $this->include('status/create_modal') ?>
-<?= $this->include('status/edit_modal') ?>
-<?= $this->include('status/view_modal') ?>
 
 <script>
 // Global variables
@@ -704,44 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle sidebar state for mobile search bar
     const sidebar = document.getElementById('kt_app_sidebar');
-    const mobileSearchBar = document.querySelector('.mobile-search-bar');
-
-    if (sidebar && mobileSearchBar) {
-        // Create observer to watch for sidebar state changes
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName ===
-                    'data-kt-drawer') {
-                    const isDrawerOn = sidebar.getAttribute('data-kt-drawer') === 'on';
-                    if (isDrawerOn) {
-                        mobileSearchBar.style.zIndex = '100';
-                    } else {
-                        mobileSearchBar.style.zIndex = '999';
-                    }
-                }
-            });
-        });
-
-        observer.observe(sidebar, {
-            attributes: true,
-            attributeFilter: ['data-kt-drawer']
-        });
-
-        // Also listen for drawer events
-        document.addEventListener('click', function(e) {
-            if (e.target.id === 'kt_app_sidebar_mobile_toggle' || e.target.closest(
-                    '#kt_app_sidebar_mobile_toggle')) {
-                setTimeout(() => {
-                    const isDrawerOn = sidebar.getAttribute('data-kt-drawer') === 'on';
-                    if (isDrawerOn) {
-                        mobileSearchBar.style.zIndex = '100';
-                    } else {
-                        mobileSearchBar.style.zIndex = '999';
-                    }
-                }, 100);
-            }
-        });
-    }
+   
 
     // Mobile search functionality
     const mobileSearch = document.getElementById('mobile_search');
@@ -1389,5 +1174,10 @@ function handleSessionExpired() {
     });
 }
 </script>
+
+<!-- Include Modals (placed at end for mobile compatibility) -->
+<?= $this->include('status/create_modal') ?>
+<?= $this->include('status/edit_modal') ?>
+<?= $this->include('status/view_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>

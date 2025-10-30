@@ -1,6 +1,42 @@
 <?= $this->include('layout/header.php') ?>
 
 <style>
+/* Fixed mobile search bar */
+.mobile-search-bar {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 100 !important;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
+}
+
+/* Hide mobile search bar when sidebar drawer is active */
+[data-kt-drawer-name="app-sidebar"][data-kt-drawer="on"]~* .mobile-search-bar,
+body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
+    z-index: 100 !important;
+}
+
+.mobile-search-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bs-app-header-base-bg-color, rgba(255, 255, 255, 0.95));
+    z-index: -1;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .mobile-search-bar {
+    background: var(--bs-app-header-base-bg-color-dark, var(--bs-gray-800));
+}
+
+[data-bs-theme="dark"] .mobile-search-bar::before {
+    background: var(--bs-app-header-base-bg-color-dark, rgba(30, 30, 30, 0.95));
+}
+
 /* Skeleton loading styles */
 .skeleton-text {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -150,126 +186,266 @@
 }
 </style>
 
+<!-- Mobile Layout (visible on small screens) -->
+<div class="d-lg-none">
+    <!-- Fixed Search Bar -->
+    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
+        <div class="container-fluid">
+            <div class="mb-2">
+                <h1 class="text-dark fw-bold ms-2">Houses</h1>
+            </div>
+            <div class="row align-items-stretch">
+                <div class="col-10">
+                    <div class="position-relative h-100">
+                        <i
+                            class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
+                            placeholder="Search houses..." value="<?= esc($search) ?>" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <?php if ($permissions['canCreate']): ?>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#createHouseModal"
+                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
+                        style="min-height: 48px;">
+                        <i class="ki-duotone ki-plus-square fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                    </button>
+                    <?php else: ?>
+                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
+                        style="min-height: 48px;" title="No permission to create houses">
+                        <i class="ki-duotone ki-lock fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<!--begin::Mobile UI (visible on mobile only)-->
-<?= $this->include('houses/mobile_view.php') ?>
+    <!-- Content Container with top padding to account for fixed search -->
+    <div class="container-fluid" style="padding-top: 5px;">
+
+        <!-- Flash Messages for Mobile -->
+        <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success d-flex align-items-center p-3 mb-4">
+            <i class="ki-duotone ki-shield-tick fs-2hx text-success me-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            <div>
+                <h6 class="mb-1 text-success">Success</h6>
+                <span class="fs-7"><?= session()->getFlashdata('success') ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger d-flex align-items-center p-3 mb-4">
+            <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            <div>
+                <h6 class="mb-1 text-danger">Error</h6>
+                <span class="fs-7"><?= session()->getFlashdata('error') ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Scrollable Card List -->
+        <div class="row mt-2" id="mobile-cards-container">
+            <?php if (!empty($houses)): ?>
+            <?php foreach ($houses as $index => $house): ?>
+            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
+                <div class="card mobile-house-card" data-house-id="<?= esc($house['id']) ?>">
+                    <div class="card-body p-4">
+                        <!-- House Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <small class="text-muted text-uppercase">#<?= esc($house['id']) ?></small>
+                            </div>
+                            <div class="ms-3 d-flex gap-2 align-items-center">
+                                <?php if (!empty($house['color'])): ?>
+                                <div class="house-color-indicator" style="background-color: <?= esc($house['color']) ?>;" title="House Color: <?= esc($house['color']) ?>"></div>
+                                <?php endif; ?>
+                                <?php if (!empty($house['status_name'])): ?>
+                                    <?php 
+                                    // Use custom color if available for mobile cards
+                                    if (!empty($house['status_color'])) {
+                                        // Convert hex color to RGB for light background
+                                        $hex = ltrim($house['status_color'], '#');
+                                        $r = hexdec(substr($hex, 0, 2));
+                                        $g = hexdec(substr($hex, 2, 2));
+                                        $b = hexdec(substr($hex, 4, 2));
+                                        $bgColor = "rgba($r, $g, $b, 0.1)";
+                                        $textColor = $house['status_color'];
+                                    } else {
+                                        $bgColor = 'rgba(33, 150, 243, 0.1)';
+                                        $textColor = '#2196F3';
+                                    }
+                                    ?>
+                                    <span class="badge fw-bold" style="background-color: <?= $bgColor ?>; color: <?= $textColor ?>;">
+                                        <?= esc($house['status_name']) ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge badge-light-secondary fw-bold">No Status</span>
+                                <?php endif; ?>
+                                <span class="badge badge-light-primary fw-bold">HOUSE</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                            <div class="flex-grow-1">
+                                <strong class="me-5 text-uppercase text-truncate"><?= esc($house['name']) ?></strong>
+                                <?php if (!empty($house['description'])): ?>
+                                <p class="text-muted mb-0 mt-3"><?= esc($house['description']) ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- House Footer -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="d-flex flex-column">
+                                <small class="text-muted"><?= esc($house['created_by_name'] ?? 'System') ?></small>
+                            </div>
+                            <small class="text-muted"><?= date('M d, Y', strtotime($house['created_at'])) ?></small>
+                        </div>
+
+                        <!-- Expandable Actions (initially hidden) -->
+                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
+                            <div class="row g-2">
+                                <?php if ($permissions['canView']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-house-btn"
+                                        data-house-id="<?= esc($house['id']) ?>">
+                                        <i class="ki-duotone ki-eye fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                        View
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canEdit']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-house-btn"
+                                        data-house-id="<?= esc($house['id']) ?>">
+                                        <i class="ki-duotone ki-pencil fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        Edit
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canDelete']): ?>
+                                <div class="col-4">
+                                    <button
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-house-btn"
+                                        data-house-id="<?= esc($house['id']) ?>">
+                                        <i class="ki-duotone ki-trash fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                            <span class="path4"></span>
+                                            <span class="path5"></span>
+                                        </i>
+                                        Delete
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <div class="col-12">
+                <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                    <i class="ki-duotone ki-home-2 fs-5x text-gray-500 mb-3 ">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <h6 class="fw-bold text-gray-700 mb-2">No houses found</h6>
+                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first house entry</p>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Loading indicator for infinite scroll -->
+        <div id="loading-indicator" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading more houses...</p>
+        </div>
+
+        <!-- No more data indicator -->
+        <div id="no-more-data" class="text-center py-4 d-none">
+            <p class="text-muted">No more houses to load</p>
+        </div>
+    </div>
+</div>
 <!--end::Mobile UI-->
 
+<!-- Desktop Layout (visible on medium screens and up) -->
+<div class="d-none d-lg-flex">
+    <!--begin::Main-->
+    <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+        <!--begin::Content wrapper-->
+        <div class="d-flex flex-column flex-column-fluid">
 
-<!--begin::Main-->
-<div class="app-main flex-column flex-row-fluid d-none d-lg-flex" id="kt_app_main">
-    <!--begin::Content wrapper-->
-    <div class="d-flex flex-column flex-column-fluid">
+            <!--begin::Content-->
+            <div id="kt_app_content" class="app-content flex-column-fluid">
+                <!--begin::Content container-->
+                <div id="kt_app_content_container" class="app-container container-fluid">
 
-        <!--begin::Toolbar-->
-        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
-
-            <!--begin::Toolbar container-->
-            <div id="kt_app_toolbar_container" class="app-container  container-fluid d-flex align-items-stretch ">
-                <!--begin::Toolbar wrapper-->
-                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
-
-                    <!--begin::Page title-->
-                    <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
-
-                        <!--begin::Title-->
-                        <h1
-                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
-                            Houses
-                        </h1>
-                        <!--end::Title-->
-                        <!--begin::Breadcrumb-->
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                <a href="/" class="text-gray-500 text-hover-primary">
-                                    <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
-                                </a>
-                            </li>
-                            <!--end::Item-->
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
-                            </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                Settings </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
-                            </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700">
-                                Houses </li>
-                            <!--end::Item-->
-
-
-                        </ul>
-                        <!--end::Breadcrumb-->
-
-
-                    </div>
-                    <!--end::Page title-->
-
-                    <!--begin::Actions-->
-                    <!-- <a href="#" class="btn btn-sm btn-success ms-3 px-4 py-3" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_create_app">
-                                        Create Project</span>
-                                    </a> -->
-                    <!--end::Actions-->
+            <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success d-flex align-items-center p-5 mb-10">
+                <i class="ki-duotone ki-shield-tick fs-2hx text-success me-4">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div class="d-flex flex-column">
+                    <h4 class="mb-1 text-success">Success</h4>
+                    <span><?= session()->getFlashdata('success') ?></span>
                 </div>
-                <!--end::Toolbar wrapper-->
             </div>
-            <!--end::Toolbar container-->
-        </div>
-        <!--end::Toolbar-->
+            <?php endif; ?>
 
-        <!--begin::Content-->
-        <div id="kt_app_content" class="app-content  flex-column-fluid ">
-
-
-            <!--begin::Content container-->
-            <div id="kt_app_content_container" class="app-container  container-fluid ">
-
-                <?php if (session()->getFlashdata('success')): ?>
-                <div class="alert alert-success d-flex align-items-center p-5 mb-10">
-                    <i class="ki-duotone ki-shield-tick fs-2hx text-success me-4">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <div class="d-flex flex-column">
-                        <h4 class="mb-1 text-success">Success</h4>
-                        <span><?= session()->getFlashdata('success') ?></span>
-                    </div>
+            <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger d-flex align-items-center p-5 mb-10">
+                <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-4">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div class="d-flex flex-column">
+                    <h4 class="mb-1 text-danger">Error</h4>
+                    <span><?= session()->getFlashdata('error') ?></span>
                 </div>
-                <?php endif; ?>
+            </div>
+            <?php endif; ?>
 
-                <?php if (session()->getFlashdata('error')): ?>
-                <div class="alert alert-danger d-flex align-items-center p-5 mb-10">
-                    <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-4">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <div class="d-flex flex-column">
-                        <h4 class="mb-1 text-danger">Error</h4>
-                        <span><?= session()->getFlashdata('error') ?></span>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <div class="row">
-                    <div class="col-6">
+                <!--begin::Card-->
+                <div class="card">
+                <!--begin::Card header-->
+                <div class="card-header border-0 pt-6">
+                    <!--begin::Card title-->
+                    <div class="card-title">
                         <!--begin::Search-->
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
@@ -282,7 +458,10 @@
                         </div>
                         <!--end::Search-->
                     </div>
-                    <div class="col-6">
+                    <!--begin::Card title-->
+
+                    <!--begin::Card toolbar-->
+                    <div class="card-toolbar">
                         <!--begin::Toolbar-->
                         <div class="d-flex justify-content-end" data-kt-house-table-toolbar="base">
                             <!--begin::Add house-->
@@ -296,10 +475,13 @@
                         </div>
                         <!--end::Toolbar-->
                     </div>
+                    <!--end::Card toolbar-->
                 </div>
+                <!--end::Card header-->
 
-
-                <!--begin::Table-->
+                <!--begin::Card body-->
+                <div class="card-body py-4">
+                    <!--begin::Table-->
                     <div class="table-responsive">
                         <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_house_table">
                             <!--begin::Table head-->
@@ -519,20 +701,24 @@
                     ];
                     echo view('partials/table_footer', $footerData);
                     ?>
-
-
+                </div>
+                <!--end::Card body-->
             </div>
-            <!--end::Content container-->
+            <!--end::Card-->
         </div>
-        <!--end::Content-->
-
+        <!--end::Content container-->
     </div>
-    <!--end::Content wrapper-->
-
+    <!--end::Content-->
 </div>
+<!--end::Content wrapper-->
 </div>
 <!--end::Main-->
+</div>
 
+<!-- Include Modals -->
+<?= $this->include('houses/create_modal') ?>
+<?= $this->include('houses/view_modal') ?>
+<?= $this->include('houses/edit_modal') ?>
 
 <script>
 // Global variables
@@ -1231,10 +1417,5 @@ function handleSessionExpired() {
     });
 }
 </script>
-
-<!-- Include Modals (placed at end for mobile compatibility) -->
-<?= $this->include('houses/create_modal') ?>
-<?= $this->include('houses/view_modal') ?>
-<?= $this->include('houses/edit_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>

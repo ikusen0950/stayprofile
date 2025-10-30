@@ -1,6 +1,41 @@
 <?= $this->include('layout/header.php') ?>
 
 <style>
+/* Fixed mobile search bar */
+.mobile-search-bar {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 100 !important;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-app-header-base-bg-color, var(--bs-gray-100));
+}
+
+/* Hide mobile search bar when sidebar drawer is active */
+[data-kt-drawer-name="app-sidebar"][data-kt-drawer="on"]~* .mobile-search-bar,
+body[data-kt-drawer-app-sidebar="on"] .mobile-search-bar {
+    z-index: 100 !important;
+}
+
+.mobile-search-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bs-app-header-base-bg-color, rgba(255, 255, 255, 0.95));
+    z-index: -1;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .mobile-search-bar {
+    background: var(--bs-app-header-base-bg-color-dark, var(--bs-gray-800));
+}
+
+[data-bs-theme="dark"] .mobile-search-bar::before {
+    background: var(--bs-app-header-base-bg-color-dark, rgba(30, 30, 30, 0.95));
+}
 
 /* Skeleton loading styles */
 .skeleton-text {
@@ -45,17 +80,17 @@
 }
 
 /* Enhanced mobile card hover effects */
-.mobile-status-card {
+.mobile-nationality-card {
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.mobile-status-card:hover {
+.mobile-nationality-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-status-card:active {
+.mobile-nationality-card:active {
     transform: translateY(0);
 }
 
@@ -118,113 +153,233 @@
         background-color: rgba(0, 0, 0, 0) !important;
     }
 }
-
-/* Better Select2 dropdown positioning in modals */
-.select2-container--bootstrap5 .select2-dropdown {
-    z-index: 1060;
-}
-
-/* Color preview styles */
-.color-preview {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--bs-border-color);
-    display: inline-block;
-    margin-right: 8px;
-}
 </style>
 
 <!--begin::Mobile UI (visible on mobile only)-->
-<?= $this->include('nationalities/mobile_view.php') ?>
-<!--end::Mobile UI-->
+<div class="d-lg-none">
+    <!-- Fixed Search Bar -->
+    <div class="mobile-search-bar position-sticky top-0 py-3 mb-2" style="top: 60px !important;">
+        <div class="container-fluid">
+            <div class="mb-2">
+                <h1 class="text-dark fw-bold ms-2">Nationalities</h1>
+            </div>
+            <div class="row align-items-stretch">
+                <div class="col-10">
+                    <div class="position-relative h-100">
+                        <i
+                            class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 mt-3 text-gray-500 d-flex align-items-center justify-content-center">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <input type="text" id="mobile_search" class="form-control form-control-solid ps-10 h-100"
+                            placeholder="Search nationalities..." value="<?= esc($search) ?>" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <?php if ($permissions['canCreate']): ?>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#createNationalityModal"
+                        class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center"
+                        style="min-height: 48px;">
+                        <i class="ki-duotone ki-plus-square fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                    </button>
+                    <?php else: ?>
+                    <div class="btn btn-light-secondary w-100 h-100 d-flex align-items-center justify-content-center disabled"
+                        style="min-height: 48px;" title="No permission to create nationalities">
+                        <i class="ki-duotone ki-lock fs-3x">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Content Container with top padding to account for fixed search -->
+    <div class="container-fluid" style="padding-top: 5px;">
+
+        <!-- Flash Messages for Mobile -->
+        <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success d-flex align-items-center p-3 mb-4">
+            <i class="ki-duotone ki-shield-tick fs-2hx text-success me-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            <div>
+                <h6 class="mb-1 text-success">Success</h6>
+                <span class="fs-7"><?= session()->getFlashdata('success') ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger d-flex align-items-center p-3 mb-4">
+            <i class="ki-duotone ki-shield-cross fs-2hx text-danger me-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            <div>
+                <h6 class="mb-1 text-danger">Error</h6>
+                <span class="fs-7"><?= session()->getFlashdata('error') ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Scrollable Card List -->
+        <div class="row mt-2" id="mobile-cards-container">
+            <?php if (!empty($nationalities)): ?>
+            <?php foreach ($nationalities as $index => $nationality): ?>
+            <div class="col-12 mb-3" data-aos="fade-up" data-aos-delay="<?= $index * 100 ?>" data-aos-duration="600">
+                <div class="card mobile-nationality-card" data-nationality-id="<?= esc($nationality['id']) ?>">
+                    <div class="card-body p-4">
+                        <!-- Nationality Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <small class="text-muted text-uppercase">#<?= esc($nationality['id']) ?></small>
+                            </div>
+                            <div class="ms-3 d-flex gap-2">
+                                <?php if (!empty($nationality['status_name'])): ?>
+                                    <?php 
+                                    // Use custom color if available for mobile cards
+                                    if (!empty($nationality['status_color'])) {
+                                        // Convert hex color to RGB for light background
+                                        $hex = ltrim($nationality['status_color'], '#');
+                                        $r = hexdec(substr($hex, 0, 2));
+                                        $g = hexdec(substr($hex, 2, 2));
+                                        $b = hexdec(substr($hex, 4, 2));
+                                        $lightBg = "rgba($r, $g, $b, 0.1)";
+                                        $textColor = $nationality['status_color'];
+                                        $mobileBadgeStyle = "background-color: $lightBg; color: $textColor;";
+                                    } else {
+                                        $mobileBadgeStyle = "";
+                                    }
+                                    ?>
+                                    <?php if (!empty($nationality['status_color'])): ?>
+                                    <span class="badge fw-bold fs-8" style="<?= $mobileBadgeStyle ?>">
+                                        <?= strtoupper(esc($nationality['status_name'])) ?>
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="badge badge-light-success fw-bold fs-8">
+                                        <?= strtoupper(esc($nationality['status_name'])) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                <span class="badge badge-light-primary fw-bold">NATIONALITY</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+                            <div class="flex-grow-1">
+                                <strong class="me-5 text-uppercase text-truncate"><?= esc($nationality['name']) ?></strong>
+                            </div>
+                        </div>
+
+                        <!-- Nationality Footer -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="d-flex flex-column">
+                                <small class="text-muted">
+                                    <?= !empty($nationality['created_by_name']) ? esc($nationality['created_by_name']) : 'System' ?>
+                                </small>
+                            </div>
+                            <small class="text-muted"><?= date('M d, Y', strtotime($nationality['created_at'])) ?></small>
+                        </div>
+
+                        <!-- Expandable Actions (initially hidden) -->
+                        <div class="mobile-actions mt-3 pt-3 border-top d-none">
+                            <div class="row g-2">
+                                <?php if ($permissions['canView']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-warning btn-sm w-100 d-flex align-items-center justify-content-center view-nationality-btn"
+                                        data-nationality-id="<?= esc($nationality['id']) ?>">
+                                        <i class="ki-duotone ki-eye fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                        View
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canEdit']): ?>
+                                <div class="col-4">
+                                    <button type="button"
+                                        class="btn btn-light-primary btn-sm w-100 d-flex align-items-center justify-content-center edit-nationality-btn"
+                                        data-nationality-id="<?= esc($nationality['id']) ?>">
+                                        <i class="ki-duotone ki-pencil fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        Edit
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($permissions['canDelete']): ?>
+                                <div class="col-4">
+                                    <button
+                                        class="btn btn-light-danger btn-sm w-100 d-flex align-items-center justify-content-center delete-nationality-btn"
+                                        data-nationality-id="<?= esc($nationality['id']) ?>">
+                                        <i class="ki-duotone ki-trash fs-1 me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                            <span class="path4"></span>
+                                            <span class="path5"></span>
+                                        </i>
+                                        Delete
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <div class="col-12">
+                <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                    <i class="ki-duotone ki-folder fs-5x text-gray-500 mb-3 ">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <h6 class="fw-bold text-gray-700 mb-2">No nationalities found</h6>
+                    <p class="fs-7 text-gray-500 mb-4">Start by creating your first nationality entry</p>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Loading indicator for infinite scroll -->
+        <div id="loading-indicator" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading more nationalities...</p>
+        </div>
+
+        <!-- No more data indicator -->
+        <div id="no-more-data" class="text-center py-4 d-none">
+            <p class="text-muted">No more nationalities to load</p>
+        </div>
+    </div>
+</div>
+<!--end::Mobile UI-->
 
 <!--begin::Main-->
 <div class="app-main flex-column flex-row-fluid d-none d-lg-flex" id="kt_app_main">
     <!--begin::Content wrapper-->
     <div class="d-flex flex-column flex-column-fluid">
 
-        <!--begin::Toolbar-->
-        <div id="kt_app_toolbar" class="app-toolbar  pt-10 ">
-
-            <!--begin::Toolbar container-->
-            <div id="kt_app_toolbar_container" class="app-container  container-fluid d-flex align-items-stretch ">
-                <!--begin::Toolbar wrapper-->
-                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
-
-                    <!--begin::Page title-->
-                    <div class="page-title d-flex flex-column gap-1 me-3 mb-2">
-
-                        <!--begin::Title-->
-                        <h1
-                            class="page-heading d-flex flex-column justify-content-center text-gray-900 fw-bolder fs-1 lh-0  mb-6 mt-4">
-                            Nationalities
-                        </h1>
-                        <!--end::Title-->
-                        <!--begin::Breadcrumb-->
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold mb-2">
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                <a href="/" class="text-gray-500 text-hover-primary">
-                                    <i class="ki-duotone ki-home fs-3 text-gray-500 me-n1"></i>
-                                </a>
-                            </li>
-                            <!--end::Item-->
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
-                            </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700 fw-bold lh-1">
-                                Settings </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <i class="ki-duotone ki-right fs-4 text-gray-700 mx-n1"></i>
-                            </li>
-                            <!--end::Item-->
-
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-gray-700">
-                                Nationalities </li>
-                            <!--end::Item-->
-
-
-                        </ul>
-                        <!--end::Breadcrumb-->
-
-
-                    </div>
-                    <!--end::Page title-->
-
-                    <!--begin::Actions-->
-                    <!-- <a href="#" class="btn btn-sm btn-success ms-3 px-4 py-3" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_create_app">
-                                        Create Project</span>
-                                    </a> -->
-                    <!--end::Actions-->
-                </div>
-                <!--end::Toolbar wrapper-->
-            </div>
-            <!--end::Toolbar container-->
-        </div>
-        <!--end::Toolbar-->
-
         <!--begin::Content-->
-        <div id="kt_app_content" class="app-content  flex-column-fluid ">
-
-
+        <div id="kt_app_content" class="app-content flex-column-fluid">
             <!--begin::Content container-->
-            <div id="kt_app_content_container" class="app-container  container-fluid ">
+            <div id="kt_app_content_container" class="app-container container-fluid">
 
                 <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success d-flex align-items-center p-5 mb-10">
@@ -252,9 +407,13 @@
                 </div>
                 <?php endif; ?>
 
-                <div class="row">
-                    <div class="col-6">
-                        <!--begin::Search-->
+                <!--begin::Card-->
+                <div class="card">
+                    <!--begin::Card header-->
+                    <div class="card-header border-0 pt-6">
+                        <!--begin::Card title-->
+                        <div class="card-title">
+                            <!--begin::Search-->
                             <div class="d-flex align-items-center position-relative my-1">
                                 <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
                                     <span class="path1"></span>
@@ -265,9 +424,12 @@
                                     value="<?= esc($search) ?>" />
                             </div>
                             <!--end::Search-->
-                    </div>
-                    <div class="col-6">
-                        <!--begin::Toolbar-->
+                        </div>
+                        <!--begin::Card title-->
+
+                        <!--begin::Card toolbar-->
+                        <div class="card-toolbar">
+                            <!--begin::Toolbar-->
                             <div class="d-flex justify-content-end" data-kt-nationality-table-toolbar="base">
                                 <!--begin::Add nationality-->
                                 <?php if ($permissions['canCreate']): ?>
@@ -279,11 +441,14 @@
                                 <!--end::Add nationality-->
                             </div>
                             <!--end::Toolbar-->
+                        </div>
+                        <!--end::Card toolbar-->
                     </div>
-                </div>
+                    <!--end::Card header-->
 
-
-                <!--begin::Table-->
+                    <!--begin::Card body-->
+                    <div class="card-body py-4">
+                        <!--begin::Table-->
                         <div class="table-responsive">
                             <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_nationality_table">
                                 <!--begin::Table head-->
@@ -490,19 +655,23 @@
                         ];
                         echo view('partials/table_footer', $footerData);
                         ?>
-
-
+                    </div>
+                    <!--end::Card body-->
+                </div>
+                <!--end::Card-->
             </div>
             <!--end::Content container-->
         </div>
         <!--end::Content-->
-
     </div>
     <!--end::Content wrapper-->
-
-</div>
 </div>
 <!--end::Main-->
+
+<!-- Include Modals -->
+<?= $this->include('nationalities/create_modal') ?>
+<?= $this->include('nationalities/edit_modal') ?>
+<?= $this->include('nationalities/view_modal') ?>
 
 <script>
 // Global variables
@@ -534,6 +703,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle sidebar state for mobile search bar
     const sidebar = document.getElementById('kt_app_sidebar');
+    const mobileSearchBar = document.querySelector('.mobile-search-bar');
+
+    if (sidebar && mobileSearchBar) {
+        // Create observer to watch for sidebar state changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName ===
+                    'data-kt-drawer') {
+                    const isDrawerOn = sidebar.getAttribute('data-kt-drawer') === 'on';
+                    if (isDrawerOn) {
+                        mobileSearchBar.style.zIndex = '100';
+                    } else {
+                        mobileSearchBar.style.zIndex = '999';
+                    }
+                }
+            });
+        });
+
+        observer.observe(sidebar, {
+            attributes: true,
+            attributeFilter: ['data-kt-drawer']
+        });
+
+        // Also listen for drawer events
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'kt_app_sidebar_mobile_toggle' || e.target.closest(
+                    '#kt_app_sidebar_mobile_toggle')) {
+                setTimeout(() => {
+                    const isDrawerOn = sidebar.getAttribute('data-kt-drawer') === 'on';
+                    if (isDrawerOn) {
+                        mobileSearchBar.style.zIndex = '100';
+                    } else {
+                        mobileSearchBar.style.zIndex = '999';
+                    }
+                }, 100);
+            }
+        });
+    }
 
     // Mobile search functionality
     const mobileSearch = document.getElementById('mobile_search');
@@ -1140,10 +1347,5 @@ function handleSessionExpired() {
     });
 }
 </script>
-
-<!-- Include Modals (placed at end for mobile compatibility) -->
-<?= $this->include('nationalities/create_modal') ?>
-<?= $this->include('nationalities/edit_modal') ?>
-<?= $this->include('nationalities/view_modal') ?>
 
 <?= $this->include('layout/footer.php') ?>
