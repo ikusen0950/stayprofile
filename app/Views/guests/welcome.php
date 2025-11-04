@@ -5,35 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= esc($title) ?> - Welcome <?= esc($guest['full_name']) ?></title>
 
-    <!-- Favicons -->
-    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/favicons/apple-touch-icon-57x57.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/favicons/apple-touch-icon-114x114.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/favicons/apple-touch-icon-72x72.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/favicons/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="/favicons/apple-touch-icon-60x60.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/favicons/apple-touch-icon-120x120.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/favicons/apple-touch-icon-76x76.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/favicons/apple-touch-icon-152x152.png" />
-    <link rel="icon" type="image/png" href="/favicons/favicon-196x196.png" sizes="196x196" />
-    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="/favicons/favicon-128.png" sizes="128x128" />
-    <meta name="msapplication-TileImage" content="/favicons/mstile-144x144.png" />
-    <meta name="msapplication-square70x70logo" content="/favicons/mstile-70x70.png" />
-    <meta name="msapplication-square150x150logo" content="/favicons/mstile-150x150.png" />
-    <meta name="msapplication-wide310x150logo" content="/favicons/mstile-310x150.png" />
-    <meta name="msapplication-square310x310logo" content="/favicons/mstile-310x310.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicons/favicon-square.svg" />
-    <link rel="shortcut icon" href="/favicons/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content=".Here" />
-    <link rel="manifest" href="/favicons/site.webmanifest" />
-
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
+
+    <script src="https://kit.fontawesome.com/cc5d7cb79f.js" crossorigin="anonymous"></script>
+
     <!-- Custom Fonts -->
     <link rel="stylesheet" href="/assets/media/fonts/Moeda.css">
     <style>
@@ -346,14 +323,14 @@
                     <div class="container d-flex justify-content-center">
                         <a href="https://www.facebook.com/profile.php?id=61577687646689" target="_blank"
                             class="mx-3 text-secondary">
-                            <i class="bi bi-facebook"></i>
+                           <i class="fa-brands fa-square-facebook"></i>
                         </a>
                         <a href="https://www.instagram.com/_.herebaaatoll" target="_blank" class="mx-3 text-secondary"
                            >
-                            <i class="bi bi-instagram"></i>
+                            <i class="fa-brands fa-square-instagram"></i>
                         </a>
                         <a href="https://www.here-maldives.com/" target="_blank" class="mx-3 text-secondary">
-                            <i class="bi bi-globe2"></i>
+                            <i class="fa-solid fa-globe"></i>
                         </a>
                     </div>
                 </div>
