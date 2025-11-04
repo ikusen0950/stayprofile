@@ -71,94 +71,13 @@
                 <!--end:Menu link-->
             </div>
             <!--end:Menu item-->
+            
+     
             <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/feed']); ?>
+            <?php $isActive = isMenuActive(['/guests']); ?>
             <div data-kt-menu-trigger="click" class="menu-item <?= $isActive ? 'here show' : '' ?>">
                 <!--begin:Menu link-->
-                <a href="/feed" class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
-                    <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                    <span class="menu-icon">
-                        <i class="ki-duotone ki-element-12 fs-1">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                        </i>
-                    </span>
-                    <span class="menu-title">Feed</span>
-                </a>
-                <!--end:Menu link-->
-            </div>
-            <!--end:Menu item-->
-            <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/requests/add_request', '/requests', '/authorizations']); ?>
-            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
-                <!--begin:Menu link-->
-                <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
-                    <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                    <span class="menu-icon">
-                        <i class="ki-duotone ki-some-files fs-2">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i></span>
-                    <span class="menu-title">Requests</span>
-                    <span class="menu-arrow"></span></span>
-                <!--end:Menu link-->
-                <!--begin:Menu sub-->
-                <div class="menu-sub menu-sub-accordion">
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive1 = isMenuActive(['/requests/add_request']); ?>
-                        <a class="menu-link <?= $subActive1 ? 'active bg-white' : '' ?>" href="/requests/add_request"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">Add Requests</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive2 = isMenuActive(['/requests']) && !isMenuActive(['/requests/add_request']); ?>
-                        <a class="menu-link <?= $subActive2 ? 'active bg-white' : '' ?>" href="/requests"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">All Requests</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive3 = isMenuActive(['/authorizations']); ?>
-                        <a class="menu-link <?= $subActive3 ? 'active bg-white' : '' ?>" href="/authorizations"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">Authorizations</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                </div>
-                <!--end:Menu sub-->
-            </div>
-            <!--end:Menu item-->
-            <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/users']); ?>
-            <div data-kt-menu-trigger="click" class="menu-item <?= $isActive ? 'here show' : '' ?>">
-                <!--begin:Menu link-->
-                <a href="/users" class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
+                <a href="/guests" class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
                     <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
                     <span class="menu-icon">
                         <i class="ki-duotone ki-profile-user fs-1">
@@ -168,148 +87,13 @@
                             <span class="path4"></span>
                         </i>
                     </span>
-                    <span class="menu-title">Islanders</span>
+                    <span class="menu-title">Guests</span>
                 </a>
                 <!--end:Menu link-->
             </div>
             <!--end:Menu item-->
-            <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/events']); ?>
-            <div data-kt-menu-trigger="click" class="menu-item <?= $isActive ? 'here show' : '' ?>">
-                <!--begin:Menu link-->
-                <a href="/events" class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
-                    <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                    <span class="menu-icon">
-                        <i class="ki-duotone ki-calendar fs-1">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                            <span class="path4"></span>
-                            <span class="path5"></span>
-                        </i>
-                    </span>
-                    <span class="menu-title">Events</span>
-                </a>
-                <!--end:Menu link-->
-            </div>
-            <!--end:Menu item-->
-            <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/policies']); ?>
-            <div data-kt-menu-trigger="click" class="menu-item <?= $isActive ? 'here show' : '' ?>">
-                <!--begin:Menu link-->
-                <a href="/policies" class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
-                    <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                    <span class="menu-icon">
-                        <i class="ki-duotone ki-document fs-1">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                    </span>
-                    <span class="menu-title">Policies</span>
-                </a>
-                <!--end:Menu link-->
-            </div>
-            <!--end:Menu item-->
-            <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/tickets']); ?>
-            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
-                <!--begin:Menu link-->
-                <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
-                    <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                    <span class="menu-icon">
-                        <i class="ki-duotone ki-save-2 fs-2">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i></span>
-                    <span class="menu-title">Tickets</span>
-                    <span class="menu-arrow"></span></span>
-                <!--end:Menu link-->
-                <!--begin:Menu sub-->
-                <div class="menu-sub menu-sub-accordion">
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive1 = isMenuActive(['/tickets']); ?>
-                        <a class="menu-link <?= $subActive1 ? 'active bg-white' : '' ?>" href="/tickets"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">All Tickets</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                </div>
-                <!--end:Menu sub-->
-            </div>
-            <!--end:Menu item-->
-            <!--begin:Menu item-->
-            <?php $isActive = isMenuActive(['/todays_arrival', '/todays_departure', '/exit_request']); ?>
-            <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
-                <!--begin:Menu link-->
-                <span class="menu-link <?= $isActive ? 'active bg-white' : '' ?>"
-                    <?= $isActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                    <span class="menu-icon">
-                        <i class="ki-duotone ki-security-user fs-2">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i></span>
-                    <span class="menu-title">Security</span>
-                    <span class="menu-arrow"></span></span>
-                <!--end:Menu link-->
-                <!--begin:Menu sub-->
-                <div class="menu-sub menu-sub-accordion">
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive1 = isMenuActive(['/todays_departure']); ?>
-                        <a class="menu-link <?= $subActive1 ? 'active bg-white' : '' ?>" href="/todays_departure"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">Todays Departure</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive2 = isMenuActive(['/todays_arrival']) && !isMenuActive(['/todays_departure']); ?>
-                        <a class="menu-link <?= $subActive2 ? 'active bg-white' : '' ?>" href="/todays_arrival"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">Todays Arrival</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <?php $subActive3 = isMenuActive(['/exit_request']); ?>
-                        <a class="menu-link <?= $subActive3 ? 'active bg-white' : '' ?>" href="/exit_request"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right" <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">All Exit Requests</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                </div>
-                <!--end:Menu sub-->
-            </div>
-            <!--end:Menu item-->
+
+
 
 
 
@@ -338,7 +122,7 @@
                             // Check if user has access to any settings
                             $hasAnySettingsAccess = $hasSystemAccess || $hasIslanderAccess || $hasUserManagementAccess;
                             
-                            $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/leave', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
+                            $isActive = isMenuActive(['/modules', '/status', '/logs', '/flight-routes', '/villas', '/questions', '/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy', '/islanders', '/visitors', '/sessions', '/requesting-rules', '/authorization-rules', '/roles', '/group-permissions', '/user-permissions']) && $hasAnySettingsAccess;
                             ?>
             <?php if ($hasAnySettingsAccess): ?>
             <div data-kt-menu-trigger="click" class="menu-item menu-accordion <?= $isActive ? 'here show' : '' ?>">
@@ -516,9 +300,11 @@
                     <?php endif; ?>
                     <!--end:Menu item-->
 
+                   
+
                     <!--begin:Menu item-->
                     <?php 
-                            $islanderActive = isMenuActive(['/divisions', '/departments', '/sections', '/positions', '/genders', '/nationalities', '/houses', '/policy']) && $hasIslanderAccess;
+                            $islanderActive = isMenuActive(['/villas', '/questions']) && $hasIslanderAccess;
                             ?>
                     <?php if ($hasIslanderAccess): ?>
                     <div data-kt-menu-trigger="click"
@@ -529,185 +315,39 @@
                             <span class="menu-bullet">
                                 <span class="bullet bullet-dot"></span>
                             </span>
-                            <span class="menu-title">Islander Settings</span>
+                            <span class="menu-title">App Settings</span>
                             <span class="menu-arrow"></span>
                         </span>
                         <!--end:Menu link-->
                         <!--begin:Menu sub-->
                         <div class="menu-sub menu-sub-accordion">
                             <!--begin:Menu item-->
-                            <?php if (has_permission('divisions.view') || $hasIslanderAccess): ?>
+                            <?php if (has_permission('villas.view') || $hasIslanderAccess): ?>
                             <div class="menu-item">
                                 <!--begin:Menu link-->
-                                <?php $subActive1 = isMenuActive(['/divisions']); ?>
-                                <a class="menu-link <?= $subActive1 ? 'active bg-white' : '' ?>" href="/divisions"
+                                <?php $subActive1 = isMenuActive(['/villas']); ?>
+                                <a class="menu-link <?= $subActive1 ? 'active bg-white' : '' ?>" href="/villas"
                                     <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
-                                    <span class="menu-title">Division</span>
+                                    <span class="menu-title">Villas</span>
                                 </a>
                                 <!--end:Menu link-->
                             </div>
                             <?php endif; ?>
                             <!--end:Menu item-->
                             <!--begin:Menu item-->
-                            <?php if (has_permission('departments.view') || $hasIslanderAccess): ?>
+                            <?php if (has_permission('questions.view') || $hasIslanderAccess): ?>
                             <div class="menu-item">
                                 <!--begin:Menu link-->
-                                <?php $subActive2 = isMenuActive(['/departments']); ?>
-                                <a class="menu-link <?= $subActive2 ? 'active bg-white' : '' ?>" href="/departments"
+                                <?php $subActive2 = isMenuActive(['/questions']); ?>
+                                <a class="menu-link <?= $subActive2 ? 'active bg-white' : '' ?>" href="/questions"
                                     <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
-                                    <span class="menu-title">Department</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <?php endif; ?>
-                            <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <?php if (has_permission('sections.view') || $hasIslanderAccess): ?>
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive3 = isMenuActive(['/sections']); ?>
-                                <a class="menu-link <?= $subActive3 ? 'active bg-white' : '' ?>" href="/sections"
-                                    <?= $subActive3 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Section</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <?php endif; ?>
-                            <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive4 = isMenuActive(['/positions']); ?>
-                                <a class="menu-link <?= $subActive4 ? 'active bg-white' : '' ?>" href="/positions"
-                                    <?= $subActive4 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Position</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive5 = isMenuActive(['/genders']); ?>
-                                <a class="menu-link <?= $subActive5 ? 'active bg-white' : '' ?>" href="/genders"
-                                    <?= $subActive5 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Gender</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive6 = isMenuActive(['/nationalities']); ?>
-                                <a class="menu-link <?= $subActive6 ? 'active bg-white' : '' ?>" href="/nationalities"
-                                    <?= $subActive6 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Nationality</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <?php if (has_permission('houses.view') || $hasIslanderAccess): ?>
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive7 = isMenuActive(['/houses']); ?>
-                                <a class="menu-link <?= $subActive7 ? 'active bg-white' : '' ?>" href="/houses"
-                                    <?= $subActive7 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Houses</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <?php endif; ?>
-                            <!--begin:Menu item-->
-
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive8 = isMenuActive(['/policy']); ?>
-                                <a class="menu-link <?= $subActive8 ? 'active bg-white' : '' ?>" href="/policy"
-                                    <?= $subActive8 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Policy</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
-                        </div>
-                        <!--end:Menu sub-->
-                    </div>
-                    <?php endif; ?>
-                    <!--end:Menu item-->
-
-                    <!--begin:Menu item-->
-                    <?php 
-                            $islanderActive = isMenuActive(['/leave', '/flight-routes']) && $hasIslanderAccess;
-                            ?>
-                    <?php if ($hasIslanderAccess): ?>
-                    <div data-kt-menu-trigger="click"
-                        class="menu-item menu-accordion <?= $islanderActive ? 'here show' : '' ?>">
-                        <!--begin:Menu link-->
-                        <span class="menu-link <?= $islanderActive ? 'active bg-white' : '' ?>"
-                            <?= $islanderActive ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                            <span class="menu-bullet">
-                                <span class="bullet bullet-dot"></span>
-                            </span>
-                            <span class="menu-title">Request Settings</span>
-                            <span class="menu-arrow"></span>
-                        </span>
-                        <!--end:Menu link-->
-                        <!--begin:Menu sub-->
-                        <div class="menu-sub menu-sub-accordion">
-                            <!--begin:Menu item-->
-                            <?php if (has_permission('leave.view') || $hasIslanderAccess): ?>
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive1 = isMenuActive(['/leave']); ?>
-                                <a class="menu-link <?= $subActive1 ? 'active bg-white' : '' ?>" href="/leave"
-                                    <?= $subActive1 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Leave Reasons</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <?php endif; ?>
-                            <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <?php if (has_permission('flight-routes.view') || $hasIslanderAccess): ?>
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <?php $subActive2 = isMenuActive(['/flight-routes']); ?>
-                                <a class="menu-link <?= $subActive2 ? 'active bg-white' : '' ?>" href="/flight-routes"
-                                    <?= $subActive2 ? 'style="border-radius: 0.5rem;"' : '' ?>>
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Flight Routes</span>
+                                    <span class="menu-title">Questions</span>
                                 </a>
                                 <!--end:Menu link-->
                             </div>

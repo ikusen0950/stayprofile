@@ -85,6 +85,44 @@ $routes->group('status', ['filter' => 'login'], function($routes) {
     $routes->get('modules', 'StatusController::getModules');
 });
 
+// Questions CRUD routes
+$routes->group('questions', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'QuestionsController::index');
+    $routes->post('/', 'QuestionsController::store');
+    $routes->post('store', 'QuestionsController::store');
+    $routes->get('show/(:num)', 'QuestionsController::show/$1');
+    $routes->get('(:num)', 'QuestionsController::show/$1');
+    $routes->get('(:num)/edit', 'QuestionsController::edit/$1');
+    $routes->post('(:num)/update', 'QuestionsController::update/$1');
+    $routes->post('update/(:num)', 'QuestionsController::update/$1');
+    $routes->post('(:num)/delete', 'QuestionsController::delete/$1');
+    $routes->post('delete/(:num)', 'QuestionsController::delete/$1');
+    $routes->get('api', 'QuestionsController::api');
+    $routes->get('getQuestions', 'QuestionsController::getQuestions');
+});
+
+// Villas CRUD routes
+$routes->group('villas', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'VillasController::index');
+    $routes->post('/', 'VillasController::store');
+    $routes->get('create', 'VillasController::create');
+    $routes->post('store', 'VillasController::store');
+    $routes->get('show/(:num)', 'VillasController::show/$1');
+    $routes->get('(:num)', 'VillasController::show/$1');
+    $routes->get('(:num)/edit', 'VillasController::edit/$1');
+    $routes->put('(:num)', 'VillasController::update/$1');
+    $routes->post('(:num)/update', 'VillasController::update/$1');
+    $routes->post('update/(:num)', 'VillasController::update/$1');
+    $routes->delete('(:num)', 'VillasController::delete/$1');
+    $routes->post('(:num)/delete', 'VillasController::delete/$1');
+    $routes->post('delete/(:num)', 'VillasController::delete/$1');
+    $routes->get('api', 'VillasController::api');
+    $routes->get('getVillas', 'VillasController::getVillas');
+    // Image management routes
+    $routes->delete('delete-image/(:num)', 'VillasController::deleteImage/$1');
+    $routes->post('set-primary-image', 'VillasController::setPrimaryImage');
+});
+
 // Notifications CRUD routes
 $routes->group('notifications', ['filter' => 'login'], function($routes) {
     $routes->get('/', 'NotificationsController::index');
@@ -403,6 +441,35 @@ $routes->group('visitors', ['filter' => 'login'], function($routes) {
     $routes->get('genders', 'VisitorsController::getGenders');
     $routes->get('nationalities', 'VisitorsController::getNationalities');
     $routes->get('statuses', 'VisitorsController::getStatuses');
+});
+
+// Public guest welcome page (no authentication required)
+$routes->get('welcome/(:any)', 'GuestsController::welcome/$1');
+
+// Public guest preferences page (no authentication required)
+$routes->get('preferences/(:any)', 'GuestsController::preferences/$1');
+$routes->post('preferences/save', 'GuestsController::savePreferences');
+$routes->get('preferences/test', 'GuestsController::testEndpoint'); // Debug route
+
+// Guests CRUD routes
+$routes->group('guests', ['filter' => 'login'], function($routes) {
+    $routes->get('/', 'GuestsController::index');
+    $routes->post('/', 'GuestsController::store');
+    $routes->get('create', 'GuestsController::create');
+    $routes->post('store', 'GuestsController::store');
+    $routes->get('show/(:num)', 'GuestsController::show/$1');
+    $routes->get('(:num)', 'GuestsController::show/$1');
+    $routes->get('(:num)/edit', 'GuestsController::edit/$1');
+    $routes->put('(:num)', 'GuestsController::update/$1');
+    $routes->post('(:num)/update', 'GuestsController::update/$1');
+    $routes->post('update/(:num)', 'GuestsController::update/$1');
+    $routes->delete('(:num)', 'GuestsController::delete/$1');
+    $routes->post('(:num)/delete', 'GuestsController::delete/$1');
+    $routes->post('delete/(:num)', 'GuestsController::delete/$1');
+    $routes->get('api', 'GuestsController::api');
+    $routes->get('villas', 'GuestsController::getVillas');
+    $routes->get('guest-types', 'GuestsController::getGuestTypes');
+    $routes->get('statuses', 'GuestsController::getStatuses');
 });
 
 // Log Management Routes
